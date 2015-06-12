@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iterator>
 #include <string>
+#include "EMRG_exceptions.h"
 #include "universe.h"
 
 boost::program_options::variables_map parse_configs(int argc, char *argv[]);

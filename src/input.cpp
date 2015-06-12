@@ -38,12 +38,12 @@ po::variables_map parse_configs(int argc, char *argv[]) {
     po::options_description visible("EMRG options");
     visible.add(generic).add(config);
     cout << visible << "\n";
-    return 0;
+    throw SilentException();
   }
 
   if (vm.count("version")) {
     cout << "ElectroMagnetics Research Gadget, version 0" << endl;
-    return 0;
+    throw UnSilentException();
   }
 
   ifstream ifs(config_file.c_str());
