@@ -1,2 +1,2 @@
 #include "universe.h"
-Universal Universe;
+Universal Universe; //One universe to rule them all...
