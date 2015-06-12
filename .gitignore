@@ -26,3 +26,10 @@
 *.exe
 *.out
 *.app
+emrg*
+
+# Misc
+tags
+*.*.swp
+obj
+*.d
