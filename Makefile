@@ -21,4 +21,4 @@ obj:
 
 .PHONY:clean
 clean:
-	rm -r emrg obj *.dat
+	rm -rf emrg obj *.dat
