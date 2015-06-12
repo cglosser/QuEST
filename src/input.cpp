@@ -57,3 +57,8 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
   return vm;
 }
+
+void populate_universe(po::variables_map const &vm) {
+  Universe.c0   = vm["constants.c0"].as<double>();
+  Universe.hbar = vm["constants.hbar"].as<double>();
+}

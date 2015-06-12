@@ -1,4 +1,4 @@
-CC = g++
+CC = clang++
 CFLAGS = -Wall -std=c++11
 CFLAGS+= -Wextra -g #debug flags
 
