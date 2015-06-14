@@ -43,7 +43,7 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
   if (vm.count("version")) {
     cout << "ElectroMagnetics Research Gadget, version 0" << endl;
-    throw UnSilentException();
+    throw SilentException();
   }
 
   ifstream ifs(config_file.c_str());
