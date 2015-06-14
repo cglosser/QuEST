@@ -43,13 +43,12 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
   if (vm.count("version")) {
     cout << "ElectroMagnetics Research Gadget, version 0" << endl;
-    throw UnSilentException();
+    throw SilentException();
   }
 
   ifstream ifs(config_file.c_str());
   if (!ifs) {
     cerr << "ERROR: " << config_file << " not found" << endl;
-    return 0;
   } else {
     po::store(po::parse_config_file(ifs, config_file_options), vm);
     po::notify(vm);
