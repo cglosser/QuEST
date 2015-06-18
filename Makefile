@@ -1,8 +1,10 @@
 CC = clang++
 CFLAGS = -Wall -std=c++11
 CFLAGS+= -Wextra -g #debug flags
+CFLAGS+=$(shell pkg-config --cflags eigen3)
 
-LIBS=-lboost_program_options
+LIBS =-lboost_program_options
+LIBS+=$(shell pkg-config --libs eigen3)
 
 CPP_FILES:=$(wildcard src/*.cpp)
 OBJ_FILES:=$(addprefix obj/, $(notdir $(CPP_FILES:.cpp=.o)))
