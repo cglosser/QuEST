@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 
     cout << "speed of light: " << Universe.c0 << endl;
     cout << "          hbar: " << Universe.hbar << endl;
-  } catch(SilentException &e) {
+  } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can just bail out
     return 0; 
   }
