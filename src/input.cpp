@@ -6,7 +6,6 @@ namespace po = boost::program_options;
 po::variables_map parse_configs(int argc, char *argv[]) {
   string config_file;
 
-  //Command-line only options; really just for printing program info
   po::options_description generic("Command line options");
   generic.add_options()
     ("help", "print this help message")
@@ -15,7 +14,6 @@ po::variables_map parse_configs(int argc, char *argv[]) {
       "path to configuration file")
     ;
 
-  //Physical constants to read from a config file
   po::options_description config("Physical constants");
   config.add_options()
     ("constants.c0", po::value<double>()->default_value(1.0),
