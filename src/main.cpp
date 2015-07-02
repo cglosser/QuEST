@@ -11,8 +11,11 @@ int main(int argc, char *argv[]) {
     auto vm = parse_configs(argc, argv);
     populate_universe(vm);
 
+    cout << "    dimensions: " << Universe.dimensions << endl;
+    cout << " num_particles: " << Universe.num_particles << endl;
     cout << "speed of light: " << Universe.c0 << endl;
     cout << "          hbar: " << Universe.hbar << endl;
+
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can just bail out
     return 0; 
