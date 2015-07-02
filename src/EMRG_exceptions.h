@@ -12,4 +12,10 @@ struct CommandLineException : public std::exception {
   }
 };
 
+struct DomainError : public std::exception {
+  const char *what() const throw() {
+    return "Invalid domain specification";
+  }
+};
+
 #endif

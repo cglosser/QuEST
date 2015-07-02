@@ -15,7 +15,11 @@ int main(int argc, char *argv[]) {
     cout << " num_particles: " << Universe.num_particles << endl;
     cout << "speed of light: " << Universe.c0 << endl;
     cout << "          hbar: " << Universe.hbar << endl;
-
+    if(Universe.domain == Domain::FREQUENCY) {
+      cout << "        domain: FREQUENCY" << endl;
+    } else {
+      cout << "        domain: TIME" << endl;
+    }
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can just bail out
     return 0; 

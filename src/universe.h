@@ -13,6 +13,7 @@ auto as_integer(Enumeration const value)
 }
 
 struct Universal{
+  Domain domain;
   size_t dimensions, num_particles;
   double c0, hbar;
 };
