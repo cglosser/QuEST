@@ -1,5 +1,5 @@
-CC = clang++
-CFLAGS = -Wall -std=c++11
+CC = g++
+CFLAGS = -Wall -std=c++11 -fdiagnostics-color=auto
 CFLAGS+= -Wextra -g #debug flags
 CFLAGS+=$(shell pkg-config --cflags eigen3)
 
