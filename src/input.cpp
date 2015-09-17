@@ -16,9 +16,8 @@ po::variables_map parse_configs(int argc, char *argv[]) {
   po::options_description system_parameters("System parameters");
   system_parameters.add_options()
     ("parameters.dimensions",      po::value<size_t>(&Universe.dimensions)->default_value(3), "number of spatial dimensions")
-    ("parameters.num_particles",   po::value<size_t>(&Universe.num_particles), "number of particles in the system")
-    ("parameters.simulation_time", po::value<double>(&Universe.simulation_time), "total (time-domain) simulation duration")
-    ("parameters.domain",          po::value<string>(), "specify time or frequency domain")
+    ("parameters.num_particles",   po::value<size_t>(&Universe.num_particles)->required(), "number of particles in the system")
+    ("parameters.simulation_time", po::value<double>(&Universe.simulation_time)->required(), "total (time-domain) simulation duration")
   ;
 
   po::options_description constants("Physical constants");
