@@ -16,6 +16,7 @@ struct Universal{
   Domain domain;
   size_t dimensions, num_particles;
   double c0, hbar;
+  double simulation_time;
 };
 
 extern Universal Universe;

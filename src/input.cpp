@@ -15,16 +15,16 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
   po::options_description system_parameters("System parameters");
   system_parameters.add_options()
-    ("parameters.dimensions",      po::value<size_t>()->default_value(3), "number of spatial dimensions")
-    ("parameters.num_particles",   po::value<size_t>(), "number of particles in the system")
-    ("parameters.simulation_time", po::value<double>(), "total time to simulate (assuming time-domain)")
+    ("parameters.dimensions",      po::value<size_t>(&Universe.dimensions)->default_value(3), "number of spatial dimensions")
+    ("parameters.num_particles",   po::value<size_t>(&Universe.num_particles), "number of particles in the system")
+    ("parameters.simulation_time", po::value<double>(&Universe.simulation_time), "total (time-domain) simulation duration")
     ("parameters.domain",          po::value<string>(), "specify time or frequency domain")
   ;
 
   po::options_description constants("Physical constants");
   constants.add_options()
-    ("constants.c0",   po::value<double>()->default_value(1.0), "speed of light in vacuum")
-    ("constants.hbar", po::value<double>()->default_value(1.0), "reduced Planck constant")
+    ("constants.c0",   po::value<double>(&Universe.c0)->default_value(1.0), "speed of light in vacuum")
+    ("constants.hbar", po::value<double>(&Universe.hbar)->default_value(1.0), "reduced Planck constant")
   ;
 
   po::options_description cmdline_options;
@@ -59,19 +59,4 @@ po::variables_map parse_configs(int argc, char *argv[]) {
   }
 
   return vm;
-}
-
-void populate_universe(po::variables_map const &vm) {
-  Universe.dimensions    = vm["parameters.dimensions"].as<size_t>();
-  Universe.num_particles = vm["parameters.num_particles"].as<size_t>();
-  if(vm["parameters.domain"].as<string>() == "frequency") {
-    Universe.domain = Domain::FREQUENCY;
-  } else if (vm["parameters.domain"].as<string>() == "time") {
-    Universe.domain = Domain::TIME;
-  } else {
-    throw DomainError();
-  }
-
-  Universe.c0   = vm["constants.c0"].as<double>();
-  Universe.hbar = vm["constants.hbar"].as<double>();
 }
