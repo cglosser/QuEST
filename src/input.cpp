@@ -4,13 +4,13 @@ using namespace std;
 namespace po = boost::program_options;
 
 po::variables_map parse_configs(int argc, char *argv[]) {
-  string config_file, domain_keyword;
+  string config_path, domain_keyword;
 
   po::options_description cmd_line_desc("Command line options");
   cmd_line_desc.add_options()
     ("help", "print this help message")
     ("version,v", "print version string")
-    ("config,c", po::value<string>(&config_file)->default_value("input.cfg"), "path to configuration file")
+    ("config,c", po::value<string>(&config_path)->default_value("input.cfg"), "path to configuration file")
   ;
 
   po::options_description system_parameters("System parameters");
@@ -49,9 +49,9 @@ po::variables_map parse_configs(int argc, char *argv[]) {
     throw CommandLineException();
   }
 
-  ifstream ifs(config_file.c_str());
+  ifstream ifs(config_path.c_str());
   if (!ifs) {
-    cerr << "ERROR: " << config_file << " not found" << endl;
+    cerr << "ERROR: " << config_path << " not found" << endl;
   } else {
     po::store(po::parse_config_file(ifs, config_file_options), vm);
     po::notify(vm);
