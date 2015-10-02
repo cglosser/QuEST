@@ -1,6 +1,7 @@
 #include "prolates.h"
 
-namespace math = boost::math::constants;
+using boost::math::constants::pi;
+using std::pow;
 
 double sinc(double);
 double sinhc(double);
@@ -17,20 +18,20 @@ double d3_sinhc(double);
 Prolate::Prolate(int n)
 {
   width = n;
-  alpha = width*math::pi<double>();
+  alpha = width*pi<double>();
 }
 
-double Prolate::sqrt_term(const double t)  {return std::sqrt(1 - std::pow(t/width, 2));}
+double Prolate::sqrt_term(const double t)  {return std::sqrt(1 - pow(t/width, 2));}
 double Prolate::d1_sqrt_term(const double t) {return -t/(sqrt_term(t)*pow(width, 2));}
 double Prolate::d2_sqrt_term(const double t)
 {
   const double q = sqrt_term(t);
-  return -std::pow(t,2)/(width*std::pow(q*width,3)) - 1/(q*std::pow(width,2));
+  return -pow(t,2)/(width*pow(q*width,3)) - 1/(q*pow(width,2));
 }
 double Prolate::d3_sqrt_term(const double t)
 {
   const double q = sqrt_term(t);
-  return -3*t/width*(std::pow(t,2)/std::pow(q*width,5) + 1/std::pow(q*width,3));
+  return -3*t/width*(pow(t,2)/pow(q*width,5) + 1/pow(q*width,3));
 }
 
 //=============================================================
@@ -38,68 +39,51 @@ double Prolate::d3_sqrt_term(const double t)
 double Prolate::d0(const double t)
 {
   if(std::abs(t) >= width) return 0;
-  const double pi = math::pi<double>(), q = sqrt_term(t);
-  return sinc(pi*t)*alpha*sinhc(alpha*q)/std::sinh(alpha);
+  const double q = sqrt_term(t);
+  return sinc(pi<double>()*t)*alpha*sinhc(alpha*q)/std::sinh(alpha);
 }
 
 double Prolate::d1(const double t)
 {
-  const double pi = math::pi<double>();
-
   if(std::abs(t) >= width) {
     return 0;
   } else {
     const double q = sqrt_term(t), d1q = d1_sqrt_term(t);
-    return
-      ( //If you look closely, you'll see a product rule here.
-        alpha*pi*sinhc(alpha*q)*d1_sinc(pi*t) +
-        std::pow(alpha, 2)*d1q*sinc(pi*t)*d1_sinhc(alpha*q)
+    return ( 
+        //If you look closely, you'll see a product rule here.
+        alpha*pi<double>()*sinhc(alpha*q)*d1_sinc(pi<double>()*t) +
+        pow(alpha, 2)*d1q*sinc(pi<double>()*t)*d1_sinhc(alpha*q)
       )/std::sinh(alpha);
   }
 }
 
 double Prolate::d2(const double t)
 {
-  const double pi = math::pi<double>();
-
   if(std::abs(t) >= width) {
     return 0;
   } else {
     const double q = sqrt_term(t), d1q = d1_sqrt_term(t), d2q = d2_sqrt_term(t);
-    return
-      (
-        2*std::pow(alpha,2)*d1q*pi*d1_sinc(pi*t)*d1_sinhc(alpha*q) +
-        alpha*std::pow(pi,2)*sinhc(alpha*q)*d2_sinc(pi*t) +
-        alpha*sinc(pi*t)*(alpha*d2q*d1_sinhc(alpha*q) + std::pow(alpha*d1q,2)*d2_sinhc(alpha*q))
+    return (
+        2*pow(alpha,2)*d1q*pi<double>()*d1_sinc(pi<double>()*t)*d1_sinhc(alpha*q) +
+        alpha*pow(pi<double>(),2)*sinhc(alpha*q)*d2_sinc(pi<double>()*t) +
+        alpha*sinc(pi<double>()*t)*(alpha*d2q*d1_sinhc(alpha*q) + pow(alpha*d1q,2)*d2_sinhc(alpha*q))
       )/std::sinh(alpha);
   }
 }
 
 double Prolate::d3(const double t)
 {
-  const double pi = math::pi<double>();
-
   if (std::abs(t) >= width) {
     return 0;
   } else {
     const double   q =    sqrt_term(t),  d2q = d2_sqrt_term(t);
     const double d1q = d1_sqrt_term(t) , d3q = d3_sqrt_term(t);
-
-    double x;
-    std::cout << q << std::endl;
-    std::cout << d1q << std::endl;
-    std::cout << d2q << std::endl;
-    std::cout << d3q << std::endl;
-
-    std::cin >> x;
-
     return (
-alpha*(3*alpha*d1q*std::pow(pi,2)*d1_sinhc(alpha*q)*d2_sinc(pi*t) +
-     3*alpha*pi*d1_sinc(pi*t)*(d2q*d1_sinhc(alpha*q) + alpha*std::pow(d1q,2)*d2_sinhc(alpha*q)) +
-     alpha*(d3q*d1_sinhc(alpha*q) + alpha*d1q*
-         (3*d2q*d2_sinhc(alpha*q) + alpha*std::pow(d1q,2)*d3_sinhc(alpha*q)))*sinc(pi*t) +
-     std::pow(pi,3)*d3_sinc(pi*t)*sinhc(alpha*q))
-      )/std::sinh(alpha);
+        3*alpha*d1q*pow(pi<double>(),2)*d1_sinhc(alpha*q)*d2_sinc(pi<double>()*t) +
+        3*alpha*pi<double>()*d1_sinc(pi<double>()*t)*(d2q*d1_sinhc(alpha*q) + alpha*pow(d1q,2)*d2_sinhc(alpha*q)) +
+        alpha*(d3q*d1_sinhc(alpha*q) + alpha*d1q*(3*d2q*d2_sinhc(alpha*q) + alpha*pow(d1q,2)*d3_sinhc(alpha*q)))*sinc(pi<double>()*t) +
+        pow(pi<double>(),3)*d3_sinc(pi<double>()*t)*sinhc(alpha*q)
+      )*alpha/std::sinh(alpha);
   }
 }
 
@@ -108,7 +92,7 @@ alpha*(3*alpha*d1q*std::pow(pi,2)*d1_sinhc(alpha*q)*d2_sinc(pi*t) +
 double sinc(const double t)
 {
   if (abs(t) <= TOLER) {
-    return 1 - std::pow(t, 2)/6 + std::pow(t, 4)/120;
+    return 1 - pow(t, 2)/6 + pow(t, 4)/120;
   } else {
     return sin(t)/t;
   }
@@ -117,7 +101,7 @@ double sinc(const double t)
 double sinhc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return 1 + std::pow(t, 2)/6 + std::pow(t, 4)/120;
+    return 1 + pow(t, 2)/6 + pow(t, 4)/120;
   } else {
     return std::sinh(t)/t;
   }
@@ -128,18 +112,18 @@ double sinhc(const double t)
 double d1_sinc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return -t/3 + std::pow(t, 3)/30 - std::pow(t, 5)/840;
+    return -t/3 + pow(t, 3)/30 - pow(t, 5)/840;
   } else {
-    return cos(t)/t - sin(t)/std::pow(t, 2);
+    return cos(t)/t - sin(t)/pow(t, 2);
   }
 }
 
 double d1_sinhc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return t/3 + std::pow(t, 3)/30 + std::pow(t, 5)/840;
+    return t/3 + pow(t, 3)/30 + pow(t, 5)/840;
   } else {
-    return cosh(t)/t - sinh(t)/std::pow(t, 2);
+    return cosh(t)/t - sinh(t)/pow(t, 2);
   }
 }
 
@@ -148,18 +132,18 @@ double d1_sinhc(const double t)
 double d2_sinc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return -1.0/3 + std::pow(t,2)/10 - std::pow(t,4)/168;
+    return -1.0/3 + pow(t,2)/10 - pow(t,4)/168;
   } else {
-    return -std::sin(t)/t - 2*std::cos(t)/std::pow(t,2) + 2*std::sin(t)/pow(t,3);
+    return -std::sin(t)/t - 2*std::cos(t)/pow(t,2) + 2*std::sin(t)/pow(t,3);
   }
 }
 
 double d2_sinhc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return 1.0/3 + std::pow(t,2)/10 + std::pow(t,4)/168;
+    return 1.0/3 + pow(t,2)/10 + pow(t,4)/168;
   } else {
-    return std::sinh(t)/t - 2*std::cosh(t)/std::pow(t,2) + 2*std::sinh(t)/pow(t,3);
+    return std::sinh(t)/t - 2*std::cosh(t)/pow(t,2) + 2*std::sinh(t)/pow(t,3);
   }
 }
 
@@ -168,19 +152,19 @@ double d2_sinhc(const double t)
 double d3_sinc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return t/5 - std::pow(t,3)/42 + std::pow(t,5)/1080;
+    return t/5 - pow(t,3)/42 + pow(t,5)/1080;
   } else {
-    return -std::cos(t)/t + 3*std::sin(t)/std::pow(t,2) +
-            6*std::cos(t)/std::pow(t,3) - 6*std::sin(t)/std::pow(t,4);
+    return -std::cos(t)/t + 3*std::sin(t)/pow(t,2) +
+            6*std::cos(t)/pow(t,3) - 6*std::sin(t)/pow(t,4);
   }
 }
 
 double d3_sinhc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return t/5 + std::pow(t,3)/42 + std::pow(t,5)/1080;
+    return t/5 + pow(t,3)/42 + pow(t,5)/1080;
   } else {
-    return std::cos(t)/t - 3*std::sin(t)/std::pow(t,2) +
-            6*std::cos(t)/std::pow(t,3) - 6*std::sin(t)/std::pow(t,4);
+    return std::cos(t)/t - 3*std::sin(t)/pow(t,2) +
+            6*std::cos(t)/pow(t,3) - 6*std::sin(t)/pow(t,4);
   }
 }
