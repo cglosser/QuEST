@@ -1,7 +1,4 @@
 #include <iostream>
-#include <iterator>
-#include <vector>
-#include "EMRG_exceptions.h"
 #include "input.h"
 #include "universe.h"
 #include "prolates.h"
