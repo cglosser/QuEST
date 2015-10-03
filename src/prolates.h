@@ -11,19 +11,18 @@ class Prolate {
   double alpha;
   int width;
 
-  double sqrt_term(double);
-  double d1_sqrt_term(double);
-  double d2_sqrt_term(double);
-  double d3_sqrt_term(double);
-
+  double sqrt_term(double) const;
+  double d1_sqrt_term(double) const;
+  double d2_sqrt_term(double) const;
+  double d3_sqrt_term(double) const;
 
  public:
   Prolate(int);
 
-  double d0(double); //0th derivative
-  double d1(double); //1st derivative
-  double d2(double); //2nd derivative
-  double d3(double); //3rd derivative
+  double d0(double) const; //0th derivative
+  double d1(double) const; //1st derivative
+  double d2(double) const; //2nd derivative
+  double d3(double) const; //3rd derivative
 };
 
 #endif
