@@ -21,14 +21,23 @@ Prolate::Prolate(int n)
   alpha = width*pi<double>();
 }
 
-double Prolate::sqrt_term(const double t)  {return std::sqrt(1 - pow(t/width, 2));}
-double Prolate::d1_sqrt_term(const double t) {return -t/(sqrt_term(t)*pow(width, 2));}
-double Prolate::d2_sqrt_term(const double t)
+double Prolate::sqrt_term(const double t) const
+{
+  return std::sqrt(1 - pow(t/width, 2));
+}
+
+double Prolate::d1_sqrt_term(const double t) const
+{
+  return -t/(sqrt_term(t)*pow(width, 2));
+}
+
+double Prolate::d2_sqrt_term(const double t) const
 {
   const double q = sqrt_term(t);
   return -pow(t,2)/(width*pow(q*width,3)) - 1/(q*pow(width,2));
 }
-double Prolate::d3_sqrt_term(const double t)
+
+double Prolate::d3_sqrt_term(const double t) const
 {
   const double q = sqrt_term(t);
   return -3*t/width*(pow(t,2)/pow(q*width,5) + 1/pow(q*width,3));
@@ -36,20 +45,20 @@ double Prolate::d3_sqrt_term(const double t)
 
 //=============================================================
 
-double Prolate::d0(const double t)
+double Prolate::d0(const double t) const
 {
   if(std::abs(t) >= width) return 0;
   const double q = sqrt_term(t);
   return sinc(pi<double>()*t)*alpha*sinhc(alpha*q)/std::sinh(alpha);
 }
 
-double Prolate::d1(const double t)
+double Prolate::d1(const double t) const
 {
   if(std::abs(t) >= width) {
     return 0;
   } else {
     const double q = sqrt_term(t), d1q = d1_sqrt_term(t);
-    return ( 
+    return (
         //If you look closely, you'll see a product rule here.
         alpha*pi<double>()*sinhc(alpha*q)*d1_sinc(pi<double>()*t) +
         pow(alpha, 2)*d1q*sinc(pi<double>()*t)*d1_sinhc(alpha*q)
@@ -57,7 +66,7 @@ double Prolate::d1(const double t)
   }
 }
 
-double Prolate::d2(const double t)
+double Prolate::d2(const double t) const
 {
   if(std::abs(t) >= width) {
     return 0;
@@ -71,7 +80,7 @@ double Prolate::d2(const double t)
   }
 }
 
-double Prolate::d3(const double t)
+double Prolate::d3(const double t) const
 {
   if (std::abs(t) >= width) {
     return 0;
