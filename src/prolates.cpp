@@ -101,7 +101,8 @@ double Prolate::d3(const double t) const
 double sinc(const double t)
 {
   if (abs(t) <= TOLER) {
-    return 1 - pow(t, 2)/6 + pow(t, 4)/120;
+    double t_sq = pow(t, 2);
+    return 1 + t_sq*(-1.0/6 + t_sq/120); 
   } else {
     return sin(t)/t;
   }
@@ -110,7 +111,8 @@ double sinc(const double t)
 double sinhc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return 1 + pow(t, 2)/6 + pow(t, 4)/120;
+    double t_sq = pow(t, 2);
+    return 1 + t_sq*(1.0/6 + t_sq/120);
   } else {
     return std::sinh(t)/t;
   }
@@ -121,7 +123,8 @@ double sinhc(const double t)
 double d1_sinc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return -t/3 + pow(t, 3)/30 - pow(t, 5)/840;
+    double t_sq = pow(t, 2);
+    return t*(-1.0/3 + t_sq*(1.0/30 - t_sq/840));
   } else {
     return cos(t)/t - sin(t)/pow(t, 2);
   }
@@ -130,7 +133,8 @@ double d1_sinc(const double t)
 double d1_sinhc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return t/3 + pow(t, 3)/30 + pow(t, 5)/840;
+    double t_sq = pow(t, 2);
+    return t*(1.0/3 + t_sq*(1.0/30 + t_sq/840));
   } else {
     return cosh(t)/t - sinh(t)/pow(t, 2);
   }
@@ -141,7 +145,8 @@ double d1_sinhc(const double t)
 double d2_sinc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return -1.0/3 + pow(t,2)/10 - pow(t,4)/168;
+    double t_sq = pow(t, 2);
+    return -1.0/3 + t_sq*(1.0/10 - t_sq/168);
   } else {
     return -std::sin(t)/t - 2*std::cos(t)/pow(t,2) + 2*std::sin(t)/pow(t,3);
   }
@@ -150,7 +155,8 @@ double d2_sinc(const double t)
 double d2_sinhc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return 1.0/3 + pow(t,2)/10 + pow(t,4)/168;
+    double t_sq = pow(t, 2);
+    return 1.0/3 + t_sq*(1.0/10 + t_sq/168);
   } else {
     return std::sinh(t)/t - 2*std::cosh(t)/pow(t,2) + 2*std::sinh(t)/pow(t,3);
   }
@@ -161,7 +167,8 @@ double d2_sinhc(const double t)
 double d3_sinc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return t/5 - pow(t,3)/42 + pow(t,5)/1080;
+    double t_sq = pow(t, 2);
+    return t*(1.0/5 + t_sq*(-1.0/42 + t_sq/1080));
   } else {
     return -std::cos(t)/t + 3*std::sin(t)/pow(t,2) +
             6*std::cos(t)/pow(t,3) - 6*std::sin(t)/pow(t,4);
@@ -171,7 +178,8 @@ double d3_sinc(const double t)
 double d3_sinhc(const double t)
 {
   if (std::abs(t) <= TOLER) {
-    return t/5 + pow(t,3)/42 + pow(t,5)/1080;
+    double t_sq = pow(t, 2);
+    return t*(1.0/5 + t_sq*(1.0/42 + t_sq/1080));
   } else {
     return std::cos(t)/t - 3*std::sin(t)/pow(t,2) +
             6*std::cos(t)/pow(t,3) - 6*std::sin(t)/pow(t,4);
