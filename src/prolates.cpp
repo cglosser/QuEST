@@ -1,6 +1,6 @@
 #include "prolates.h"
 
-using boost::math::constants::pi;
+constexpr double pi = boost::math::constants::pi<double>();
 
 using std::abs;
 using std::cos;
@@ -25,7 +25,7 @@ double d3_sinhc(const double);
 Prolate::Prolate(const int n)
 {
   width = n;
-  alpha = width*pi<double>();
+  alpha = width*pi;
 }
 
 double Prolate::sqrt_term(const double t) const
@@ -56,7 +56,7 @@ double Prolate::d0(const double t) const
 {
   if(abs(t) >= width) return 0;
   const double q = sqrt_term(t);
-  return sinc(pi<double>()*t)*alpha*sinhc(alpha*q)/sinh(alpha);
+  return sinc(pi*t)*alpha*sinhc(alpha*q)/sinh(alpha);
 }
 
 double Prolate::d1(const double t) const
@@ -67,8 +67,8 @@ double Prolate::d1(const double t) const
     const double q = sqrt_term(t), d1q = d1_sqrt_term(t);
     return (
         //If you look closely, you'll see a product rule here.
-        alpha*pi<double>()*sinhc(alpha*q)*d1_sinc(pi<double>()*t) +
-        pow(alpha, 2)*d1q*sinc(pi<double>()*t)*d1_sinhc(alpha*q)
+        alpha*pi*sinhc(alpha*q)*d1_sinc(pi*t) +
+        pow(alpha, 2)*d1q*sinc(pi*t)*d1_sinhc(alpha*q)
       )/sinh(alpha);
   }
 }
@@ -80,9 +80,9 @@ double Prolate::d2(const double t) const
   } else {
     const double q = sqrt_term(t), d1q = d1_sqrt_term(t), d2q = d2_sqrt_term(t);
     return (
-        2*pow(alpha,2)*d1q*pi<double>()*d1_sinc(pi<double>()*t)*d1_sinhc(alpha*q) +
-        alpha*pow(pi<double>(),2)*sinhc(alpha*q)*d2_sinc(pi<double>()*t) +
-        alpha*sinc(pi<double>()*t)*(alpha*d2q*d1_sinhc(alpha*q) + pow(alpha*d1q,2)*d2_sinhc(alpha*q))
+        2*pow(alpha,2)*d1q*pi*d1_sinc(pi*t)*d1_sinhc(alpha*q) +
+        alpha*pow(pi,2)*sinhc(alpha*q)*d2_sinc(pi*t) +
+        alpha*sinc(pi*t)*(alpha*d2q*d1_sinhc(alpha*q) + pow(alpha*d1q,2)*d2_sinhc(alpha*q))
       )/sinh(alpha);
   }
 }
@@ -95,10 +95,10 @@ double Prolate::d3(const double t) const
     const double   q =    sqrt_term(t),  d2q = d2_sqrt_term(t);
     const double d1q = d1_sqrt_term(t) , d3q = d3_sqrt_term(t);
     return (
-        3*alpha*d1q*pow(pi<double>(),2)*d1_sinhc(alpha*q)*d2_sinc(pi<double>()*t) +
-        3*alpha*pi<double>()*d1_sinc(pi<double>()*t)*(d2q*d1_sinhc(alpha*q) + alpha*pow(d1q,2)*d2_sinhc(alpha*q)) +
-        alpha*(d3q*d1_sinhc(alpha*q) + alpha*d1q*(3*d2q*d2_sinhc(alpha*q) + alpha*pow(d1q,2)*d3_sinhc(alpha*q)))*sinc(pi<double>()*t) +
-        pow(pi<double>(),3)*d3_sinc(pi<double>()*t)*sinhc(alpha*q)
+        3*alpha*d1q*pow(pi,2)*d1_sinhc(alpha*q)*d2_sinc(pi*t) +
+        3*alpha*pi*d1_sinc(pi*t)*(d2q*d1_sinhc(alpha*q) + alpha*pow(d1q,2)*d2_sinhc(alpha*q)) +
+        alpha*(d3q*d1_sinhc(alpha*q) + alpha*d1q*(3*d2q*d2_sinhc(alpha*q) + alpha*pow(d1q,2)*d3_sinhc(alpha*q)))*sinc(pi*t) +
+        pow(pi,3)*d3_sinc(pi*t)*sinhc(alpha*q)
       )*alpha/sinh(alpha);
   }
 }
