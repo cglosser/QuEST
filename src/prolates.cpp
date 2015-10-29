@@ -22,7 +22,11 @@ double d2_sinhc(const double);
 double d3_sinc(const double);
 double d3_sinhc(const double);
 
-Prolate::Prolate(const int n)
+//=============================================================
+//=====  Prolate basis functions                          =====
+//=============================================================
+
+Prolate::Prolate(const int n = 0)
 {
   width = n;
   alpha = width*pi;
@@ -87,17 +91,55 @@ double Prolate::d2(const double t) const
   }
 }
 
+//=============================================================
+//=====  Prolate Time Expansions                          =====
+//=============================================================
+
+ProlateTimeExpansion::ProlateTimeExpansion(const Prolate &bf, const int duration,
+    const Eigen::Vector3d &init)
 {
-  }
+  basis_function = bf;
+  history.reserve(duration);
+  history.push_back(init);
 }
 
+//=============================================================
+
+void ProlateTimeExpansion::step(const Eigen::Vector3d &new_val)
+{
+  history.push_back(new_val);
+}
+
+//=============================================================
+
+Eigen::Vector3d ProlateTimeExpansion::at(const double time)
+{
+  /* To help modularity, the time expansion works in terms of *dimensionless*
+   * times (t/dt). Thus you must also make the argument of this function
+   * dimensionless for an appropriate query of the signal's value. */
+
+  assert(time <= history.size()); //Can't look into the future
+
+  if(time < basis_function.get_width()) { // Too close to the end, need to extrapolate off end of expansion
+    ;
+  } else if (history.size() - time < basis_function.get_width()) { //Too close to future, need to disfuturify
+    ;
+  } else { //Just right, compute weighted sum of prolates as expected
+    ;
+  }
+
+  return Eigen::Vector3d(0,0,0);
+}
+
+//=============================================================
+//=====  Helper functions                                 =====
 //=============================================================
 
 double sinc(const double t)
 {
   if (abs(t) <= TOLER) {
     double t_sq = pow(t, 2);
-    return 1 + t_sq*(-1.0/6 + t_sq/120); 
+    return 1 + t_sq*(-1.0/6 + t_sq/120);
   } else {
     return sin(t)/t;
   }
@@ -180,3 +222,4 @@ double d3_sinhc(const double t)
             6*cos(t)/pow(t,3) - 6*sin(t)/pow(t,4);
   }
 }
+
