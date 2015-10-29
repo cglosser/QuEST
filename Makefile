@@ -21,6 +21,10 @@ obj/%.o: src/%.cpp | obj
 obj:
 	mkdir -p $@
 
+.PHONY:doc
+doc:
+	doxygen doc/Doxyfile && rm doc/doxygen_sqlite3.db
+
 .PHONY:clean
 clean:
-	rm -rf emrg obj *.dat
+	rm -rf emrg obj *.dat doc/html
