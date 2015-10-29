@@ -87,19 +87,7 @@ double Prolate::d2(const double t) const
   }
 }
 
-double Prolate::d3(const double t) const
 {
-  if (abs(t) >= width) {
-    return 0;
-  } else {
-    const double   q =    sqrt_term(t),  d2q = d2_sqrt_term(t);
-    const double d1q = d1_sqrt_term(t) , d3q = d3_sqrt_term(t);
-    return (
-        3*alpha*d1q*pow(pi,2)*d1_sinhc(alpha*q)*d2_sinc(pi*t) +
-        3*alpha*pi*d1_sinc(pi*t)*(d2q*d1_sinhc(alpha*q) + alpha*pow(d1q,2)*d2_sinhc(alpha*q)) +
-        alpha*(d3q*d1_sinhc(alpha*q) + alpha*d1q*(3*d2q*d2_sinhc(alpha*q) + alpha*pow(d1q,2)*d3_sinhc(alpha*q)))*sinc(pi*t) +
-        pow(pi,3)*d3_sinc(pi*t)*sinhc(alpha*q)
-      )*alpha/sinh(alpha);
   }
 }
 

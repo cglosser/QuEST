@@ -22,7 +22,6 @@ class Prolate {
   double d0(double) const; //0th derivative
   double d1(double) const; //1st derivative
   double d2(double) const; //2nd derivative
-  double d3(double) const; //3rd derivative
 };
 
 #endif
