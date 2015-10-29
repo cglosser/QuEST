@@ -26,25 +26,20 @@ int main()
 
   const double t_max = boost::math::cyl_bessel_j_zero(0.0, 5);
   const double dt = 1;//t_max/(NSAMP - 1);
+  const size_t nsteps = t_max/dt;
 
-  vector<double> weights;
-  for(int i = -WIDTH; i < NSAMP + WIDTH; ++i) {
-    double val = boost::math::cyl_bessel_j(0.0, i*dt);
-    weights.push_back(val);
+  double jnaught = boost::math::cyl_bessel_j(0.0, 0.0);
+  ProlateTimeExpansion pte(Prolate(3), nsteps + 5, Eigen::Vector3d(jnaught, jnaught, jnaught));
+
+  for(int i = 1; i < nsteps; ++i) {
+    double time = i*dt;
+    double val = boost::math::cyl_bessel_j(0.0, time);
+
+    pte.step(Eigen::Vector3d(val, val, val));
   }
 
-  Prolate p0(WIDTH);
-
-  double step = dt/8;
-  for(double x = 0; x < t_max; x += step) {
-    int base_idx = floor(x/dt + 0.5);
-
-    double val = 0;
-    for(int w = -WIDTH; w < WIDTH; ++w) {
-      val += weights[base_idx + w + WIDTH]*p0.d0(x/dt - base_idx - w);
-    }
-
-    cout << x << "\t" << "\t" << boost::math::cyl_bessel_j(0.0, x) << "\t" << val << endl;
+  for(double time = 0; time < t_max; time += 0.001) {
+    cout << time << "\t" << pte.at(time/dt)[0] << endl;
   }
 
 }

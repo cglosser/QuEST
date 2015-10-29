@@ -18,7 +18,16 @@ int main(int argc, char *argv[]) {
     cout << "speed of light: " << Universe.c0 << endl;
     cout << "          hbar: " << Universe.hbar << endl;
 
-    ProlateTimeExpansion(Prolate(5), 10, Eigen::Vector3d(1,2,3));
+    ProlateTimeExpansion pte(Prolate(2), 10, Eigen::Vector3d(10,10,10));
+
+    for(int i = 0; i < 10; ++i) {
+      pte.step(Eigen::Vector3d(10,10,10));
+    }
+
+    for(int i = 0; i <= 4; ++i) {
+      cout << pte.at(i + 0.2).transpose() << endl;
+    }
+
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can just bail out

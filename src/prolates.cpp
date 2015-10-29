@@ -118,17 +118,33 @@ Eigen::Vector3d ProlateTimeExpansion::at(const double time)
    * times (t/dt). Thus you must also make the argument of this function
    * dimensionless for an appropriate query of the signal's value. */
 
-  assert(time <= history.size()); //Can't look into the future
+  //assert(time <= history.size()); //Can't look into the future
 
-  if(time < basis_function.get_width()) { // Too close to the end, need to extrapolate off end of expansion
-    ;
-  } else if (history.size() - time < basis_function.get_width()) { //Too close to future, need to disfuturify
-    ;
-  } else { //Just right, compute weighted sum of prolates as expected
-    ;
+  double intpart, fracpart;
+  fracpart = std::modf(time, &intpart);
+
+  int lbound = std::floor(intpart) - basis_function.get_width() + 1;
+  int ubound = std::floor(intpart) + basis_function.get_width();
+
+  Eigen::Vector3d signal(0,0,0);
+
+  if(lbound < 0) {
+    for(int i = lbound; i < 0; ++i) {
+      // Assume constant initial value for time <= 0
+      signal += basis_function.d0(-i + fracpart)*history[0];
+    }
+    for(int i = 0; i <= ubound; ++i) {
+      signal += basis_function.d0(i - time)*history[i];
+    }
+  } else if ((size_t)ubound > history.size()) {
+    assert(false && "Disfuturification not implemented!");
+  } else {
+    for(int i = lbound; i <= ubound; ++i) {
+      signal += basis_function.d0(i - time)*history[i];
+    }
   }
 
-  return Eigen::Vector3d(0,0,0);
+  return signal;
 }
 
 //=============================================================
