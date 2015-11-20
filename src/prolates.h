@@ -23,7 +23,7 @@ class Prolate {
   double d3_sqrt_term(double) const;
 
  public:
-  Prolate(int);
+  Prolate(const int = 0);
 
   int get_width() {return width;}
 

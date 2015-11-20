@@ -26,7 +26,7 @@ double d3_sinhc(const double);
 //=====  Prolate basis functions                          =====
 //=============================================================
 
-Prolate::Prolate(const int n = 0)
+Prolate::Prolate(const int n)
 {
   width = n;
   alpha = width*pi;
