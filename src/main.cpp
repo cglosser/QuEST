@@ -23,9 +23,15 @@ int main(int argc, char *argv[]) {
 
     //zmatrix myMat(pts, 816);
 
-    for(auto it : lagrange_coefficients(3, 0, 0.2)) {
-      cout << it << endl;
+    for(auto it : lagrange_coefficients(3, -0.2)) {
+      cout << it << " ";
     }
+    cout << endl;
+
+    for(auto it : deriv_lagrange_coefficients(3, -0.2)) {
+      cout << it << " ";
+    }
+    cout << endl;
 
 
 

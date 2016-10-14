@@ -6,7 +6,7 @@
 class zmatrix
 {
  public:
-  typedef boost::multi_array<double, 3> array;
+  typedef boost::multi_array<double, 4> array;
   typedef array::index index;
 
   array weights;
@@ -15,4 +15,5 @@ class zmatrix
 
 };
 
-std::vector<double> lagrange_coefficients(int, int, double);
+std::vector<double> lagrange_coefficients(int, double);
+std::vector<double> deriv_lagrange_coefficients(int, double);
