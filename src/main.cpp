@@ -6,6 +6,7 @@
 #include "input.h"
 #include "universe.h"
 #include "prolates.h"
+#include "zmatrix.h"
 using namespace std;
 
 int main(int argc, char *argv[]) {
@@ -18,15 +19,14 @@ int main(int argc, char *argv[]) {
     cout << "speed of light: " << Universe.c0 << endl;
     cout << "          hbar: " << Universe.hbar << endl;
 
-    ProlateTimeExpansion pte(Prolate(2), 10, Eigen::Vector3d(10,10,10));
+    //vector<Eigen::Vector3d> pts(42);
 
-    for(int i = 0; i < 10; ++i) {
-      pte.step(Eigen::Vector3d(10,10,10));
+    //zmatrix myMat(pts, 816);
+
+    for(auto it : lagrange_coefficients(3, 0, 0.2)) {
+      cout << it << endl;
     }
 
-    for(int i = 0; i <= 4; ++i) {
-      cout << pte.at(i + 0.2).transpose() << endl;
-    }
 
 
   } catch(CommandLineException &e) {
