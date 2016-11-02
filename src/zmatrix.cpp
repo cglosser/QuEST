@@ -25,14 +25,17 @@ std::vector<double> deriv_1_lagrange_coefficients(
 {
   assert(x <= 0); //Can only interpolate past (i.e. known) values
   std::vector<double> d0(deriv_0_lagrange_coefficients(interp_order, x));
-  std::vector<double> result(interp_order + 1, 0);
+  std::vector<double> result(interp_order + 1);
 
   for(int basis_id = -interp_order; basis_id <= 0; ++basis_id) {
+    double rhs_sum = 0;
     for(int m = -interp_order; m <= 0; ++m) {
       if(m == basis_id) continue;
-      result.at(basis_id + interp_order) +=
-        d0.at(basis_id + interp_order)/(x - m);
+      rhs_sum += 1/(x - m);
     }
+
+    const size_t idx = basis_id + interp_order;
+    result.at(idx) = d0.at(idx)*rhs_sum;
   }
 
   return result;
@@ -45,7 +48,7 @@ std::vector<double> deriv_2_lagrange_coefficients(
   assert(x <= 0); //Can only interpolate past (i.e. known) values
   std::vector<double> d0(deriv_0_lagrange_coefficients(interp_order, x));
   std::vector<double> d1(deriv_1_lagrange_coefficients(interp_order, x));
-  std::vector<double> result(interp_order + 1, 0);
+  std::vector<double> result(interp_order + 1);
 
   for(int basis_id = -interp_order; basis_id <=0; ++basis_id) {
     double rhs_sum = 0;
