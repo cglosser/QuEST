@@ -15,5 +15,5 @@ class zmatrix
 
 };
 
-std::vector<double> lagrange_coefficients(int, double);
-std::vector<double> deriv_lagrange_coefficients(int, double);
+std::vector<double> deriv_0_lagrange_coefficients(int, double);
+std::vector<double> deriv_1_lagrange_coefficients(int, double);
