@@ -23,20 +23,20 @@ std::vector<double> deriv_lagrange_coefficients(
 {
   assert(x <= 0); //Can only  interpolate past (i.e. known) values
   std::vector<double> d0(lagrange_coefficients(interp_order, x));
-  std::vector<double> deriv_coefficients(interp_order + 1, 1);
+  std::vector<double> result(interp_order + 1, 0);
 
   for(int basis_id = -interp_order; basis_id <= 0; ++basis_id) {
     std::cout << d0.at(basis_id + interp_order) << "| ";
     for(int m = -interp_order; m <= 0; ++m) {
       if(m == basis_id) continue;
-      deriv_coefficients.at(basis_id + interp_order) +=
+      result.at(basis_id + interp_order) +=
         d0.at(basis_id + interp_order)/(x - m);
       std::cout << 1/(x - m) << " ";
     }
     std::cout << std::endl;
   }
 
-  return deriv_coefficients;
+  return result;
 }
 
 
