@@ -62,7 +62,7 @@ std::vector<double> deriv_2_lagrange_coefficients(
     }
 
     const size_t idx = basis_id + interp_order;
-    result.at(idx) = d0.at(idx)*rhs_sum + d1.at(idx)*d1.at(idx)/d0.at(idx);
+    result.at(idx) = d0.at(idx)*rhs_sum + std::pow(d1.at(idx), 2)/d0.at(idx);
   }
 
   return result;
