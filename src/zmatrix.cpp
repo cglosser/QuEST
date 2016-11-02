@@ -1,5 +1,7 @@
 #include "zmatrix.h"
 
+constexpr int NUM_DERIVATIVES = 3;
+
 std::vector<double> deriv_0_lagrange_coefficients(
     const int interp_order,
     const double x)
@@ -61,5 +63,5 @@ std::vector<double> deriv_2_lagrange_coefficients(
 
 zmatrix::zmatrix(const std::vector<Eigen::Vector3d> &pts,
     const int history_length) :
-  weights(boost::extents[pts.size()][pts.size()][history_length][3])
+  weights(boost::extents[pts.size()][pts.size()][history_length][NUM_DERIVATIVES])
 {}
