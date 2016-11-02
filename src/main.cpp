@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <iterator>
 #include <vector>
 
@@ -6,7 +7,7 @@
 #include "input.h"
 #include "universe.h"
 #include "prolates.h"
-#include "zmatrix.h"
+#include "lagrange_set.h"
 using namespace std;
 
 int main(int argc, char *argv[]) {
@@ -19,26 +20,19 @@ int main(int argc, char *argv[]) {
     cout << "speed of light: " << Universe.c0 << endl;
     cout << "          hbar: " << Universe.hbar << endl;
 
-    //vector<Eigen::Vector3d> pts(42);
 
-    //zmatrix myMat(pts, 816);
+    const int order = 3;
+    UniformLagrangeSet uls(-0.2, order);
 
-    for(auto it : deriv_0_lagrange_coefficients(3, -0.2)) {
-      cout << it << " ";
+    cout << uls.order << endl;
+    cout << uls.sample_x << endl;
+
+    for(int r = 0; r < 3; ++r) {
+      for(int c = 0; c <= order; ++c) {
+        cout << fixed << setprecision(14) << uls.coefficients[r][c] << " ";
+      }
+      cout << endl;
     }
-    cout << endl;
-
-    for(auto it : deriv_1_lagrange_coefficients(3, -0.2)) {
-      cout << it << " ";
-    }
-    cout << endl;
-
-    for(auto it : deriv_2_lagrange_coefficients(3, -0.2)) {
-      cout << it << " ";
-    }
-    cout << endl;
-
-
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can just bail out
