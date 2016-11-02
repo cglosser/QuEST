@@ -7,13 +7,17 @@ std::vector<double> deriv_0_lagrange_coefficients(
     const double x)
 {
   assert(x <= 0); //Can only interpolate past (i.e. known) values
-  std::vector<double> result(interp_order + 1, 1);
+  std::vector<double> result(interp_order + 1);
 
   for(int basis_id = -interp_order; basis_id <= 0; ++basis_id) {
+    double rhs_product = 1;
     for(int m = -interp_order; m <= 0; ++m) {
       if(m == basis_id) continue;
-      result.at(basis_id + interp_order) *= (m - x)/(m - basis_id);
+      rhs_product *= (m - x)/(m - basis_id);
     }
+
+    const size_t idx = basis_id + interp_order;
+    result.at(idx) = rhs_product;
   }
 
   return result;
