@@ -32,6 +32,8 @@ int main(int argc, char *argv[]) {
       cout << it << " ";
     }
     cout << endl;
+
+    for(auto it : deriv_2_lagrange_coefficients(3, -0.2)) {
       cout << it << " ";
     }
     cout << endl;
