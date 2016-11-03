@@ -1,3 +1,6 @@
+# Simulation data
+*.dat
+
 # Compiled Object files
 *.slo
 *.lo
