@@ -47,6 +47,7 @@ po::variables_map parse_configs(int argc, char *argv[]) {
   ifstream ifs(config_path.c_str());
   if (!ifs) {
     cerr << "ERROR: " << config_path << " not found" << endl;
+    throw CommandLineException();
   } else {
     po::store(po::parse_config_file(ifs, file_options), vm);
     po::notify(vm);

@@ -18,7 +18,6 @@ int main(int argc, char *argv[]) {
     cout << "speed of light: " << config.c0 << endl;
     cout << "          hbar: " << config.hbar << endl;
 
-
     const int order = 3;
     UniformLagrangeSet uls(-0.2, order);
 

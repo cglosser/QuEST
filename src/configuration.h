@@ -14,8 +14,9 @@ struct Configuration{
   double simulation_time;
 };
 
-// This Exception really just allows parse_configs to bail out early if it
-// finds a --help or --version flag.
+// This Exception really just allows parse_configs to return control
+// to main() in an atypical manner (--help or --version flag, config
+// file not found, etc.)
 struct CommandLineException : public std::exception {
   const char *what() const throw() {return "Have a nice day! :)";}
 };
