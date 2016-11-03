@@ -2,13 +2,14 @@
 #include <Eigen/Dense>
 #include <boost/multi_array.hpp>
 
+#include "configuration.h"
+
 class UniformLagrangeSet
 {
   public:
-  UniformLagrangeSet(const double, const int);
+  UniformLagrangeSet(const double);
 
   double sample_x;
-  int order;
   boost::multi_array<double, 2> coefficients;
 
   private:

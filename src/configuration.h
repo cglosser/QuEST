@@ -12,6 +12,7 @@ struct Configuration{
   size_t num_particles;
   double c0, hbar;
   double simulation_time;
+  int interpolation_order;
 };
 
 // This Exception really just allows parse_configs to return control
