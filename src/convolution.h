@@ -11,6 +11,6 @@
 
 std::vector<double> input_signal();
 std::vector<double> output_signal();
-std::pair<int, double> delay_parts(const double);
+std::pair<int, double> factor_delay(const double);
 
 #endif
