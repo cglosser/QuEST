@@ -26,7 +26,7 @@
 *.exe
 *.out
 *.app
-emrg*
+quest*
 
 # Misc
 tags
