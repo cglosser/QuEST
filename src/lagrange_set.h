@@ -1,5 +1,3 @@
-#include <iostream>
-#include <Eigen/Dense>
 #include <boost/multi_array.hpp>
 
 #include "configuration.h"
