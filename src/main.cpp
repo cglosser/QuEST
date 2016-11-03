@@ -5,7 +5,9 @@
 
 #include "bloch.h"
 #include "configuration.h"
+#include "convolution.h"
 #include "lagrange_set.h"
+#include "math_utils.h"
 using namespace std;
 
 int main(int argc, char *argv[]) {
@@ -18,14 +20,12 @@ int main(int argc, char *argv[]) {
     cout << "     speed of light: " << config.c0                  << endl;
     cout << "               hbar: " << config.hbar                << endl;
 
-    UniformLagrangeSet uls(-0.2);
-    cout << uls.sample_x << endl;
 
-    for(int r = 0; r < 3; ++r) {
-      for(int c = 0; c <= config.interpolation_order; ++c) {
-        cout << fixed << setprecision(14) << uls.weights[r][c] << " ";
-      }
-      cout << endl;
+    auto in(input_signal());
+    auto out(output_signal());
+
+    for(int i = 0; i < 101; ++i) {
+      cout << i << "\t" << in[i] << "\t" << out[i] << endl;
     }
 
   } catch(CommandLineException &e) {
