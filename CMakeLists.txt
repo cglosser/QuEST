@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 project(quest)
-set(CMAKE_CXX_FLAGS "--std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "--std=c++11 -Wall -fdiagnostics-color=auto ${CMAKE_CXX_FLAGS}")
 
 set(quest_VERSION_MAJOR 0)
 set(quest_VERSION_MINOR 0)
