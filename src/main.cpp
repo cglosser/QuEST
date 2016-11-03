@@ -14,7 +14,6 @@ int main(int argc, char *argv[]) {
   try {
     auto vm = parse_configs(argc, argv);
 
-    cout << "    dimensions: " << Universe.dimensions << endl;
     cout << " num_particles: " << Universe.num_particles << endl;
     cout << "      duration: " << Universe.simulation_time << endl;
     cout << "speed of light: " << Universe.c0 << endl;
