@@ -1,4 +1,5 @@
-#include "input.h"
+#include "configuration.h"
+Configuration config; //One configuration to rule them all...
 
 using namespace std;
 namespace po = boost::program_options;
@@ -15,11 +16,11 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
   po::options_description file_description("System parameters");
   file_description.add_options()
-    ("parameters.num_particles",   po::value<size_t>(&Universe.num_particles)->required(), "number of particles in the system")
-    ("parameters.simulation_time", po::value<double>(&Universe.simulation_time)->required(), "total (time-domain) simulation duration")
+    ("parameters.num_particles",   po::value<size_t>(&config.num_particles)->required(), "number of particles in the system")
+    ("parameters.simulation_time", po::value<double>(&config.simulation_time)->required(), "total (time-domain) simulation duration")
 
-    ("constants.c0",   po::value<double>(&Universe.c0)->default_value(1.0), "speed of light in vacuum")
-    ("constants.hbar", po::value<double>(&Universe.hbar)->default_value(1.0), "reduced Planck constant")
+    ("constants.c0",   po::value<double>(&config.c0)->default_value(1.0), "speed of light in vacuum")
+    ("constants.hbar", po::value<double>(&config.hbar)->default_value(1.0), "reduced Planck constant")
   ;
 
   po::options_description cmdline_options, file_options;

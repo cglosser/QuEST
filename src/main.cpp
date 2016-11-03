@@ -4,8 +4,7 @@
 #include <vector>
 
 #include "bloch.h"
-#include "input.h"
-#include "universe.h"
+#include "configuration.h"
 #include "prolates.h"
 #include "lagrange_set.h"
 using namespace std;
@@ -14,10 +13,10 @@ int main(int argc, char *argv[]) {
   try {
     auto vm = parse_configs(argc, argv);
 
-    cout << " num_particles: " << Universe.num_particles << endl;
-    cout << "      duration: " << Universe.simulation_time << endl;
-    cout << "speed of light: " << Universe.c0 << endl;
-    cout << "          hbar: " << Universe.hbar << endl;
+    cout << " num_particles: " << config.num_particles << endl;
+    cout << "      duration: " << config.simulation_time << endl;
+    cout << "speed of light: " << config.c0 << endl;
+    cout << "          hbar: " << config.hbar << endl;
 
 
     const int order = 3;
