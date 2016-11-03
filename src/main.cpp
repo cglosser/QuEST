@@ -5,7 +5,6 @@
 
 #include "bloch.h"
 #include "configuration.h"
-#include "prolates.h"
 #include "lagrange_set.h"
 using namespace std;
 
