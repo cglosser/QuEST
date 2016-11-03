@@ -1,7 +1,7 @@
 #include "lagrange_set.h"
 
 UniformLagrangeSet::UniformLagrangeSet(const double x) :
-  sample_x(x), coefficients(boost::extents[3][config.interpolation_order + 1])
+  sample_x(x), weights(boost::extents[3][config.interpolation_order + 1])
 {
   assert(x <= 0); //Can only interpolate past (i.e. known) values
   set_deriv_0();
@@ -19,7 +19,7 @@ void UniformLagrangeSet::set_deriv_0()
     }
 
     const size_t idx = basis_id + config.interpolation_order;
-    coefficients[0][idx] = rhs_product;
+    weights[0][idx] = rhs_product;
   }
 }
 
@@ -33,7 +33,7 @@ void UniformLagrangeSet::set_deriv_1()
     }
 
     const size_t idx = basis_id + config.interpolation_order;
-    coefficients[1][idx] = coefficients[0][idx]*rhs_sum;
+    weights[1][idx] = weights[0][idx]*rhs_sum;
   }
 }
 
@@ -47,8 +47,7 @@ void UniformLagrangeSet::set_deriv_2()
     }
 
     const size_t idx = basis_id + config.interpolation_order;
-    coefficients[2][idx] =
-      coefficients[0][idx]*rhs_sum
-      + std::pow(coefficients[1][idx], 2)/coefficients[0][idx];
+    weights[2][idx] =
+      weights[0][idx]*rhs_sum + std::pow(weights[1][idx], 2)/weights[0][idx];
   }
 }

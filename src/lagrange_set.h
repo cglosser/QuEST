@@ -8,7 +8,7 @@ class UniformLagrangeSet
   UniformLagrangeSet(const double);
 
   double sample_x;
-  boost::multi_array<double, 2> coefficients;
+  boost::multi_array<double, 2> weights;
 
   private:
   void set_deriv_0();
