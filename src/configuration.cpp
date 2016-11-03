@@ -39,7 +39,7 @@ po::variables_map parse_configs(int argc, char *argv[]) {
   }
 
   if (vm.count("version")) {
-    cout << "ElectroMagnetics Research Gadget, version 0" << endl;
+    cout << "Quantum Electromagnetics Simulation Toolbox (QuEST), version 0" << endl;
     cout << "Compiled with " << __VERSION__ << " on " << __TIMESTAMP__ << endl;
     throw CommandLineException();
   }
