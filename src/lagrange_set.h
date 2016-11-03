@@ -11,7 +11,5 @@ class UniformLagrangeSet
   boost::multi_array<double, 2> weights;
 
   private:
-  void set_deriv_0();
-  void set_deriv_1();
-  void set_deriv_2();
+  void calculate_weights();
 };
