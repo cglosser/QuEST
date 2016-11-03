@@ -38,3 +38,6 @@ obj
 doc/html
 doc/LaTeX
 doc/doxygen_sqlite3.db
+
+# Build
+build/
