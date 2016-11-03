@@ -31,8 +31,9 @@ int main(int argc, char *argv[]) {
     }
 
   } catch(CommandLineException &e) {
-    // User most likely queried for help or version info, so we can just bail out
-    return 0;
+    // User most likely queried for help or version info, so we can silently
+    // move on
   }
+
   return 0;
 }
