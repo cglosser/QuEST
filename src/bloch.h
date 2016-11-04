@@ -7,7 +7,7 @@
 #include <vector>
 #include <Eigen/Dense>
 
-typedef std::pair<double, std::complex<double>> matrix_element;
+typedef Eigen::Vector2cd matrix_element;
 
 class QuantumDot {
  public:
