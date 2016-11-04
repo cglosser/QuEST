@@ -20,13 +20,10 @@ int main(int argc, char *argv[]) {
     cout << "     speed of light: " << config.c0                  << endl;
     cout << "               hbar: " << config.hbar                << endl;
 
+    QuantumDot qd(Eigen::Vector3d(0,0,0), 2297.284, std::pair<double, double>(10,10), 5e-5, Eigen::Vector3d(1,0,0));
 
-    auto in(input_signal());
-    auto out(output_signal());
+    cout << qd << endl;
 
-    for(int i = 0; i < 101; ++i) {
-      cout << i << "\t" << in[i] << "\t" << out[i] << endl;
-    }
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
