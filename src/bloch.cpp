@@ -1,12 +1,18 @@
 #include "bloch.h"
 
-QuantumDot::QuantumDot(const double omega, const double kappa, 
-    const std::pair<double, double> &ts, const Eigen::Vector3d &loc) :
+QuantumDot::QuantumDot(
+  const Eigen::Vector3d &loc,
+  const double omega,
+  const std::pair<double, double> &ts,
+  const double dipole_strength,
+  const Eigen::Vector3d &dipole_direction
+):
   history(500),
+  location(loc),
   frequency(omega),
-  dipole(kappa),
   damping(ts),
-  location(loc)
+  dipole(dipole_strength),
+  orientation(dipole_direction)
 {}
 
 std::ostream &operator<<(std::ostream &os, const QuantumDot &qd)
@@ -14,6 +20,7 @@ std::ostream &operator<<(std::ostream &os, const QuantumDot &qd)
   os << qd.location.transpose() << " ";
   os << qd.frequency << " ";
   os << qd.damping.first << " " << qd.damping.second << " ";
-  os << qd.dipole;
+  os << qd.dipole << " ";
+  os << qd.orientation.transpose();
   return os;
 }
