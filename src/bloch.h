@@ -2,6 +2,7 @@
 #define BLOCH_H
 
 #include <complex>
+#include <ostream>
 #include <utility>
 #include <vector>
 #include <Eigen/Dense>
@@ -14,6 +15,8 @@ class QuantumDot {
       const Eigen::Vector3d &);
 
   std::vector<matrix_element> history;
+
+  friend std::ostream &operator<<(std::ostream &, const QuantumDot &);
 
  private:
   double frequency, dipole;

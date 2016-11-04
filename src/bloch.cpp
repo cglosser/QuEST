@@ -8,3 +8,12 @@ QuantumDot::QuantumDot(const double omega, const double kappa,
   damping(ts),
   location(loc)
 {}
+
+std::ostream &operator<<(std::ostream &os, const QuantumDot &qd)
+{
+  os << qd.location.transpose() << " ";
+  os << qd.frequency << " ";
+  os << qd.damping.first << " " << qd.damping.second << " ";
+  os << qd.dipole;
+  return os;
+}
