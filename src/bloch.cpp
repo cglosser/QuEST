@@ -15,13 +15,29 @@ QuantumDot::QuantumDot(
   const double dipole_strength,
   const Eigen::Vector3d &dipole_direction
 ):
-  history(500),
   pos(loc),
   frequency(omega),
   damping(ts),
   dipole(dipole_strength),
   dir(dipole_direction)
-{}
+{
+  history.reserve(512);
+}
+
+matrix_element QuantumDot::interpolate(const UniformLagrangeSet &delay,
+    int offset = 0)
+{
+  matrix_element result = 0;
+
+  const size_t start = history.size() - 1 - offset;
+  assert(start - config.interpolation_order >= 0);
+
+  for(int i = 0; i <= config.interpolation_order; ++i) {
+    result += history[start - i]*delay.weights[1][i];
+  }
+
+  return result;
+}
 
 std::ostream &operator<<(std::ostream &os, const QuantumDot &qd)
 {

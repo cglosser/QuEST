@@ -21,11 +21,19 @@ int main(int argc, char *argv[]) {
     cout << "               hbar: " << config.hbar                << endl;
 
     QuantumDot qd;
+    int ipart = 34;
+    UniformLagrangeSet delay(0.6);
 
-    cin >> qd;
+    for(int i = 0; i < 500; ++i) {
+      double val = exp(-std::pow((i - 250)/25.0, 2)/2);
+      qd.history.push_back(val);
 
-    cout << qd << endl;
-
+      if(i > ipart) {
+        cout << i << " ";
+        cout << qd.history[i] << " ";
+        cout << qd.interpolate(delay, ipart) << endl;
+      }
+    }
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
