@@ -20,7 +20,9 @@ int main(int argc, char *argv[]) {
     cout << "     speed of light: " << config.c0                  << endl;
     cout << "               hbar: " << config.hbar                << endl;
 
-    QuantumDot qd(Eigen::Vector3d(0,0,0), 2297.284, std::pair<double, double>(10,10), 5e-5, Eigen::Vector3d(1,0,0));
+    QuantumDot qd;
+
+    cin >> qd;
 
     cout << qd << endl;
 

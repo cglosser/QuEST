@@ -2,6 +2,7 @@
 #define BLOCH_H
 
 #include <complex>
+#include <istream>
 #include <ostream>
 #include <utility>
 #include <vector>
@@ -10,20 +11,22 @@
 typedef Eigen::Vector2cd matrix_element;
 
 class QuantumDot {
- public:
+  public:
+  QuantumDot();
   QuantumDot(const Eigen::Vector3d &, const double,
       const std::pair<double, double> &, const double, const Eigen::Vector3d &);
 
   std::vector<matrix_element> history;
 
   friend std::ostream &operator<<(std::ostream &, const QuantumDot &);
+  friend std::istream &operator>>(std::istream &, QuantumDot &);
 
  //private:
-  Eigen::Vector3d location;
+  Eigen::Vector3d pos;
   double frequency;
   std::pair<double, double> damping;
   double dipole;
-  Eigen::Vector3d orientation;
+  Eigen::Vector3d dir;
 };
 
 #endif
