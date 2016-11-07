@@ -7,13 +7,13 @@
 
 class UniformLagrangeSet
 {
-  public:
+ public:
   UniformLagrangeSet(const double);
 
   double sample_x;
   boost::multi_array<double, 2> weights;
 
-  private:
+ private:
   void calculate_weights();
 };
 

@@ -33,7 +33,7 @@ matrix_element QuantumDot::interpolate(const UniformLagrangeSet &delay,
   assert(start - config.interpolation_order >= 0);
 
   for(int i = 0; i <= config.interpolation_order; ++i) {
-    result += history[start - i]*delay.weights[1][i];
+    result += history[start - i]*delay.weights[1][config.interpolation_order - i];
   }
 
   return result;
