@@ -13,14 +13,14 @@ class Interaction {
  public:
   Interaction(const Eigen::Vector3d &);
 
-  std::pair<Eigen::Vector3d, Eigen::Vector3d> 
+  std::pair<Eigen::Vector3d, Eigen::Vector3d>
     operator()(const QuantumDot &, const QuantumDot &) const;
 
- private:
+ //private:
   double dist;
   Eigen::Vector3d dr;
   Eigen::Matrix3d dyad;
-  std::pair<double, double> split_delay;
+  std::pair<int, double> delay;
   UniformLagrangeSet interp;
 };
 

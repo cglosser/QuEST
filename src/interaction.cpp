@@ -1,12 +1,15 @@
 #include "interaction.h"
 
-Interaction::Interaction(const Eigen::Vector3d &dr) 
+Interaction::Interaction(const Eigen::Vector3d &dr)
 {
   double dist = dr.norm();
   double dimensionless_delay = dist/(config.c0*config.dt);
 
-  split_delay.second = std::modf(dimensionless_delay, &split_delay.first);
-  interp = UniformLagrangeSet(split_delay.second); 
+  double idelay;
+  delay.second = std::modf(dimensionless_delay, &idelay);
+  delay.first = static_cast<int>(idelay);
+
+  interp = UniformLagrangeSet(delay.second);
 
   dyad = dr*dr.transpose()/std::pow(dist, 2);
 }
