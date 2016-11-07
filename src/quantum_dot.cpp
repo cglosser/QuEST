@@ -1,4 +1,4 @@
-#include "bloch.h"
+#include "quantum_dot.h"
 
 QuantumDot::QuantumDot()
     : pos(Eigen::Vector3d(0,0,0)),

@@ -1,5 +1,5 @@
-#ifndef BLOCH_H
-#define BLOCH_H
+#ifndef QUANTUM_DOT_H
+#define QUANTUM_DOT_H
 
 #include <complex>
 #include <istream>

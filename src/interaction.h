@@ -4,10 +4,10 @@
 #include <Eigen/Dense>
 #include <utility>
 
-#include "bloch.h"
 #include "configuration.h"
 #include "lagrange_set.h"
 #include "math_utils.h"
+#include "quantum_dot.h"
 
 class Interaction {
  public:

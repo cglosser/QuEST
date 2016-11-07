@@ -3,12 +3,12 @@
 #include <iterator>
 #include <vector>
 
-#include "bloch.h"
 #include "configuration.h"
 #include "convolution.h"
 #include "interaction.h"
 #include "lagrange_set.h"
 #include "math_utils.h"
+#include "quantum_dot.h"
 using namespace std;
 
 int main(int argc, char *argv[]) {
