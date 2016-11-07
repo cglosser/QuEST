@@ -22,6 +22,12 @@ int main(int argc, char *argv[]) {
     cout << "     speed of light: " << config.c0                  << endl;
     cout << "               hbar: " << config.hbar                << endl;
 
+    Eigen::Vector3d r1(0,0,0), r2(300,400,0);
+
+    Interaction inter(r2 - r1);
+
+    cout << (r2 - r1).norm()/(config.c0*config.dt) << endl;
+    cout << inter.delay.first << " " << inter.delay.second << endl;
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
