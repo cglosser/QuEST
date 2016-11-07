@@ -23,6 +23,9 @@ class Interaction {
   UniformLagrangeSet interp;
 
   Eigen::Matrix3d rhat_dyadic() const;
+  Eigen::Vector3d nearfield_dyadic(const Eigen::Vector3d &) const;
+  Eigen::Vector3d midfield_dyadic(const Eigen::Vector3d &) const;
+  Eigen::Vector3d farfield_dyadic(const Eigen::Vector3d &) const;
 };
 
 
