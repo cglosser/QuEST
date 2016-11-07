@@ -19,9 +19,10 @@ class Interaction {
  //private:
   double dist;
   Eigen::Vector3d dr;
-  Eigen::Matrix3d dyad;
   std::pair<int, double> delay;
   UniformLagrangeSet interp;
+
+  Eigen::Matrix3d rhat_dyadic() const;
 };
 
 
