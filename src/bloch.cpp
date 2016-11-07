@@ -1,12 +1,11 @@
 #include "bloch.h"
 
-QuantumDot::QuantumDot():
-  pos(Eigen::Vector3d(0,0,0)),
-  frequency(0),
-  damping(std::pair<double, double>(0,0)),
-  dipole(0),
-  dir(Eigen::Vector3d(0,0,0))
-{}
+QuantumDot::QuantumDot()
+    : pos(Eigen::Vector3d(0,0,0)),
+      frequency(0),
+      damping(std::pair<double, double>(0,0)),
+      dipole(0),
+      dir(Eigen::Vector3d(0,0,0)) {}
 
 QuantumDot::QuantumDot(
   const Eigen::Vector3d &loc,
@@ -14,12 +13,12 @@ QuantumDot::QuantumDot(
   const std::pair<double, double> &ts,
   const double dipole_strength,
   const Eigen::Vector3d &dipole_direction
-):
-  pos(loc),
-  frequency(omega),
-  damping(ts),
-  dipole(dipole_strength),
-  dir(dipole_direction)
+)
+    : pos(loc),
+      frequency(omega),
+      damping(ts),
+      dipole(dipole_strength),
+      dir(dipole_direction)
 {
   history.reserve(512);
 }

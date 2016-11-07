@@ -1,7 +1,7 @@
 #include "lagrange_set.h"
 
-UniformLagrangeSet::UniformLagrangeSet(const double x) :
-  sample_x(x), weights(boost::extents[3][config.interpolation_order + 1])
+UniformLagrangeSet::UniformLagrangeSet(const double x)
+    : sample_x(x), weights(boost::extents[3][config.interpolation_order + 1])
 {
   assert(x >= 0); //Can only interpolate past (i.e. known) values
   calculate_weights();

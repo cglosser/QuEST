@@ -14,7 +14,7 @@
 typedef double matrix_element;
 
 class QuantumDot {
-  public:
+ public:
   QuantumDot();
   QuantumDot(const Eigen::Vector3d &, const double,
       const std::pair<double, double> &, const double, const Eigen::Vector3d &);
