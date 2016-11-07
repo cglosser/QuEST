@@ -1,5 +1,15 @@
 #include "lagrange_set.h"
 
+UniformLagrangeSet::UniformLagrangeSet()
+    : sample_x(0), weights(boost::extents[3][config.interpolation_order + 1])
+{
+  for(int r = 0; r < 3; ++r) {
+    for(int c = 0; c <= config.interpolation_order; ++c) {
+      weights[r][c] = 0;
+    }
+  }
+}
+
 UniformLagrangeSet::UniformLagrangeSet(const double x)
     : sample_x(x), weights(boost::extents[3][config.interpolation_order + 1])
 {
