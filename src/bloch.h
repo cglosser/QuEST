@@ -10,8 +10,7 @@
 
 #include "lagrange_set.h"
 
-//typedef Eigen::Vector2cd matrix_element;
-typedef double matrix_element;
+typedef Eigen::Vector2cd matrix_elements;
 
 class QuantumDot {
  public:
@@ -19,8 +18,10 @@ class QuantumDot {
   QuantumDot(const Eigen::Vector3d &, const double,
       const std::pair<double, double> &, const double, const Eigen::Vector3d &);
 
-  std::vector<matrix_element> history;
-  matrix_element interpolate(const UniformLagrangeSet &, int);
+  std::vector<matrix_elements> history;
+
+  Eigen::Vector3d polarization(const size_t) const;
+  matrix_elements interpolate(const UniformLagrangeSet &, int);
 
   friend std::ostream &operator<<(std::ostream &, const QuantumDot &);
   friend std::istream &operator>>(std::istream &, QuantumDot &);

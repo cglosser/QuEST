@@ -23,10 +23,18 @@ QuantumDot::QuantumDot(
   history.reserve(512);
 }
 
-matrix_element QuantumDot::interpolate(const UniformLagrangeSet &delay,
+Eigen::Vector3d QuantumDot::polarization(const size_t idx) const
+{
+  assert(0 <= idx && idx < history.size());
+  double coef = 2*history[idx](1).real();
+
+  return coef*dipole*dir;
+}
+
+matrix_elements QuantumDot::interpolate(const UniformLagrangeSet &delay,
     int offset = 0)
 {
-  matrix_element result = 0;
+  matrix_elements result(Eigen::Vector2cd::Zero());
 
   const size_t start = history.size() - 1 - offset;
   assert(start - config.interpolation_order >= 0);
