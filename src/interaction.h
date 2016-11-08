@@ -17,7 +17,6 @@ class Interaction {
     operator()(const QuantumDot &, const QuantumDot &) const;
 
  //private:
-  double dist;
   Eigen::Vector3d dr;
   std::pair<int, double> delay;
   UniformLagrangeSet interp;
