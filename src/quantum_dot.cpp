@@ -25,7 +25,7 @@ QuantumDot::QuantumDot(
 
 Eigen::Vector3d QuantumDot::polarization(const size_t idx) const
 {
-  assert(0 <= idx && idx < history.size());
+  assert(idx < history.size());
   double coef = 2*history[idx](1).real();
 
   return coef*dipole*dir;
