@@ -37,7 +37,7 @@ Eigen::Matrix3d Interaction::rhat_dyadic() const
   return dr*dr.transpose()/dr.squaredNorm();
 }
 
-Eigen::Vector3d Interaction::nearfield_dyadic(const Eigen::Vector3d &polarization) const
+Eigen::Vector3d Interaction::farfield_dyadic(const Eigen::Vector3d &polarization) const
 {
   return (Eigen::Matrix3d::Identity() - rhat_dyadic())*polarization/dr.norm();
 }
@@ -47,7 +47,7 @@ Eigen::Vector3d Interaction::midfield_dyadic(const Eigen::Vector3d &polarization
   return (Eigen::Matrix3d::Identity() - 3*rhat_dyadic())*polarization*config.c0/dr.squaredNorm();
 }
 
-Eigen::Vector3d Interaction::farfield_dyadic(const Eigen::Vector3d &polarization) const
+Eigen::Vector3d Interaction::nearfield_dyadic(const Eigen::Vector3d &polarization) const
 {
   double r_cubed = std::pow(dr.norm(), 3);
   return (Eigen::Matrix3d::Identity() - 3*rhat_dyadic())*polarization*std::pow(config.c0, 2)/r_cubed;
