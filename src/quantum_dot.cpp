@@ -20,7 +20,7 @@ QuantumDot::QuantumDot(
       dipole(dipole_strength),
       dir(dipole_direction)
 {
-  history.reserve(512);
+  history.reserve(2048);
 }
 
 Eigen::Vector3d QuantumDot::polarization(const size_t idx) const
