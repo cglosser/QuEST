@@ -7,5 +7,6 @@
 
 Eigen::Vector3d unit_normal(const double, const double);
 double gaussian(const double);
+double skew_gaussian(const double, const double);
 
 #endif
