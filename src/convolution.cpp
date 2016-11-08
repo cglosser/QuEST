@@ -5,7 +5,7 @@ std::vector<double> input_signal()
   std::vector<double> result(101, 0);
 
   for(int t = 0; t < 101; ++t) {
-    result[t] = gaussian(t, 50, 10);
+    result[t] = gaussian((t - 50)/10.0);
   }
 
   return result;

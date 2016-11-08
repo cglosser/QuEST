@@ -10,7 +10,7 @@ Eigen::Vector3d unit_normal(double theta, double phi) {
   return rhat;
 }
 
-double gaussian(const double t, const double mu, const double sigma)
+double gaussian(const double t)
 {
-  return std::exp(-std::pow((t - mu)/sigma, 2)/2);
+  return std::exp(-std::pow(t, 2)/2);
 }
