@@ -24,12 +24,10 @@ std::pair<Eigen::Vector3d, Eigen::Vector3d>
               //+  midfield_dyadic(d2.polarization(start - i))*interp.weights[1][config.interpolation_order - i]
               //+ nearfield_dyadic(d2.polarization(start - i))*interp.weights[0][config.interpolation_order - i];
 
-      field2 += d1.polarization(start - i)*interp.weights[0][i];
-    /*
-     *field2 +=    farfield_dyadic(d1.polarization(start - i))*interp.weights[2][config.interpolation_order - i]
-     *          +  midfield_dyadic(d1.polarization(start - i))*interp.weights[1][config.interpolation_order - i]
-     *          + nearfield_dyadic(d1.polarization(start - i))*interp.weights[0][config.interpolation_order - i];
-     */
+    //field2 += d1.polarization(start - i)*interp.weights[0][i];
+    field2 += /*   farfield_dyadic(d1.polarization(start - i))*interp.weights[2][config.interpolation_order - i]*/
+              /*+  midfield_dyadic(d1.polarization(start - i))*interp.weights[1][config.interpolation_order - i]*/
+              nearfield_dyadic(d1.polarization(start - i))*interp.weights[0][i];
   };
 
   return std::pair<Eigen::Vector3d, Eigen::Vector3d>(field1, field2);

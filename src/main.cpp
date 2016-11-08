@@ -29,19 +29,21 @@ int main(int argc, char *argv[]) {
     QuantumDot src(Eigen::Vector3d(0,0,0), 0, std::pair<double, double>(0, 0),
                    1, Eigen::Vector3d(0,0,1));
 
-    QuantumDot obs(Eigen::Vector3d(0,0,40.5), 0, std::pair<double, double>(0, 0),
+    QuantumDot obs(Eigen::Vector3d(0,0,0.01), 0, std::pair<double, double>(0, 0),
                    1, Eigen::Vector3d(0,0,1));
 
     cout << "Source: " << src << endl;
     cout << "   Obs: " << obs << endl;
 
     const cmplx rho00(0, 0);
+    const int mean = 256;
+    const double width = 32;
 
     ofstream polar("polarization.dat", ios::out),
              efield("efield.dat", ios::out);
 
     for(int time = 0; time < 45; ++time) {
-      cmplx input(gaussian((time - 1024)/128.0), 0);
+      cmplx input(gaussian((time - mean)/width), 0);
 
       src.history.push_back(Eigen::Vector2cd(rho00, input));
       obs.history.push_back(Eigen::Vector2cd(rho00, rho00));
@@ -54,8 +56,8 @@ int main(int argc, char *argv[]) {
     Interaction inter(dr);
     cout << " Delay: " << inter.delay.first << " " << inter.delay.second << endl;
 
-    for(int time = 45; time < 2048; ++time) {
-      cmplx input(gaussian((time - 1024)/128.0), 0);
+    for(int time = 45; time < 2*mean; ++time) {
+      cmplx input(gaussian((time - mean)/width), 0);
 
       src.history.push_back(Eigen::Vector2cd(rho00, input));
       obs.history.push_back(Eigen::Vector2cd(rho00, rho00));
