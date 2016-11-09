@@ -24,7 +24,10 @@ void UniformLagrangeSet::calculate_weights()
     for(int m = 0; m <= config.interpolation_order; ++m) {
       if(m == basis_id) continue;
       d0_product *= (sample_x - m)/(basis_id - m);
-      d1_sum += 1/(sample_x - m);
+      d1_sum -= 1/(sample_x - m); /* I have _no_ idea why this one needs -= (instead of +=) to produce the appropriate
+                                   * derivative, but until I can figure it out I'm leaving this comment as a warning to
+                                   * those who look at this later.
+                                   */
       d2_sum -= std::pow(sample_x - m, -2);
     }
 

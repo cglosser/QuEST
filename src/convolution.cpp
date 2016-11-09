@@ -5,7 +5,7 @@ std::vector<double> input_signal()
   std::vector<double> result(101, 0);
 
   for(int t = 0; t < 101; ++t) {
-    result[t] = gaussian((t - 50)/10.0);
+    result[t] = skew_gaussian((t - 50)/10.0, 4);
   }
 
   return result;
@@ -24,7 +24,7 @@ std::vector<double> output_signal()
   for(int t = parts.first + config.interpolation_order; t < 101; ++t) {
 
     for(int i = 0; i <= config.interpolation_order; ++i) {
-      result[t] += uls.weights[0][i]*input[t - parts.first - i];
+      result[t] += uls.weights[1][i]*input[t - parts.first - i];
     }
   }
 
