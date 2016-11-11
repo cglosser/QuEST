@@ -21,6 +21,7 @@ class PredictorCorrector {
 
   Eigen::MatrixXcd predictor_matrix() const;
   Eigen::MatrixXcd corrector_matrix() const;
+  Eigen::VectorXcd rhs_vector() const;
 
 };
 

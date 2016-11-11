@@ -27,8 +27,7 @@ int main(int argc, char *argv[]) {
 
     PredictorCorrector pc(18, 22, 3.15, 1e-9);
 
-    //cout << pc.predictor_matrix() << endl;
-    pc.predictor_matrix();
+    cout << pc.corrector_matrix().col(2*pc.n_time) << endl;
 
 
 
