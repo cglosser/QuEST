@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "configuration.h"
-#include "convolution.h"
 #include "interaction.h"
 #include "lagrange_set.h"
 #include "math_utils.h"
@@ -24,9 +23,6 @@ int main(int argc, char *argv[]) {
     cout << "      timestep (dt): " << config.dt                  << endl;
     cout << "     speed of light: " << config.c0                  << endl;
     cout << "               hbar: " << config.hbar                << endl;
-
-    auto inp(input_signal());
-    auto out(output_signal());
 
     for(size_t i = 0; i < 101; ++i) {
       cout << i << " " << inp[i] << " " << out[i] << endl;
