@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "configuration.h"
+#include "integrator.h"
 #include "interaction.h"
 #include "lagrange_set.h"
 #include "math_utils.h"
@@ -24,7 +25,10 @@ int main(int argc, char *argv[]) {
     cout << "     speed of light: " << config.c0                  << endl;
     cout << "               hbar: " << config.hbar                << endl;
 
+    PredictorCorrector pc(18, 22, 3.15, 1e-9);
 
+    //cout << pc.predictor_matrix() << endl;
+    pc.predictor_matrix();
 
 
 
