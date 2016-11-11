@@ -13,6 +13,7 @@ struct Configuration{
   double c0, hbar;
   double simulation_time, dt;
   int interpolation_order;
+  std::string qd_path;
 };
 
 // This Exception really just allows parse_configs to return control
