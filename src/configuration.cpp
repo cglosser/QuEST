@@ -16,10 +16,11 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
   po::options_description file_description("System parameters");
   file_description.add_options()
-    ("parameters.num_particles",   po::value<size_t>(&config.num_particles)->required(), "number of particles in the system")
-    ("parameters.simulation_time", po::value<double>(&config.simulation_time)->required(), "total (time-domain) simulation duration")
-    ("parameters.timestep",        po::value<double>(&config.dt)->required(), "timestep size")
+    ("parameters.num_particles",       po::value<size_t>(&config.num_particles)->required(), "number of particles in the system")
+    ("parameters.simulation_time",     po::value<double>(&config.simulation_time)->required(), "total (time-domain) simulation duration")
+    ("parameters.timestep",            po::value<double>(&config.dt)->required(), "timestep size")
     ("parameters.interpolation_order", po::value<int>(&config.interpolation_order)->required(), "order of the interpolants")
+    ("parameters.qd_path",             po::value<std::string>(&config.qd_path)->required(), "path to dot configuration file")
 
     ("constants.c0",   po::value<double>(&config.c0)->default_value(1.0), "speed of light in vacuum")
     ("constants.hbar", po::value<double>(&config.hbar)->default_value(1.0), "reduced Planck constant")
