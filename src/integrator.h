@@ -16,6 +16,12 @@ class PredictorCorrector {
   double rho, tolerance, timestep, future_time, step_factor;
   Eigen::VectorXcd lambdas;
   Eigen::VectorXd times;
+
+ //private:
+
+  Eigen::MatrixXcd predictor_matrix() const;
+  Eigen::MatrixXcd corrector_matrix() const;
+
 };
 
 #endif

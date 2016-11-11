@@ -22,6 +22,18 @@ PredictorCorrector::PredictorCorrector(const int nlam, const int ntim,
   }
 }
 
+Eigen::MatrixXcd PredictorCorrector::predictor_matrix() const
+{
+  Eigen::MatrixXcd result(n_lambda, 2*n_time);
+
+  const Eigen::ArrayXXcd b((lambdas*times.transpose()).array().exp());
+
+  result.block(0, 0, n_lambda, n_time) = b;
+  result.block(0, n_time, n_lambda, n_time) = b.colwise()*lambdas.array();
+
+  return result;
+}
+
 std::complex<double> semidisk(const double t)
 {
   const std::complex<double> iu(0, 1);
