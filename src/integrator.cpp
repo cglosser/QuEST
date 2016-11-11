@@ -44,6 +44,16 @@ Eigen::MatrixXcd PredictorCorrector::corrector_matrix() const
   return result;
 }
 
+Eigen::VectorXd PredictorCorrector::compute_coefficients(const Eigen::MatrixXcd &mat) const
+{
+  Eigen::JacobiSVD<Eigen::MatrixXcd> decomp =
+    mat.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).setThreshold(tolerance);
+
+  Eigen::VectorXcd b(rhs_vector()), least_squares(decomp.solve(b));
+
+  return least_squares.real();
+}
+
 Eigen::VectorXcd PredictorCorrector::rhs_vector() const
 {
   Eigen::ArrayXcd b(lambdas*future_time);
