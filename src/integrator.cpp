@@ -1,18 +1,16 @@
 #include "integrator.h"
 
-using namespace std;
-
 std::complex<double> semidisk(const double);
 
 PredictorCorrector::PredictorCorrector(const int nlam, const int ntim,
   const double radius, const double toler)
-    : n_lambda(nlam),
+    : step_factor((ntim - 1)/2.0),
+      n_lambda(nlam),
       n_time(ntim),
       rho(radius),
       tolerance(toler),
       timestep(2.0/(ntim - 1)),
       future_time(1 + timestep),
-      step_factor((ntim - 1)/2.0),
       lambdas(nlam),
       times(Eigen::VectorXd::LinSpaced(ntim, -1, 1))
 {
@@ -20,6 +18,14 @@ PredictorCorrector::PredictorCorrector(const int nlam, const int ntim,
   for(int i = 0; i < nlam; ++i) {
     lambdas[i] = rho*semidisk(xs.at(i));
   }
+
+  Eigen::VectorXd predictors(compute_coefficients(predictor_matrix()));
+  Eigen::VectorXd correctors(compute_coefficients(corrector_matrix()));
+
+  // Eigen defaults to column major, hence the (n_time x 2) ordering
+  predictor_coefs = Eigen::Map<Eigen::ArrayXXd>(predictors.data(), n_time, 2);
+  corrector_coefs = Eigen::Map<Eigen::ArrayXXd>(correctors.data(), n_time, 2);
+  future_coef = correctors(2*n_time);
 }
 
 Eigen::MatrixXcd PredictorCorrector::predictor_matrix() const

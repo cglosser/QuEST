@@ -17,15 +17,12 @@ int main(int argc, char *argv[]) {
 
     PredictorCorrector pc(18, 22, 3.15, 1e-9);
 
-    auto x(pc.compute_coefficients(pc.predictor_matrix()));
-
-    ofstream mat("mat.dat"), vec("vec.dat");
-
-    mat << pc.predictor_matrix();
-    vec << pc.rhs_vector();
-
     cout << setprecision(18) << scientific;
-    cout << pc.compute_coefficients(pc.predictor_matrix()) << endl;
+
+    cout << pc.predictor_coefs << endl << endl;
+    cout << pc.corrector_coefs << endl << endl;
+
+    cout << pc.future_coef << endl;
 
 
   } catch(CommandLineException &e) {

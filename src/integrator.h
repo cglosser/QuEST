@@ -2,7 +2,7 @@
 #define INTEGRATOR_H
 
 #include <complex>
-#include <cmath>
+//#include <cmath>
 #include <iostream>
 #include <vector>
 
@@ -12,20 +12,21 @@ class PredictorCorrector {
  public:
   PredictorCorrector(const int, const int, const double, const double);
 
+  double step_factor, future_coef;
+  Eigen::ArrayXXd predictor_coefs;
+  Eigen::ArrayXXd corrector_coefs;
+
+ private:
+
   size_t n_lambda, n_time;
-  double rho, tolerance, timestep, future_time, step_factor;
+  double rho, tolerance, timestep, future_time;
   Eigen::VectorXcd lambdas;
   Eigen::VectorXd times;
 
- //private:
-
   Eigen::MatrixXcd predictor_matrix() const;
   Eigen::MatrixXcd corrector_matrix() const;
-
-  Eigen::VectorXd compute_coefficients(const Eigen::MatrixXcd &) const;
-
   Eigen::VectorXcd rhs_vector() const;
-
+  Eigen::VectorXd compute_coefficients(const Eigen::MatrixXcd &) const;
 };
 
 #endif
