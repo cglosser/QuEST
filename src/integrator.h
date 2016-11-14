@@ -2,8 +2,6 @@
 #define INTEGRATOR_H
 
 #include <complex>
-//#include <cmath>
-#include <iostream>
 #include <vector>
 
 #include "math_utils.h"
