@@ -18,12 +18,14 @@ class Interaction {
 
  private:
   std::pair<int, double> compute_delay(const double) const;
+
   Eigen::Matrix3d rhat_dyadic(const Eigen::Vector3d &) const;
-
-  double nearfield_dyadic(const Eigen::Vector3d &, const Eigen::Vector3d &, const Eigen::Vector3d &) const;
-  double midfield_dyadic(const Eigen::Vector3d &, const Eigen::Vector3d &, const Eigen::Vector3d &) const;
-  double farfield_dyadic(const Eigen::Vector3d &, const Eigen::Vector3d &, const Eigen::Vector3d &) const;
+  double nearfield_dyadic(const Eigen::Vector3d &, const Eigen::Vector3d &,
+                          const Eigen::Vector3d &) const;
+  double midfield_dyadic(const Eigen::Vector3d &, const Eigen::Vector3d &,
+                         const Eigen::Vector3d &) const;
+  double farfield_dyadic(const Eigen::Vector3d &, const Eigen::Vector3d &,
+                         const Eigen::Vector3d &) const;
 };
-
 
 #endif
