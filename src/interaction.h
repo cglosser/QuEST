@@ -13,14 +13,17 @@ class Interaction {
  public:
   Interaction(const QuantumDot &, const QuantumDot &);
 
- //private:
-  std::pair<int, double> delay;
-  std::pair<int, double> compute_delay(const double) const;
 
+ //private:
+  std::vector<double> coefs;
+  std::pair<int, double> delay;
+
+  std::pair<int, double> compute_delay(const double) const;
   Eigen::Matrix3d rhat_dyadic(const Eigen::Vector3d &) const;
-  //Eigen::Vector3d nearfield_dyadic(const Eigen::Vector3d &) const;
-  //Eigen::Vector3d midfield_dyadic(const Eigen::Vector3d &) const;
-  //Eigen::Vector3d farfield_dyadic(const Eigen::Vector3d &) const;
+
+  double nearfield_dyadic(const Eigen::Vector3d &, const Eigen::Vector3d &, const Eigen::Vector3d &) const;
+  double midfield_dyadic(const Eigen::Vector3d &, const Eigen::Vector3d &, const Eigen::Vector3d &) const;
+  double farfield_dyadic(const Eigen::Vector3d &, const Eigen::Vector3d &, const Eigen::Vector3d &) const;
 };
 
 

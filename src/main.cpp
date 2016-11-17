@@ -18,14 +18,13 @@ int main(int argc, char *argv[]) {
     auto vm = parse_configs(argc, argv);
 
     QuantumDot dot1(Eigen::Vector3d(0,0,0), 1000, std::pair<double, double>(10, 10), Eigen::Vector3d(0,0,1));
-    QuantumDot dot2(Eigen::Vector3d(3,4,5), 1000, std::pair<double, double>(10, 10), Eigen::Vector3d(0,0,1));
+    QuantumDot dot2(Eigen::Vector3d(8,8,3.1415926535), 1000, std::pair<double, double>(10, 10), Eigen::Vector3d(0,0,1));
 
     Interaction inter(dot1, dot2);
 
-    cout << inter.delay.first << " " << inter.delay.second << endl;
-
-    cout << inter.rhat_dyadic(dot1.pos - dot2.pos) << endl;
-
+    cout << inter.farfield_dyadic(dot2.pos - dot1.pos, dot1.dipole, dot2.dipole) << endl;
+    cout << inter.midfield_dyadic(dot2.pos - dot1.pos, dot1.dipole, dot2.dipole) << endl;
+    cout << inter.nearfield_dyadic(dot2.pos - dot1.pos, dot1.dipole, dot2.dipole) << endl;
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
