@@ -10,6 +10,7 @@ Interaction::Interaction(const QuantumDot &d1, const QuantumDot &d2)
 
   UniformLagrangeSet interp(delay.second);
 
+
   for(size_t i = 0; i < coefs.size(); ++i) {
     coefs.at(i) =
         nearfield_dyadic(dr, d1.dipole, d2.dipole) * interp.weights[0][i] +
@@ -57,6 +58,6 @@ double Interaction::farfield_dyadic(const Eigen::Vector3d &dr,
                                     const Eigen::Vector3d &obs) const
 {
   const double dyad =
-    obs.transpose() * (Eigen::Matrix3d::Identity() - 3*rhat_dyadic(dr)) * src;
+    obs.transpose() * (Eigen::Matrix3d::Identity() - rhat_dyadic(dr)) * src;
   return dyad / dr.norm();
 }
