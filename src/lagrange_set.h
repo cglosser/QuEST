@@ -8,7 +8,6 @@
 class UniformLagrangeSet
 {
  public:
-  UniformLagrangeSet();
   UniformLagrangeSet(const double);
 
   double sample_x;
