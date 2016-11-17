@@ -16,7 +16,7 @@ class QuantumDot {
  public:
   QuantumDot();
   QuantumDot(const Eigen::Vector3d &, const double,
-      const std::pair<double, double> &, const double, const Eigen::Vector3d &);
+      const std::pair<double, double> &, const Eigen::Vector3d &);
 
   std::vector<matrix_elements> history;
 
@@ -30,8 +30,7 @@ class QuantumDot {
   Eigen::Vector3d pos;
   double frequency;
   std::pair<double, double> damping;
-  double dipole;
-  Eigen::Vector3d dir;
+  Eigen::Vector3d dipole;
 };
 
 #endif

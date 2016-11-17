@@ -17,8 +17,8 @@ int main(int argc, char *argv[]) {
   try {
     auto vm = parse_configs(argc, argv);
 
-    QuantumDot dot1(Eigen::Vector3d(0,0,0), 1000, std::pair<double, double>(10, 10), 1, Eigen::Vector3d(1,2,3));
-    QuantumDot dot2(Eigen::Vector3d(3,4,5), 1000, std::pair<double, double>(10, 10), 1, Eigen::Vector3d(1,2,3));
+    QuantumDot dot1(Eigen::Vector3d(0,0,0), 1000, std::pair<double, double>(10, 10), Eigen::Vector3d(0,0,1));
+    QuantumDot dot2(Eigen::Vector3d(3,4,5), 1000, std::pair<double, double>(10, 10), Eigen::Vector3d(0,0,1));
 
     Interaction inter(dot1, dot2);
 
