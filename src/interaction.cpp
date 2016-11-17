@@ -3,11 +3,19 @@
 Interaction::Interaction(const QuantumDot &d1, const QuantumDot &d2)
   : coefs(config.interpolation_order + 1)
 {
-  Eigen::Vector3d dr(d2.pos - d1.pos);
+  const Eigen::Vector3d dr(d2.pos - d1.pos);
 
   const double dimensionless_delay = dr.norm()/(config.c0*config.dt);
   delay = compute_delay(dimensionless_delay);
 
+  UniformLagrangeSet interp(delay.second);
+
+  for(size_t i = 0; i < coefs.size(); ++i) {
+    coefs.at(i) =
+      nearfield_dyadic(dr, d1.dipole, d2.dipole)*interp.weights[0][i] +
+      midfield_dyadic(dr, d1.dipole, d2.dipole)*interp.weights[1][i] +
+      farfield_dyadic(dr, d1.dipole, d2.dipole)*interp.weights[2][i];
+  }
 }
 
 std::pair<int, double> Interaction::compute_delay(const double delay) const

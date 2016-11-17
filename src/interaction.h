@@ -13,11 +13,10 @@ class Interaction {
  public:
   Interaction(const QuantumDot &, const QuantumDot &);
 
-
- //private:
   std::vector<double> coefs;
   std::pair<int, double> delay;
 
+ private:
   std::pair<int, double> compute_delay(const double) const;
   Eigen::Matrix3d rhat_dyadic(const Eigen::Vector3d &) const;
 

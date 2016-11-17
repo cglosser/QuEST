@@ -22,9 +22,11 @@ int main(int argc, char *argv[]) {
 
     Interaction inter(dot1, dot2);
 
-    cout << inter.farfield_dyadic(dot2.pos - dot1.pos, dot1.dipole, dot2.dipole) << endl;
-    cout << inter.midfield_dyadic(dot2.pos - dot1.pos, dot1.dipole, dot2.dipole) << endl;
-    cout << inter.nearfield_dyadic(dot2.pos - dot1.pos, dot1.dipole, dot2.dipole) << endl;
+    for(auto const &x : inter.coefs) {
+      cout << x << " ";
+    }
+    cout << endl;
+
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
