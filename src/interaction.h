@@ -11,20 +11,16 @@
 
 class Interaction {
  public:
-  Interaction(const Eigen::Vector3d &);
-
-  std::pair<Eigen::Vector3d, Eigen::Vector3d>
-    operator()(const QuantumDot &, const QuantumDot &) const;
+  Interaction(const QuantumDot &, const QuantumDot &);
 
  //private:
-  Eigen::Vector3d dr;
   std::pair<int, double> delay;
-  UniformLagrangeSet interp;
+  std::pair<int, double> compute_delay(const double) const;
 
-  Eigen::Matrix3d rhat_dyadic() const;
-  Eigen::Vector3d nearfield_dyadic(const Eigen::Vector3d &) const;
-  Eigen::Vector3d midfield_dyadic(const Eigen::Vector3d &) const;
-  Eigen::Vector3d farfield_dyadic(const Eigen::Vector3d &) const;
+  Eigen::Matrix3d rhat_dyadic(const Eigen::Vector3d &) const;
+  //Eigen::Vector3d nearfield_dyadic(const Eigen::Vector3d &) const;
+  //Eigen::Vector3d midfield_dyadic(const Eigen::Vector3d &) const;
+  //Eigen::Vector3d farfield_dyadic(const Eigen::Vector3d &) const;
 };
 
 
