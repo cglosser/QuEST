@@ -2,6 +2,7 @@
 #define QUANTUM_DOT_H
 
 #include <Eigen/Dense>
+#include <Eigen/StdVector>
 #include <complex>
 #include <istream>
 #include <ostream>
@@ -9,6 +10,8 @@
 #include <vector>
 
 typedef Eigen::Vector2cd matrix_elements;
+typedef std::vector<matrix_elements, Eigen::aligned_allocator<matrix_elements>>
+    history_vector;
 
 class QuantumDot {
  public:
@@ -16,7 +19,7 @@ class QuantumDot {
   QuantumDot(const Eigen::Vector3d &, const double,
              const std::pair<double, double> &, const Eigen::Vector3d &);
 
-  std::vector<matrix_elements> history;
+  history_vector history;
 
   Eigen::Vector3d polarization(const size_t) const;
 
