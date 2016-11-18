@@ -10,7 +10,7 @@
 
 struct Configuration{
   size_t num_particles;
-  double c0, hbar;
+  double c0, hbar, mu0;
   double simulation_time, dt;
   int interpolation_order;
 };

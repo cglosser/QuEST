@@ -23,6 +23,7 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
     ("constants.c0",   po::value<double>(&config.c0)->default_value(1.0), "speed of light in vacuum")
     ("constants.hbar", po::value<double>(&config.hbar)->default_value(1.0), "reduced Planck constant")
+    ("constants.mu0",  po::value<double>(&config.mu0)->default_value(1.0), "vacuum permeability")
   ;
 
   po::options_description cmdline_options, file_options;
