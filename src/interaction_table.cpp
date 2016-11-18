@@ -38,22 +38,9 @@ InteractionTable::InteractionTable(const int n, const std::vector<QuantumDot> &d
 size_t InteractionTable::coord2idx(size_t row, size_t col)
 {
   assert(row != col);
-  if(col < row) std::swap(row, col);
+  if(col > row) std::swap(row, col);
 
-  return num_interactions -
-         (num_dots - row) * (num_dots - row - 1) / 2 + col - row - 1;
-}
-
-std::pair<size_t, size_t> InteractionTable::idx2coord(const size_t idx)
-{
-  const size_t r =
-      num_dots - 2 -
-      std::floor(std::sqrt(-8 * idx + 8 * num_interactions - 7) / 2 -
-                 0.5);
-  const size_t c = idx + r + 1 - num_dots * (num_dots - 1) / 2 +
-                   (num_dots - r) * (num_dots - r - 1) / 2;
-
-  return std::pair<size_t, size_t>(r, c);
+  return row*(row - 1)/2 + col;
 }
 
 std::pair<int, double> compute_delay(const double delay)

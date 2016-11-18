@@ -21,8 +21,7 @@ class InteractionTable {
 
   boost::multi_array<double, 2> coefficients;
 
-  size_t coord2idx(size_t, size_t);
-  std::pair<size_t, size_t> idx2coord(const size_t);
+  size_t coord2idx(const size_t, const size_t);
 };
 
 #endif
