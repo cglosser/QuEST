@@ -8,10 +8,11 @@ double nearfield_dyadic(const Vec3d &, const Vec3d &, const Vec3d &);
 double midfield_dyadic(const Vec3d &, const Vec3d &, const Vec3d &);
 double farfield_dyadic(const Vec3d &, const Vec3d &, const Vec3d &);
 
-InteractionTable::InteractionTable(const int n, const std::vector<QuantumDot> &dots)
+InteractionTable::InteractionTable(const int n,
+                                   const std::vector<QuantumDot> &dots)
     : interp_order(n),
       num_dots(dots.size()),
-      num_interactions(dots.size()*(dots.size() - 1)/2),
+      num_interactions(dots.size() * (dots.size() - 1) / 2),
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
   UniformLagrangeSet lagrange(interp_order);
@@ -20,16 +21,19 @@ InteractionTable::InteractionTable(const int n, const std::vector<QuantumDot> &d
       Vec3d dr(dots[obs].pos - dots[src].pos);
       size_t idx = coord2idx(src, obs);
 
-      std::pair<int, double>
-        delay(compute_delay(dr.norm()/(config.c0*config.dt)));
+      std::pair<int, double> delay(
+          compute_delay(dr.norm() / (config.c0 * config.dt)));
 
       lagrange.calculate_weights(delay.second);
 
       for(int i = 0; i <= interp_order; ++i) {
         coefficients[idx][i] =
-            nearfield_dyadic(dr, dots[src].dipole, dots[obs].dipole)*lagrange.weights[0][i] +
-            midfield_dyadic(dr, dots[src].dipole, dots[obs].dipole)*lagrange.weights[1][i] +
-            farfield_dyadic(dr, dots[src].dipole, dots[obs].dipole)*lagrange.weights[2][i];
+            nearfield_dyadic(dr, dots[src].dipole, dots[obs].dipole) *
+                lagrange.weights[0][i] +
+            midfield_dyadic(dr, dots[src].dipole, dots[obs].dipole) *
+                lagrange.weights[1][i] +
+            farfield_dyadic(dr, dots[src].dipole, dots[obs].dipole) *
+                lagrange.weights[2][i];
       }
     }
   }
