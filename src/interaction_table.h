@@ -19,6 +19,7 @@ class InteractionTable {
   size_t num_dots;
   size_t num_interactions;
 
+  std::vector<int> floor_delays;
   boost::multi_array<double, 2> coefficients;
 
   size_t coord2idx(const size_t, const size_t);
