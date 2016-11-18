@@ -3,8 +3,6 @@
 
 #include <boost/multi_array.hpp>
 
-#include "configuration.h"
-
 class UniformLagrangeSet
 {
  public:
