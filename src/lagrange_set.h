@@ -8,7 +8,7 @@ class UniformLagrangeSet
  public:
   typedef boost::multi_array<double, 2> Array;
 
-  int order;
+  const int order;
   Array weights;
 
   explicit UniformLagrangeSet(const int);
