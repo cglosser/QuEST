@@ -1,3 +1,4 @@
+#include <Eigen/Dense>
 #include <complex>
 #include <iostream>
 #include <iomanip>
@@ -26,12 +27,19 @@ int main(int argc, char *argv[]) {
 
     InteractionTable itab(config.interpolation_order, dots);
 
-    for(int r = 0; r < itab.num_interactions; ++r) {
-      cout << r << " | ";
-      for(int c = 0; c <= config.interpolation_order; ++c) {
-        cout << setprecision(15) << scientific << itab.coefficients[r][c] << " ";
+    for(int i = 0; i < 2048; ++i) {
+      Eigen::Vector2cd val(0, gaussian((i - 1024)/256.0));
+      dots[0].history.push_back(val);
+      //cout << fixed << i << " " << val.transpose().real() << endl;
+    }
+
+    for(int i = config.interpolation_order + 1; i < 2048; ++i) {
+      double val = 0;
+      for(int j = 0; j <= config.interpolation_order; ++j) {
+        val += 2*dots[0].history[i - j - itab.floor_delays[0]][1].real() * itab.coefficients[0][j];
       }
-      cout << endl;
+
+      cout << setprecision(15) << scientific << i << " " << 2*dots[0].history[i][1].real() << " " << val << endl;
     }
 
   } catch(CommandLineException &e) {
