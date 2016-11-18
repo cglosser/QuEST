@@ -6,7 +6,6 @@
 
 #include "configuration.h"
 #include "interaction_table.h"
-#include "interaction.h"
 #include "lagrange_set.h"
 #include "math_utils.h"
 #include "quantum_dot.h"
@@ -18,36 +17,22 @@ int main(int argc, char *argv[]) {
   try {
     auto vm = parse_configs(argc, argv);
 
-    vector<QuantumDot> dots(6);
-    for(int i = 0; i < 6; ++i) {
-      dots[i].pos = Eigen::Vector3d(i, std::sin(i/6.0), 0);
-      dots[i].dipole = Eigen::Vector3d(0, 0, 1);
-    }
+    vector<QuantumDot> dots(2);
+    dots[0].pos = Eigen::Vector3d(0, 0, 0);
+    dots[0].dipole = Eigen::Vector3d(2, 1, 7);
+
+    dots[1].pos = Eigen::Vector3d(1, 1, 0);
+    dots[1].dipole = Eigen::Vector3d(6, 0, -6);
 
     InteractionTable itab(config.interpolation_order, dots);
 
-    cout << "Interaction table:" << endl;
-    for(int i = 0; i < 15; ++i) {
-      cout << i << " | ";
-      for(int r = 0; r <= config.interpolation_order; ++r) {
-        cout << itab.coefficients[i][r] << " ";
+    for(int r = 0; r < itab.num_interactions; ++r) {
+      cout << r << " | ";
+      for(int c = 0; c <= config.interpolation_order; ++c) {
+        cout << setprecision(15) << scientific << itab.coefficients[r][c] << " ";
       }
       cout << endl;
     }
-
-    cout << endl << endl;
-
-    cout << "Interaction objects:" << endl;
-    int idx = 0;
-    for(int d1 = 0; d1 < 5; ++d1) {
-      for(int d2 = d1 + 1; d2 < 6; ++d2) {
-        Interaction inter(dots[d2], dots[d1]);
-        cout << idx++ << " | ";
-        for(auto const &x : inter.coefs) cout << x << " ";
-        cout << endl;
-      }
-    }
-
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently

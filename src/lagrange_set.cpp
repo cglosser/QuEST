@@ -17,7 +17,7 @@ void UniformLagrangeSet::calculate_weights(const double x)
     for(int m = 0; m <= order; ++m) {
       if(m == basis_id) continue;
       d0_product *= (x - m)/(basis_id - m);
-      d1_sum -= 1/(x - m);
+      d1_sum += 1/(x - m);
       d2_sum -= std::pow(x - m, -2);
     }
 
