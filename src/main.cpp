@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
       dots[i].dipole = Eigen::Vector3d(0, 0, 1);
     }
 
-    InteractionTable itab(dots);
+    InteractionTable itab(config.interpolation_order, dots);
 
     cout << "Interaction table:" << endl;
     for(int i = 0; i < 15; ++i) {

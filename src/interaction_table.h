@@ -13,12 +13,13 @@
 
 class InteractionTable {
  public:
-  InteractionTable(const std::vector<QuantumDot> &);
+  InteractionTable(const int, const std::vector<QuantumDot> &);
+
+  int interp_order;
+  size_t num_dots;
+  size_t num_interactions;
 
   boost::multi_array<double, 2> coefficients;
-
-  // private:
-  size_t num_dots;
 
   size_t coord2idx(size_t, size_t);
   std::pair<size_t, size_t> idx2coord(const size_t);
