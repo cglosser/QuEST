@@ -8,7 +8,7 @@ Interaction::Interaction(const QuantumDot &d1, const QuantumDot &d2)
   const double dimensionless_delay = dr.norm() / (config.c0 * config.dt);
   delay = compute_delay(dimensionless_delay);
 
-  UniformLagrangeSet interp(delay.second);
+  UniformLagrangeSet interp(config.interpolation_order, delay.second);
 
 
   for(size_t i = 0; i < coefs.size(); ++i) {
