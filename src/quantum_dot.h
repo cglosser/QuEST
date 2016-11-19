@@ -20,6 +20,7 @@ class QuantumDot {
   QuantumDot(const Eigen::Vector3d &, const double,
              const std::pair<double, double> &, const Eigen::Vector3d &);
 
+  matrix_elements liouville_rhs(const matrix_elements &, const double) const;
 
   friend std::ostream &operator<<(std::ostream &, const QuantumDot &);
   friend std::istream &operator>>(std::istream &, QuantumDot &);
