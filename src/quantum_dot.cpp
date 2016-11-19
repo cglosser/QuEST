@@ -15,10 +15,13 @@ QuantumDot::QuantumDot(const Eigen::Vector3d &loc, const double omega,
 {
 }
 
-matrix_elements liouville_rhs(const matrix_elements &rho, const double rabi) const
+matrix_elements QuantumDot::liouville_rhs(const matrix_elements &rho,
+                                          const double rabi) const
 {
+  constexpr std::complex<double> iu(0, 1);
   double m0 = -2 * rho[1].imag() * rabi;
-  std::complex<double> m1(0, (2*rho[0] - 1)*rabi + rho[1]*frequency)
+  std::complex<double> m1(
+      iu * ((2 * rho[0].real() - 1) * rabi + rho[1] * frequency));
   return matrix_elements(m0, m1);
 }
 
