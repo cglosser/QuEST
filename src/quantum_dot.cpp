@@ -13,7 +13,6 @@ QuantumDot::QuantumDot(const Eigen::Vector3d &loc, const double omega,
                        const Eigen::Vector3d &dip)
     : pos(loc), frequency(omega), damping(ts), dipole(dip)
 {
-  history.reserve(2048);
 }
 
 Eigen::Vector3d QuantumDot::polarization(const size_t idx) const
