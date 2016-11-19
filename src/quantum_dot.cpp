@@ -39,3 +39,10 @@ std::istream &operator>>(std::istream &is, QuantumDot &qd)
 
   return is;
 }
+
+std::vector<QuantumDot> import_dots(const std::string &fname)
+{
+  std::ifstream ifs(fname);
+  std::istream_iterator<QuantumDot> in_iter(ifs), eof;
+  return std::vector<QuantumDot>(in_iter, eof);
+}
