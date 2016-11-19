@@ -4,8 +4,11 @@
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 #include <complex>
-#include <istream>
-#include <ostream>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -32,5 +35,7 @@ class QuantumDot {
   std::pair<double, double> damping;
   Eigen::Vector3d dipole;
 };
+
+std::vector<QuantumDot> import_dots(const std::string &);
 
 #endif
