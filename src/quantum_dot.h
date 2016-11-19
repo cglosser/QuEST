@@ -20,7 +20,6 @@ class QuantumDot {
   QuantumDot(const Eigen::Vector3d &, const double,
              const std::pair<double, double> &, const Eigen::Vector3d &);
 
-  Eigen::Vector3d polarization(const size_t) const;
 
   friend std::ostream &operator<<(std::ostream &, const QuantumDot &);
   friend std::istream &operator>>(std::istream &, QuantumDot &);
