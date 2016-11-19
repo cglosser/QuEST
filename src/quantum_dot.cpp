@@ -15,10 +15,7 @@ QuantumDot::QuantumDot(const Eigen::Vector3d &loc, const double omega,
 {
 }
 
-Eigen::Vector3d QuantumDot::polarization(const size_t idx) const
 {
-  const double coef = 2 * (history.at(idx)(1)).real();
-  return coef * dipole;
 }
 
 std::ostream &operator<<(std::ostream &os, const QuantumDot &qd)
