@@ -4,9 +4,9 @@ std::complex<double> semidisk(const double);
 
 PredictorCorrector::PredictorCorrector(const int nlam, const int ntim,
   const double radius, const double toler)
-    : step_factor((ntim - 1)/2.0),
-      n_lambda(nlam),
+    : n_lambda(nlam),
       n_time(ntim),
+      step_factor((ntim - 1)/2.0),
       rho(radius),
       tolerance(toler),
       timestep(2.0/(ntim - 1)),
@@ -24,8 +24,11 @@ PredictorCorrector::PredictorCorrector(const int nlam, const int ntim,
 
   // Eigen defaults to column major, hence the (n_time x 2) ordering
   predictor_coefs = Eigen::Map<Eigen::ArrayXXd>(predictors.data(), n_time, 2);
+  predictor_coefs.col(1) *= step_factor;
+
   corrector_coefs = Eigen::Map<Eigen::ArrayXXd>(correctors.data(), n_time, 2);
-  future_coef = correctors(2*n_time);
+  corrector_coefs.col(1) *= step_factor;
+  future_coef = correctors(2*n_time)*step_factor;
 }
 
 Eigen::MatrixXcd PredictorCorrector::predictor_matrix() const
