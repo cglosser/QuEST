@@ -16,10 +16,17 @@ class BlochSystem {
   // private:
   typedef boost::multi_array<matrix_elements, 3> HistoryArray;
 
+  const int num_steps;
+  const int num_dots;
+
   PredictorCorrector integrator;
   std::vector<QuantumDot> dots;
   HistoryArray history;
-  const int num_dots;
-  const int num_steps;
+  std::vector<double> rabi_freqs;
+
+  int now;
+  const double dt;
+
+  void compute_rabi_freqs(const std::vector<double> &);
 };
 #endif

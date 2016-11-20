@@ -19,9 +19,17 @@ int main(int argc, char *argv[])
   try {
     auto vm = parse_configs(argc, argv);
 
-    BlochSystem bs(import_dots("dots.dat"));
+    PredictorCorrector rpc(18, 22, 3.15, 1e-12);
+    vector<QuantumDot> qds(1);
+    qds[0] = QuantumDot(Eigen::Vector3d(0,0,0), 0.1, std::pair<double, double>(10, 20), Eigen::Vector3d(0, 0, 1));
 
-    cout << bs.dots[0].history.capacity() << endl;
+    BlochSystem sys(rpc, qds, 2048);
+
+    for(int i = 0; i < 2048; ++i) sys.step();
+
+    for(int i = -22; i < 2048; ++i) {
+      cout << setprecision(12) << scientific << i << " " << sys.history[0][i][0][0].real() << endl;
+    }
 
 
   } catch(CommandLineException &e) {

@@ -14,7 +14,7 @@ class PredictorCorrector {
   Eigen::ArrayXXd predictor_coefs;
   Eigen::ArrayXXd corrector_coefs;
 
-  size_t num_steps() const { return n_time; }
+  size_t width() const { return n_time; }
 
  private:
   size_t n_lambda, n_time;
