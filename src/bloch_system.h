@@ -11,7 +11,8 @@
 
 class BlochSystem {
  public:
-  BlochSystem(const PredictorCorrector, std::vector<QuantumDot>, const size_t);
+  BlochSystem(const PredictorCorrector, std::vector<QuantumDot>, const int,
+              const size_t);
   void step();
 
   // private:
@@ -25,11 +26,13 @@ class BlochSystem {
   PredictorCorrector integrator;
   std::vector<QuantumDot> dots;
   HistoryArray history;
+  InteractionTable interactions;
+
   std::vector<double> rabi_freqs;
 
   int now;
   const double dt;
 
-  void compute_rabi_freqs(const std::vector<double> &);
+  void convolve_currents();
 };
 #endif

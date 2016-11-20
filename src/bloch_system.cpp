@@ -1,13 +1,15 @@
 #include "bloch_system.h"
 
 BlochSystem::BlochSystem(const PredictorCorrector pc,
-                         std::vector<QuantumDot> ds, const size_t nsteps)
+                         std::vector<QuantumDot> ds, const int iorder,
+                         const size_t nsteps)
     : num_steps(nsteps + 1),
       num_dots(static_cast<int>(ds.size())),
       integrator(pc),
       history(boost::extents[ds.size()]
                             [HistoryArray::extent_range(-pc.width(), num_steps)]
                             [2]),
+      interactions(iorder, ds),
       rabi_freqs(ds.size()),
       now(1),
       dt(1)
@@ -30,7 +32,7 @@ void BlochSystem::step()
   const double time = now * dt, norm = 0.00489575834889;
   std::vector<double> rabi(
       num_dots, norm * gaussian((time - 1024) / 256) * cos(0.05 * time));
-  compute_rabi_freqs(rabi);
+  convolve_currents();
 
   for(int dot_idx = 0; dot_idx < num_dots; ++dot_idx) {
     // Predictor
@@ -66,8 +68,24 @@ void BlochSystem::step()
   now++;
 }
 
-void BlochSystem::compute_rabi_freqs(const std::vector<double> &r0)
+void BlochSystem::convolve_currents()
 {
-  assert(r0.size() == rabi_freqs.size());
-  rabi_freqs = r0;
+  std::fill(rabi_freqs.begin(), rabi_freqs.end(), 0);
+
+  for(size_t src = 0; src < dots.size() - 1; ++src) {
+    for(size_t obs = src + 1; obs < dots.size(); ++obs) {
+      const size_t idx = interactions.coord2idx(src, obs);
+      const int s = now - interactions.floor_delays[idx] - 1;
+      // The -1 in s arises from the definition of "now": the timestep we're
+      // *currently* solving for (e.g. now == 1 when the simulation starts)
+
+      for(int i = 0; i <= interactions.interp_order; ++i) {
+        if(s - i < history.index_bases()[1]) continue;
+        rabi_freqs[src] += polarization(history[obs][s - i][0]) *
+                           interactions.coefficients[idx][i];
+        rabi_freqs[obs] += polarization(history[src][s - i][0]) *
+                           interactions.coefficients[idx][i];
+      }
+    }
+  }
 }
