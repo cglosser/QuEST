@@ -11,7 +11,6 @@ double farfield_dyadic(const Vec3d &, const Vec3d &, const Vec3d &);
 InteractionTable::InteractionTable(const int n,
                                    const std::vector<QuantumDot> &dots)
     : interp_order(n),
-      num_dots(dots.size()),
       num_interactions(dots.size() * (dots.size() - 1) / 2),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])

@@ -16,7 +16,6 @@ class InteractionTable {
   InteractionTable(const int, const std::vector<QuantumDot> &);
 
   int interp_order;
-  size_t num_dots;
   size_t num_interactions;
 
   std::vector<int> floor_delays;
