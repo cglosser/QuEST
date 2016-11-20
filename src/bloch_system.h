@@ -1,6 +1,7 @@
 #ifndef BLOCH_SYSTEM_H
 #define BLOCH_SYSTEM_H
 
+#include <Eigen/Dense>
 #include <utility>
 #include <vector>
 
@@ -14,7 +15,9 @@ class BlochSystem {
   void step();
 
   // private:
-  typedef boost::multi_array<matrix_elements, 3> HistoryArray;
+  typedef boost::multi_array<matrix_elements, 3,
+                             Eigen::aligned_allocator<matrix_elements>>
+      HistoryArray;
 
   const int num_steps;
   const int num_dots;
