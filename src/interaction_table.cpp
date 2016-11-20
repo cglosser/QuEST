@@ -46,14 +46,13 @@ size_t InteractionTable::coord2idx(size_t row, size_t col)
   assert(row != col);
   if(col > row) std::swap(row, col);
 
-  return row*(row - 1)/2 + col;
+  return row * (row - 1) / 2 + col;
 }
 
 std::pair<size_t, size_t> InteractionTable::idx2coord(const size_t idx)
 {
-  const size_t row =
-    std::floor((std::sqrt(1 + 8*idx) + 1)/2.0);
-  const size_t col = idx - row*(row - 1)/2;
+  const size_t row = std::floor((std::sqrt(1 + 8 * idx) + 1) / 2.0);
+  const size_t col = idx - row * (row - 1) / 2;
 
   return std::pair<size_t, size_t>(row, col);
 }
