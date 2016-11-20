@@ -21,14 +21,15 @@ int main(int argc, char *argv[])
 
     PredictorCorrector rpc(18, 22, 3.15, 1e-12);
     vector<QuantumDot> qds(1);
-    qds[0] = QuantumDot(Eigen::Vector3d(0,0,0), 0.1, std::pair<double, double>(10, 20), Eigen::Vector3d(0, 0, 1));
+    qds[0] = QuantumDot(Eigen::Vector3d(0,0,0), 0.05, std::pair<double, double>(10, 20), Eigen::Vector3d(0, 0, 1));
 
     BlochSystem sys(rpc, qds, 2048);
 
     for(int i = 0; i < 2048; ++i) sys.step();
 
     for(int i = -22; i < 2048; ++i) {
-      cout << setprecision(12) << scientific << i << " " << sys.history[0][i][0][0].real() << endl;
+      cout << setw(5) << i << " ";
+      cout << setprecision(12) << scientific << sys.history[0][i][0][0].real() << endl;
     }
 
 

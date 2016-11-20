@@ -29,7 +29,7 @@ void BlochSystem::step()
   const int start = now - integrator.width();
   const double time = now * dt, norm = 0.00489575834889;
   std::vector<double> rabi(
-      num_dots, norm * gaussian((time - 1024) / 256) * cos(0.1 * time));
+      num_dots, norm * gaussian((time - 1024) / 256) * cos(0.05 * time));
   compute_rabi_freqs(rabi);
 
   for(int dot_idx = 0; dot_idx < num_dots; ++dot_idx) {
