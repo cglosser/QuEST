@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
       const double g = skew_gaussian((i - 1024)/256., 5);
 
       sys.history[0][i][0][1] = g;
-      sys.history[1][i][0][1] = 0;
+      sys.history[1][i][0][1] = g*cos(2*M_PI*i/128);
     }
 
     for(int i = 0; i < 2048; ++i) {
