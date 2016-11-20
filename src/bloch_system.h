@@ -10,10 +10,16 @@
 
 class BlochSystem {
  public:
-  BlochSystem(std::vector<QuantumDot>);
+  BlochSystem(const PredictorCorrector, std::vector<QuantumDot>, const size_t);
   void step();
 
- //private:
+  // private:
+  typedef boost::multi_array<matrix_elements, 3> HistoryArray;
+
+  PredictorCorrector integrator;
   std::vector<QuantumDot> dots;
+  HistoryArray history;
+  const int num_dots;
+  const int num_steps;
 };
 #endif
