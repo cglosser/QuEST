@@ -22,14 +22,18 @@ class QuantumDot {
 
   matrix_elements liouville_rhs(const matrix_elements &, const double) const;
 
+  friend Eigen::Vector3d separation(const QuantumDot &, const QuantumDot &);
+  friend double dyadic_product(const QuantumDot &, const Eigen::Matrix3d &,
+                               const QuantumDot &);
+
   friend std::ostream &operator<<(std::ostream &, const QuantumDot &);
   friend std::istream &operator>>(std::istream &, QuantumDot &);
 
-  // private:
+ private:
   Eigen::Vector3d pos;
   double frequency;
   std::pair<double, double> damping;
-  Eigen::Vector3d dipole;
+  Eigen::Vector3d dipole_moment;
 };
 
 double polarization(const matrix_elements &);

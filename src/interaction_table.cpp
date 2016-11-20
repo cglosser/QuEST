@@ -4,9 +4,9 @@ using Vec3d = Eigen::Vector3d;
 
 std::pair<int, double> compute_delay(const double);
 Eigen::Matrix3d rhat_dyadic(const Vec3d &);
-double nearfield_dyadic(const Vec3d &, const Vec3d &, const Vec3d &);
-double midfield_dyadic(const Vec3d &, const Vec3d &, const Vec3d &);
-double farfield_dyadic(const Vec3d &, const Vec3d &, const Vec3d &);
+Eigen::Matrix3d nearfield_dyadic(const Vec3d &);
+Eigen::Matrix3d midfield_dyadic(const Vec3d &);
+Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
 InteractionTable::InteractionTable(const int n,
                                    const std::vector<QuantumDot> &dots)
@@ -20,7 +20,7 @@ InteractionTable::InteractionTable(const int n,
     for(size_t obs = src + 1; obs < dots.size(); ++obs) {
       size_t idx = coord2idx(src, obs);
 
-      Vec3d dr(dots[obs].pos - dots[src].pos);
+      Vec3d dr(separation(dots[src], dots[obs]));
 
       std::pair<int, double> delay(
           compute_delay(dr.norm() / (config.c0 * config.dt)));
@@ -30,11 +30,11 @@ InteractionTable::InteractionTable(const int n,
 
       for(int i = 0; i <= interp_order; ++i) {
         coefficients[idx][i] =
-            nearfield_dyadic(dr, dots[src].dipole, dots[obs].dipole) *
+            dyadic_product(dots[obs], nearfield_dyadic(dr), dots[src]) *
                 lagrange.weights[0][i] +
-            midfield_dyadic(dr, dots[src].dipole, dots[obs].dipole) *
+            dyadic_product(dots[obs], midfield_dyadic(dr), dots[src]) *
                 lagrange.weights[1][i] +
-            farfield_dyadic(dr, dots[src].dipole, dots[obs].dipole) *
+            dyadic_product(dots[obs], farfield_dyadic(dr), dots[src]) *
                 lagrange.weights[2][i];
       }
     }
@@ -74,23 +74,20 @@ Eigen::Matrix3d rhat_dyadic(const Vec3d &dr)
   return dr * dr.transpose() / dr.squaredNorm();
 }
 
-double nearfield_dyadic(const Vec3d &dr, const Vec3d &src, const Vec3d &obs)
+Eigen::Matrix3d nearfield_dyadic(const Vec3d &dr)
 {
-  const double dyad = obs.transpose() *
-                      (Eigen::Matrix3d::Identity() - 3 * rhat_dyadic(dr)) * src;
+  Eigen::Matrix3d dyad = (Eigen::Matrix3d::Identity() - 3 * rhat_dyadic(dr));
   return dyad * std::pow(config.c0, 2) / std::pow(dr.norm(), 3);
 }
 
-double midfield_dyadic(const Vec3d &dr, const Vec3d &src, const Vec3d &obs)
+Eigen::Matrix3d midfield_dyadic(const Vec3d &dr)
 {
-  const double dyad = obs.transpose() *
-                      (Eigen::Matrix3d::Identity() - 3 * rhat_dyadic(dr)) * src;
+  Eigen::Matrix3d dyad = (Eigen::Matrix3d::Identity() - 3 * rhat_dyadic(dr));
   return dyad * config.c0 / dr.squaredNorm();
 }
 
-double farfield_dyadic(const Vec3d &dr, const Vec3d &src, const Vec3d &obs)
+Eigen::Matrix3d farfield_dyadic(const Vec3d &dr)
 {
-  const double dyad =
-      obs.transpose() * (Eigen::Matrix3d::Identity() - rhat_dyadic(dr)) * src;
+  Eigen::Matrix3d dyad = (Eigen::Matrix3d::Identity() - rhat_dyadic(dr));
   return dyad / dr.norm();
 }

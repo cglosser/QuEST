@@ -20,11 +20,12 @@ int main(int argc, char *argv[])
     auto vm = parse_configs(argc, argv);
 
     vector<QuantumDot> qds(2);
-    qds[0].pos = Eigen::Vector3d(0, 0, 0);
-    qds[0].dipole = Eigen::Vector3d(0, 0, 1);
+    qds[0] = QuantumDot(Eigen::Vector3d(), 0, std::pair<double, double>(10, 20),
+                        Eigen::Vector3d(0, 0, 1));
 
-    qds[1].pos = Eigen::Vector3d(16, 8, 4);
-    qds[1].dipole = Eigen::Vector3d(0, 0, 1);
+    qds[1] =
+        QuantumDot(Eigen::Vector3d(0.005, 0.005, 0.005), 0,
+                   std::pair<double, double>(10, 20), Eigen::Vector3d(0, 0, 1));
 
     PredictorCorrector rpc(18, 22, 3.15, 1e-12);
 
