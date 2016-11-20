@@ -43,6 +43,8 @@ std::istream &operator>>(std::istream &is, QuantumDot &qd)
   return is;
 }
 
+double polarization(const matrix_elements &mel) { return 2*mel[1].real(); }
+
 std::vector<QuantumDot> import_dots(const std::string &fname)
 {
   std::ifstream ifs(fname);
