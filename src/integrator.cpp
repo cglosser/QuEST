@@ -1,6 +1,15 @@
 #include "integrator.h"
 
-std::complex<double> semidisk(const double);
+std::complex<double> semidisk(const double t)
+{
+  const std::complex<double> iu(0, 1);
+
+  if(0 <= t && t < 1) return iu * t;
+  if(1 <= t && t < M_PI + 1) return std::exp(iu * (t + M_PI_2 - 1));
+  if(M_PI + 1 <= t && t < M_PI + 2) return iu * (t - (M_PI + 2));
+
+  return 0;
+}
 
 class WeightsBuilder {
  public:
@@ -93,13 +102,24 @@ PredictorCorrector::Weights::Weights(const size_t n_lambda, const size_t n_time,
   future_coef = correctors(2 * n_time) * step_factor;
 }
 
-std::complex<double> semidisk(const double t)
+PredictorCorrector::Integrator::Integrator(
+    std::vector<QuantumDot> qds, const size_t n, const double timestep,
+    const size_t n_lambda, const size_t n_time, const double radius,
+    const double tolerance)
+    : num_steps(n + 1),
+      dt(timestep),
+      weights(n_lambda, n_time, radius, tolerance),
+      history(
+          boost::extents[qds.size()][HistoryArray::extent_range(-n_time, n)][2])
 {
-  const std::complex<double> iu(0, 1);
+  dots.swap(qds);
 
-  if(0 <= t && t < 1) return iu * t;
-  if(1 <= t && t < M_PI + 1) return std::exp(iu * (t + M_PI_2 - 1));
-  if(M_PI + 1 <= t && t < M_PI + 2) return iu * (t - (M_PI + 2));
+  for(int dot_idx = 0; dot_idx < static_cast<int>(dots.size()); ++dot_idx) {
+    for(int i = -weights.width(); i <= 0; ++i) {
+      history[dot_idx][i][0] = matrix_elements(1, 0);
+      history[dot_idx][i][1] = matrix_elements(0, 0);
+    }
+  }
 
-  return 0;
+  now = 1;
 }
