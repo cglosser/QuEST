@@ -2,9 +2,9 @@
 
 std::complex<double> semidisk(const double);
 
-class PCBuilder {
+class WeightsBuilder {
  public:
-  PCBuilder(const size_t, const size_t, const double, const double);
+  WeightsBuilder(const size_t, const size_t, const double, const double);
 
   Eigen::VectorXd predictors() { return compute_coeff(predictor_matrix()); }
   Eigen::VectorXd correctors() { return compute_coeff(corrector_matrix()); }
@@ -20,7 +20,7 @@ class PCBuilder {
   Eigen::VectorXd compute_coeff(const Eigen::MatrixXcd &) const;
 };
 
-PCBuilder::PCBuilder(const size_t n_lambda, const size_t n_time,
+WeightsBuilder::WeightsBuilder(const size_t n_lambda, const size_t n_time,
                      const double radius, const double toler)
     : lambdas(n_lambda),
       times(Eigen::VectorXd::LinSpaced(n_time, -1, 1)),
@@ -32,7 +32,7 @@ PCBuilder::PCBuilder(const size_t n_lambda, const size_t n_time,
   for(size_t i = 0; i < n_lambda; ++i) lambdas[i] = radius * semidisk(xs[i]);
 }
 
-Eigen::MatrixXcd PCBuilder::predictor_matrix() const
+Eigen::MatrixXcd WeightsBuilder::predictor_matrix() const
 {
   Eigen::MatrixXcd result(lambdas.size(), 2 * times.size());
 
@@ -45,7 +45,7 @@ Eigen::MatrixXcd PCBuilder::predictor_matrix() const
   return result;
 }
 
-Eigen::MatrixXcd PCBuilder::corrector_matrix() const
+Eigen::MatrixXcd WeightsBuilder::corrector_matrix() const
 {
   Eigen::MatrixXcd result(lambdas.size(), 2 * times.size() + 1);
 
@@ -56,13 +56,13 @@ Eigen::MatrixXcd PCBuilder::corrector_matrix() const
   return result;
 }
 
-Eigen::VectorXcd PCBuilder::rhs_vector() const
+Eigen::VectorXcd WeightsBuilder::rhs_vector() const
 {
   Eigen::ArrayXcd b(lambdas * future_time);
   return b.exp();
 }
 
-Eigen::VectorXd PCBuilder::compute_coeff(const Eigen::MatrixXcd &mat) const
+Eigen::VectorXd WeightsBuilder::compute_coeff(const Eigen::MatrixXcd &mat) const
 {
   Eigen::JacobiSVD<Eigen::MatrixXcd> decomp =
       mat.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV)
@@ -73,13 +73,13 @@ Eigen::VectorXd PCBuilder::compute_coeff(const Eigen::MatrixXcd &mat) const
   return least_squares.real();
 }
 
-PredictorCorrector::PredictorCorrector(const size_t n_lambda,
-                                       const size_t n_time, const double radius,
-                                       const double tolerance)
+Weights::Weights(const size_t n_lambda,
+                 const size_t n_time, const double radius,
+                 const double tolerance)
     : n_time_(n_time)
 {
   const double step_factor = (n_time - 1) / 2.0;
-  PCBuilder builder(n_lambda, n_time, radius, tolerance);
+  WeightsBuilder builder(n_lambda, n_time, radius, tolerance);
 
   Eigen::VectorXd predictors(builder.predictors());
   Eigen::VectorXd correctors(builder.correctors());

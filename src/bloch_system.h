@@ -11,7 +11,7 @@
 
 class BlochSystem {
  public:
-  BlochSystem(const PredictorCorrector, std::vector<QuantumDot>, const int,
+  BlochSystem(const Weights, std::vector<QuantumDot>, const int,
               const size_t);
   void step();
 
@@ -23,7 +23,7 @@ class BlochSystem {
   const int num_steps;
   const int num_dots;
 
-  PredictorCorrector integrator;
+  Weights integrator;
   std::vector<QuantumDot> dots;
   HistoryArray history;
   InteractionTable interactions;

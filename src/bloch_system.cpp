@@ -1,6 +1,6 @@
 #include "bloch_system.h"
 
-BlochSystem::BlochSystem(const PredictorCorrector pc,
+BlochSystem::BlochSystem(const Weights pc,
                          std::vector<QuantumDot> ds, const int iorder,
                          const size_t nsteps)
     : num_steps(nsteps + 1),

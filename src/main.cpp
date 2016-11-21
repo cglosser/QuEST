@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
         QuantumDot(Eigen::Vector3d(0.005, 0.005, 0.005), 0,
                    std::pair<double, double>(10, 20), Eigen::Vector3d(0, 0, 1));
 
-    PredictorCorrector rpc(18, 22, 3.15, 1e-12);
+    Weights rpc(18, 22, 3.15, 1e-12);
 
     BlochSystem sys(rpc, qds, config.interpolation_order, 2048);
 
