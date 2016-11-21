@@ -110,7 +110,9 @@ PredictorCorrector::Integrator::Integrator(
       dt(timestep),
       weights(n_lambda, n_time, radius, tolerance),
       history(
-          boost::extents[qds.size()][HistoryArray::extent_range(-n_time, n)][2])
+          boost::extents[qds.size()]
+                        [HistoryArray::extent_range(-n_time, num_steps)][2]),
+      rabi_freqs(qds.size(), 0)
 {
   dots.swap(qds);
 
@@ -122,4 +124,52 @@ PredictorCorrector::Integrator::Integrator(
   }
 
   now = 1;
+}
+
+void PredictorCorrector::Integrator::step()
+{
+  assert(now < num_steps);
+
+  pctor(weights.ps);
+
+  set_rabi_freqs(now * dt);
+  evaluator();
+
+  for(int m = 1; m < 10; ++m) {
+    pctor(weights.cs);
+
+    set_rabi_freqs(now * dt);
+    evaluator();
+  }
+
+  ++now;
+}
+
+void PredictorCorrector::Integrator::pctor(const Eigen::ArrayXXd &coefs)
+{
+  const int start = now - weights.width();
+
+  for(int sol_idx = 0; sol_idx < static_cast<int>(dots.size()); ++sol_idx) {
+    history[sol_idx][now][0].setZero();
+    for(int h = 0; h < weights.width(); ++h) {
+      history[sol_idx][now][0] +=
+          history[sol_idx][start + h][0] * coefs(0, h) +
+          history[sol_idx][start + h][1] * coefs(1, h) * dt;
+    }
+  }
+}
+
+void PredictorCorrector::Integrator::evaluator()
+{
+  for(size_t sol_idx = 0; sol_idx < dots.size(); ++sol_idx) {
+    history[sol_idx][now][1] = dots[sol_idx].liouville_rhs(
+        history[sol_idx][now][0], rabi_freqs[sol_idx]);
+  }
+}
+
+void PredictorCorrector::Integrator::set_rabi_freqs(const double time)
+{
+  const double chi_0 = M_PI / std::sqrt(2 * M_PI * std::pow(0.1, 2));
+  const double x = chi_0 * gaussian((time - 0.5) / 0.1) * cos(2278.9 * time);
+  std::fill(rabi_freqs.begin(), rabi_freqs.end(), x);
 }

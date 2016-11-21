@@ -2,6 +2,7 @@
 #define INTEGRATOR_H
 
 #include <Eigen/Dense>
+#include <algorithm>
 #include <boost/multi_array.hpp>
 #include <complex>
 #include <vector>
@@ -31,6 +32,8 @@ class PredictorCorrector::Integrator {
   Integrator(std::vector<QuantumDot>, const size_t, const double, const size_t,
              const size_t, const double, const double);
 
+  void step();
+
   // private:
 
   typedef boost::multi_array<matrix_elements, 3,
@@ -42,7 +45,13 @@ class PredictorCorrector::Integrator {
   double dt;
   Weights weights;
   HistoryArray history;
+
   std::vector<QuantumDot> dots;
+  std::vector<double> rabi_freqs;
+
+  void pctor(const Eigen::ArrayXXd &);
+  void evaluator();
+  void set_rabi_freqs(const double);
 };
 
 #endif
