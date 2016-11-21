@@ -128,15 +128,15 @@ PredictorCorrector::Integrator::Integrator(
 
 void PredictorCorrector::Integrator::step()
 {
-  assert(now < num_steps);
+  assert(now < static_cast<int>(num_steps));
 
-  pctor(weights.ps);
+  predictor();
 
   set_rabi_freqs(now * dt);
   evaluator();
 
   for(int m = 1; m < 10; ++m) {
-    pctor(weights.cs);
+    corrector();
 
     set_rabi_freqs(now * dt);
     evaluator();
@@ -145,16 +145,31 @@ void PredictorCorrector::Integrator::step()
   ++now;
 }
 
-void PredictorCorrector::Integrator::pctor(const Eigen::ArrayXXd &coefs)
+void PredictorCorrector::Integrator::predictor()
 {
   const int start = now - weights.width();
 
   for(int sol_idx = 0; sol_idx < static_cast<int>(dots.size()); ++sol_idx) {
     history[sol_idx][now][0].setZero();
-    for(int h = 0; h < weights.width(); ++h) {
+    for(int h = 0; h < static_cast<int>(weights.width()); ++h) {
       history[sol_idx][now][0] +=
-          history[sol_idx][start + h][0] * coefs(0, h) +
-          history[sol_idx][start + h][1] * coefs(1, h) * dt;
+          history[sol_idx][start + h][0] * weights.ps(0, h) +
+          history[sol_idx][start + h][1] * weights.ps(1, h) * dt;
+    }
+  }
+}
+
+void PredictorCorrector::Integrator::corrector()
+{
+  const int start = now - weights.width();
+
+  for(int sol_idx = 0; sol_idx < static_cast<int>(dots.size()); ++sol_idx) {
+    history[sol_idx][now][0] =
+          weights.future_coef * history[sol_idx][now][1] * dt;
+    for(int h = 0; h < static_cast<int>(weights.width()); ++h) {
+      history[sol_idx][now][0] +=
+          history[sol_idx][start + h][0] * weights.cs(0, h) +
+          history[sol_idx][start + h][1] * weights.cs(1, h) * dt;
     }
   }
 }
