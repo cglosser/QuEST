@@ -21,7 +21,7 @@ class WeightsBuilder {
 };
 
 WeightsBuilder::WeightsBuilder(const size_t n_lambda, const size_t n_time,
-                     const double radius, const double toler)
+                               const double radius, const double toler)
     : lambdas(n_lambda),
       times(Eigen::VectorXd::LinSpaced(n_time, -1, 1)),
       timestep(2.0 / (n_time - 1)),
@@ -73,9 +73,9 @@ Eigen::VectorXd WeightsBuilder::compute_coeff(const Eigen::MatrixXcd &mat) const
   return least_squares.real();
 }
 
-Weights::Weights(const size_t n_lambda,
-                 const size_t n_time, const double radius,
-                 const double tolerance)
+PredictorCorrector::Weights::Weights(const size_t n_lambda, const size_t n_time,
+                                     const double radius,
+                                     const double tolerance)
     : n_time_(n_time)
 {
   const double step_factor = (n_time - 1) / 2.0;

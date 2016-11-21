@@ -6,9 +6,13 @@
 
 #include "math_utils.h"
 
-class Weights {
+namespace PredictorCorrector {
+  class Weights;
+}
+
+class PredictorCorrector::Weights {
  public:
-  Weights (const size_t, const size_t, const double, const double);
+  Weights(const size_t, const size_t, const double, const double);
 
   Eigen::ArrayXXd predictor_coefs;
   Eigen::ArrayXXd corrector_coefs;
