@@ -85,11 +85,11 @@ PredictorCorrector::Weights::Weights(const size_t n_lambda, const size_t n_time,
   Eigen::VectorXd correctors(builder.correctors());
 
   // Eigen defaults to column major, hence the (n_time x 2) ordering
-  predictor_coefs = Eigen::Map<Eigen::ArrayXXd>(predictors.data(), n_time, 2);
-  corrector_coefs = Eigen::Map<Eigen::ArrayXXd>(correctors.data(), n_time, 2);
+  ps = Eigen::Map<Eigen::ArrayXXd>(predictors.data(), n_time, 2);
+  cs = Eigen::Map<Eigen::ArrayXXd>(correctors.data(), n_time, 2);
 
-  predictor_coefs.col(1) *= step_factor;
-  corrector_coefs.col(1) *= step_factor;
+  ps.col(1) *= step_factor;
+  cs.col(1) *= step_factor;
   future_coef = correctors(2 * n_time) * step_factor;
 }
 

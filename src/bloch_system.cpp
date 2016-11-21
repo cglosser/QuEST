@@ -37,9 +37,8 @@ void BlochSystem::step()
     // Predictor
     for(int h = 0; h < integrator.width(); ++h) {
       history[dot_idx][now][0] +=
-          history[dot_idx][start + h][0] * integrator.predictor_coefs(h, 0) +
-          history[dot_idx][start + h][1] * integrator.predictor_coefs(h, 1) *
-              dt;
+          history[dot_idx][start + h][0] * integrator.ps(h, 0) +
+          history[dot_idx][start + h][1] * integrator.ps(h, 1) * dt;
     }
 
     // Estimator
@@ -54,9 +53,8 @@ void BlochSystem::step()
 
       for(int h = 0; h < integrator.width(); ++h) {
         history[dot_idx][now][0] +=
-            history[dot_idx][start + h][0] * integrator.corrector_coefs(h, 0) +
-            history[dot_idx][start + h][1] * integrator.corrector_coefs(h, 1) *
-                dt;
+            history[dot_idx][start + h][0] * integrator.cs(h, 0) +
+            history[dot_idx][start + h][1] * integrator.cs(h, 1) * dt;
       }
 
       // Estimator

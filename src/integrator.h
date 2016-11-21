@@ -14,8 +14,7 @@ class PredictorCorrector::Weights {
  public:
   Weights(const size_t, const size_t, const double, const double);
 
-  Eigen::ArrayXXd predictor_coefs;
-  Eigen::ArrayXXd corrector_coefs;
+  Eigen::ArrayXXd ps, cs;
   double future_coef;
 
   size_t width() const { return n_time_; }
