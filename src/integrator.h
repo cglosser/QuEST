@@ -8,15 +8,15 @@
 
 class PredictorCorrector {
  public:
-  PredictorCorrector(const int, const int, const double, const double);
+  PredictorCorrector(const size_t, const size_t, const double, const double);
 
   Eigen::ArrayXXd predictor_coefs;
   Eigen::ArrayXXd corrector_coefs;
   double future_coef;
 
-  size_t width() const { return n_time; }
+  size_t width() const { return n_time_; }
  private:
-  size_t n_time;
+  size_t n_time_;
 };
 
 #endif

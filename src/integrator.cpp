@@ -73,13 +73,13 @@ Eigen::VectorXd PCBuilder::compute_coeff(const Eigen::MatrixXcd &mat) const
   return least_squares.real();
 }
 
-PredictorCorrector::PredictorCorrector(const int n_lambda_, const int n_time_,
-                                       const double radius,
+PredictorCorrector::PredictorCorrector(const size_t n_lambda,
+                                       const size_t n_time, const double radius,
                                        const double tolerance)
-    : n_time(n_time_)
+    : n_time_(n_time)
 {
   const double step_factor = (n_time - 1) / 2.0;
-  PCBuilder builder(n_lambda_, n_time, radius, tolerance);
+  PCBuilder builder(n_lambda, n_time, radius, tolerance);
 
   Eigen::VectorXd predictors(builder.predictors());
   Eigen::VectorXd correctors(builder.correctors());
