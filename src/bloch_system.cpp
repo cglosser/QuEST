@@ -32,7 +32,6 @@ void BlochSystem::step()
   const double time = now * dt, norm = 0.00489575834889;
   std::vector<double> rabi(
       num_dots, norm * gaussian((time - 1024) / 256) * cos(0.05 * time));
-  convolve_currents();
 
   for(int dot_idx = 0; dot_idx < num_dots; ++dot_idx) {
     // Predictor
@@ -44,6 +43,7 @@ void BlochSystem::step()
     }
 
     // Estimator
+    convolve_currents(now);
     history[dot_idx][now][1] = dots[dot_idx].liouville_rhs(
         history[dot_idx][now][0], rabi_freqs[dot_idx]);
 
@@ -60,6 +60,7 @@ void BlochSystem::step()
       }
 
       // Estimator
+      convolve_currents(now);
       history[dot_idx][now][1] = dots[dot_idx].liouville_rhs(
           history[dot_idx][now][0], rabi_freqs[dot_idx]);
     }
@@ -68,16 +69,14 @@ void BlochSystem::step()
   now++;
 }
 
-void BlochSystem::convolve_currents()
+void BlochSystem::convolve_currents(const int time_idx)
 {
   std::fill(rabi_freqs.begin(), rabi_freqs.end(), 0);
 
   for(size_t src = 0; src < dots.size() - 1; ++src) {
     for(size_t obs = src + 1; obs < dots.size(); ++obs) {
       const size_t idx = interactions.coord2idx(src, obs);
-      const int s = now - interactions.floor_delays[idx] - 1;
-      // The -1 in s arises from the definition of "now": the timestep we're
-      // *currently* solving for (e.g. now == 1 when the simulation starts)
+      const int s = time_idx - interactions.floor_delays[idx] - 1;
 
       for(int i = 0; i <= interactions.interp_order; ++i) {
         if(s - i < history.index_bases()[1]) continue;

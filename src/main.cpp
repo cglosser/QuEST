@@ -39,8 +39,7 @@ int main(int argc, char *argv[])
     }
 
     for(int i = 0; i < 2048; ++i) {
-      sys.convolve_currents();
-      sys.now++;
+      sys.convolve_currents(sys.now++);
 
       cout << setprecision(12);
       cout << i*config.dt << " " << sys.rabi_freqs[0] << " " << sys.rabi_freqs[1] << endl;

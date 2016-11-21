@@ -33,6 +33,6 @@ class BlochSystem {
   int now;
   const double dt;
 
-  void convolve_currents();
+  void convolve_currents(const int time_idx);
 };
 #endif
