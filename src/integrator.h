@@ -10,22 +10,13 @@ class PredictorCorrector {
  public:
   PredictorCorrector(const int, const int, const double, const double);
 
-  double future_coef;
   Eigen::ArrayXXd predictor_coefs;
   Eigen::ArrayXXd corrector_coefs;
+  double future_coef;
 
   size_t width() const { return n_time; }
-
  private:
-  size_t n_lambda, n_time;
-  double step_factor, rho, tolerance, timestep, future_time;
-  Eigen::VectorXcd lambdas;
-  Eigen::VectorXd times;
-
-  Eigen::MatrixXcd predictor_matrix() const;
-  Eigen::MatrixXcd corrector_matrix() const;
-  Eigen::VectorXcd rhs_vector() const;
-  Eigen::VectorXd compute_coefficients(const Eigen::MatrixXcd &) const;
+  size_t n_time;
 };
 
 #endif
