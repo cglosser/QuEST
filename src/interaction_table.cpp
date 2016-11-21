@@ -33,9 +33,9 @@ InteractionTable::InteractionTable(const int n,
             dyadic_product(dots[obs], nearfield_dyadic(dr), dots[src]) *
                 lagrange.weights[0][i] +
             dyadic_product(dots[obs], midfield_dyadic(dr), dots[src]) *
-                lagrange.weights[1][i] +
+                lagrange.weights[1][i]/config.dt +
             dyadic_product(dots[obs], farfield_dyadic(dr), dots[src]) *
-                lagrange.weights[2][i];
+                lagrange.weights[2][i]/std::pow(config.dt, 2);
       }
     }
   }

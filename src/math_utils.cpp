@@ -29,7 +29,7 @@ double gaussian(const double t)
   return std::exp(-std::pow(t, 2)/2);
 }
 
-double skew_gaussian(const double t, const double alpha)
+double skew_gaussian(const double alpha, const double t)
 {
   return gaussian(t)*std::erfc(-alpha*t/std::sqrt(2));
 }

@@ -32,10 +32,10 @@ int main(int argc, char *argv[])
     BlochSystem sys(rpc, qds, config.interpolation_order, 2048);
 
     for(int i = -22; i < 2048; ++i) {
-      const double g = skew_gaussian((i - 1024)/256., 5);
+      const double g = skew_gaussian(5, ((i - 1024) / 256.));
 
       sys.history[0][i][0][1] = g;
-      sys.history[1][i][0][1] = g*cos(2*M_PI*i/128);
+      sys.history[1][i][0][1] = 0;
     }
 
     for(int i = 0; i < 2048; ++i) {
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
       sys.now++;
 
       cout << setprecision(12);
-      cout << i << " " << sys.rabi_freqs[0] << " " << sys.rabi_freqs[1] << endl;
+      cout << i*config.dt << " " << sys.rabi_freqs[0] << " " << sys.rabi_freqs[1] << endl;
     }
 
   } catch(CommandLineException &e) {
