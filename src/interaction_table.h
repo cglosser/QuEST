@@ -16,13 +16,13 @@ class InteractionTable {
   InteractionTable(const int, const std::vector<QuantumDot> &);
 
   int interp_order;
-  size_t num_interactions;
+  int num_interactions;
 
   std::vector<int> floor_delays;
   boost::multi_array<double, 2> coefficients;
 
-  static size_t coord2idx(size_t, size_t);
-  static std::pair<size_t, size_t> idx2coord(const size_t);
+  static int coord2idx(int, int);
+  static std::pair<int, int> idx2coord(const int);
 };
 
 #endif

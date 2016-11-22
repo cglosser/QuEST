@@ -18,7 +18,7 @@ InteractionTable::InteractionTable(const int n,
   UniformLagrangeSet lagrange(interp_order);
   for(size_t src = 0; src < dots.size() - 1; ++src) {
     for(size_t obs = src + 1; obs < dots.size(); ++obs) {
-      size_t idx = coord2idx(src, obs);
+      int idx = coord2idx(src, obs);
 
       Vec3d dr(separation(dots[src], dots[obs]));
 
@@ -41,7 +41,7 @@ InteractionTable::InteractionTable(const int n,
   }
 }
 
-size_t InteractionTable::coord2idx(size_t row, size_t col)
+int InteractionTable::coord2idx(int row, int col)
 {
   assert(row != col);
   if(col > row) std::swap(row, col);
@@ -49,12 +49,12 @@ size_t InteractionTable::coord2idx(size_t row, size_t col)
   return row * (row - 1) / 2 + col;
 }
 
-std::pair<size_t, size_t> InteractionTable::idx2coord(const size_t idx)
+std::pair<int, int> InteractionTable::idx2coord(const int idx)
 {
-  const size_t row = std::floor((std::sqrt(1 + 8 * idx) + 1) / 2.0);
-  const size_t col = idx - row * (row - 1) / 2;
+  const int row = std::floor((std::sqrt(1 + 8 * idx) + 1) / 2.0);
+  const int col = idx - row * (row - 1) / 2;
 
-  return std::pair<size_t, size_t>(row, col);
+  return std::pair<int, int>(row, col);
 }
 
 std::pair<int, double> compute_delay(const double delay)
