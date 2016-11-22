@@ -13,7 +13,7 @@ std::complex<double> semidisk(const double t)
 
 class WeightsBuilder {
  public:
-  WeightsBuilder(const size_t, const size_t, const double, const double);
+  WeightsBuilder(const int, const int, const double, const double);
 
   Eigen::VectorXd predictors() { return compute_coeff(predictor_matrix()); }
   Eigen::VectorXd correctors() { return compute_coeff(corrector_matrix()); }
@@ -29,7 +29,7 @@ class WeightsBuilder {
   Eigen::VectorXd compute_coeff(const Eigen::MatrixXcd &) const;
 };
 
-WeightsBuilder::WeightsBuilder(const size_t n_lambda, const size_t n_time,
+WeightsBuilder::WeightsBuilder(const int n_lambda, const int n_time,
                                const double radius, const double toler)
     : lambdas(n_lambda),
       times(Eigen::VectorXd::LinSpaced(n_time, -1, 1)),
@@ -38,7 +38,7 @@ WeightsBuilder::WeightsBuilder(const size_t n_lambda, const size_t n_time,
       tolerance(toler)
 {
   Eigen::VectorXd xs(Eigen::VectorXd::LinSpaced(n_lambda + 1, 0, M_PI + 2));
-  for(size_t i = 0; i < n_lambda; ++i) lambdas[i] = radius * semidisk(xs[i]);
+  for(int i = 0; i < n_lambda; ++i) lambdas[i] = radius * semidisk(xs[i]);
 }
 
 Eigen::MatrixXcd WeightsBuilder::predictor_matrix() const
@@ -82,7 +82,7 @@ Eigen::VectorXd WeightsBuilder::compute_coeff(const Eigen::MatrixXcd &mat) const
   return least_squares.real();
 }
 
-PredictorCorrector::Weights::Weights(const size_t n_lambda, const size_t n_time,
+PredictorCorrector::Weights::Weights(const int n_lambda, const int n_time,
                                      const double radius,
                                      const double tolerance)
     : n_time_(n_time)
@@ -103,8 +103,8 @@ PredictorCorrector::Weights::Weights(const size_t n_lambda, const size_t n_time,
 }
 
 PredictorCorrector::Integrator::Integrator(
-    std::vector<QuantumDot> qds, const size_t n, const double timestep,
-    const size_t n_lambda, const size_t n_time, const double radius,
+    std::vector<QuantumDot> qds, const int n, const double timestep,
+    const int n_lambda, const int n_time, const double radius,
     const double tolerance)
     : num_steps(n + 1),
       dt(timestep),

@@ -17,20 +17,20 @@ namespace PredictorCorrector {
 
 class PredictorCorrector::Weights {
  public:
-  Weights(const size_t, const size_t, const double, const double);
+  Weights(const int, const int, const double, const double);
 
   Eigen::ArrayXXd ps, cs;
   double future_coef;
 
-  size_t width() const { return n_time_; }
+  int width() const { return n_time_; }
  private:
-  size_t n_time_;
+  int n_time_;
 };
 
 class PredictorCorrector::Integrator {
  public:
-  Integrator(std::vector<QuantumDot>, const size_t, const double, const size_t,
-             const size_t, const double, const double);
+  Integrator(std::vector<QuantumDot>, const int, const double, const int,
+             const int, const double, const double);
 
   void step();
 
@@ -41,7 +41,7 @@ class PredictorCorrector::Integrator {
       HistoryArray;
 
   int now;
-  size_t num_steps;
+  int num_steps;
   double dt;
   Weights weights;
   HistoryArray history;
