@@ -8,8 +8,7 @@ Eigen::Matrix3d nearfield_dyadic(const Vec3d &);
 Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
-InteractionTable::InteractionTable(const int n,
-                                   DotTable qdots)
+InteractionTable::InteractionTable(const int n, DotTable qdots)
     : interp_order(n),
       num_interactions(qdots.size() * (qdots.size() - 1) / 2),
       dots(qdots),
@@ -54,10 +53,10 @@ void InteractionTable::convolve_currents(const HistoryArray &history,
 
       for(int i = 0; i <= interp_order; ++i) {
         if(s - i < history.index_bases()[1]) continue;
-        convolution[src] += polarization(history[obs][s - i][0]) *
-                            coefficients[idx][i];
-        convolution[obs] += polarization(history[src][s - i][0]) *
-                            coefficients[idx][i];
+        convolution[src] +=
+            polarization(history[obs][s - i][0]) * coefficients[idx][i];
+        convolution[obs] +=
+            polarization(history[src][s - i][0]) * coefficients[idx][i];
       }
     }
   }
