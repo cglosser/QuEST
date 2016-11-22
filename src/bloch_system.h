@@ -12,7 +12,7 @@
 class BlochSystem {
  public:
   BlochSystem(const PredictorCorrector::Weights, std::vector<QuantumDot>,
-              const int, const size_t);
+              const int, const int);
   void step();
 
   // private:

@@ -2,7 +2,7 @@
 
 BlochSystem::BlochSystem(const PredictorCorrector::Weights pc,
                          std::vector<QuantumDot> ds, const int iorder,
-                         const size_t nsteps)
+                         const int nsteps)
     : num_steps(nsteps + 1),
       num_dots(static_cast<int>(ds.size())),
       integrator(pc),
@@ -16,7 +16,7 @@ BlochSystem::BlochSystem(const PredictorCorrector::Weights pc,
 {
   dots.swap(ds);
 
-  for(int dot_idx = 0; dot_idx < static_cast<int>(dots.size()); ++dot_idx) {
+  for(size_t dot_idx = 0; dot_idx < dots.size(); ++dot_idx) {
     for(int i = -pc.width(); i <= 0; ++i) {
       history[dot_idx][i][0] = matrix_elements(1, 0);
       history[dot_idx][i][1] = matrix_elements(0, 0);
@@ -73,7 +73,7 @@ void BlochSystem::convolve_currents(const int time_idx)
 
   for(size_t src = 0; src < dots.size() - 1; ++src) {
     for(size_t obs = src + 1; obs < dots.size(); ++obs) {
-      const size_t idx = interactions.coord2idx(src, obs);
+      const int idx = interactions.coord2idx(src, obs);
       const int s = time_idx - interactions.floor_delays[idx] - 1;
 
       for(int i = 0; i <= interactions.interp_order; ++i) {
