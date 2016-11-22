@@ -9,18 +9,19 @@ Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
 InteractionTable::InteractionTable(const int n,
-                                   const std::vector<QuantumDot> &dots)
+                                   const std::vector<QuantumDot> &qdots)
     : interp_order(n),
-      num_interactions(dots.size() * (dots.size() - 1) / 2),
+      num_interactions(qdots.size() * (qdots.size() - 1) / 2),
+      dots(&qdots),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
   UniformLagrangeSet lagrange(interp_order);
-  for(size_t src = 0; src < dots.size() - 1; ++src) {
-    for(size_t obs = src + 1; obs < dots.size(); ++obs) {
+  for(size_t src = 0; src < qdots.size() - 1; ++src) {
+    for(size_t obs = src + 1; obs < qdots.size(); ++obs) {
       int idx = coord2idx(src, obs);
 
-      Vec3d dr(separation(dots[src], dots[obs]));
+      Vec3d dr(separation(qdots[src], qdots[obs]));
 
       std::pair<int, double> delay(
           compute_delay(dr.norm() / (config.c0 * config.dt)));
@@ -30,12 +31,33 @@ InteractionTable::InteractionTable(const int n,
 
       for(int i = 0; i <= interp_order; ++i) {
         coefficients[idx][i] =
-            dyadic_product(dots[obs], nearfield_dyadic(dr), dots[src]) *
+            dyadic_product(qdots[obs], nearfield_dyadic(dr), qdots[src]) *
                 lagrange.weights[0][i] +
-            dyadic_product(dots[obs], midfield_dyadic(dr), dots[src]) *
-                lagrange.weights[1][i]/config.dt +
-            dyadic_product(dots[obs], farfield_dyadic(dr), dots[src]) *
-                lagrange.weights[2][i]/std::pow(config.dt, 2);
+            dyadic_product(qdots[obs], midfield_dyadic(dr), qdots[src]) *
+                lagrange.weights[1][i] / config.dt +
+            dyadic_product(qdots[obs], farfield_dyadic(dr), qdots[src]) *
+                lagrange.weights[2][i] / std::pow(config.dt, 2);
+      }
+    }
+  }
+}
+
+void InteractionTable::convolve_currents(const HistoryArray &history,
+                                         const int time_idx)
+{
+  std::fill(convolution.begin(), convolution.end(), 0);
+
+  for(size_t src = 0; src < dots->size() - 1; ++src) {
+    for(size_t obs = src + 1; obs < dots->size(); ++obs) {
+      const int idx = coord2idx(src, obs);
+      const int s = time_idx - floor_delays[idx] - 1;
+
+      for(int i = 0; i <= interp_order; ++i) {
+        if(s - i < history.index_bases()[1]) continue;
+        convolution[src] += polarization(history[obs][s - i][0]) *
+                            coefficients[idx][i];
+        convolution[obs] += polarization(history[src][s - i][0]) *
+                            coefficients[idx][i];
       }
     }
   }
