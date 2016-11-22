@@ -9,10 +9,10 @@ Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
 InteractionTable::InteractionTable(const int n,
-                                   const std::vector<QuantumDot> &qdots)
+                                   DotTable qdots)
     : interp_order(n),
       num_interactions(qdots.size() * (qdots.size() - 1) / 2),
-      dots(&qdots),
+      dots(qdots),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
@@ -47,8 +47,8 @@ void InteractionTable::convolve_currents(const HistoryArray &history,
 {
   std::fill(convolution.begin(), convolution.end(), 0);
 
-  for(size_t src = 0; src < dots->size() - 1; ++src) {
-    for(size_t obs = src + 1; obs < dots->size(); ++obs) {
+  for(size_t src = 0; src < dots.size() - 1; ++src) {
+    for(size_t obs = src + 1; obs < dots.size(); ++obs) {
       const int idx = coord2idx(src, obs);
       const int s = time_idx - floor_delays[idx] - 1;
 
