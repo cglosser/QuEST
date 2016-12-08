@@ -1,12 +1,15 @@
 #include "lagrange_set.h"
 
-UniformLagrangeSet::UniformLagrangeSet(const int n)
-    : order(n), weights(boost::extents[3][n + 1])
+constexpr int NUM_DERIVATIVES = 3;
+
+UniformLagrangeSet::UniformLagrangeSet(const int n, const double timestep = 1)
+    : order(n), dt(timestep), weights(boost::extents[NUM_DERIVATIVES][n + 1])
 {
 }
 
-UniformLagrangeSet::UniformLagrangeSet(const int n, const double x)
-    : UniformLagrangeSet(n)
+UniformLagrangeSet::UniformLagrangeSet(const double x, const int n,
+                                       const double timestep = 1)
+    : UniformLagrangeSet(n, timestep)
 {
   assert(x > 0);  // Don't extrapolate!
   calculate_weights(x);
@@ -27,10 +30,11 @@ void UniformLagrangeSet::calculate_weights(const double x)
       d2_sum -= std::pow(x - m, -2);
     }
 
-    const size_t idx = basis_id;
-    weights[0][idx] = d0_product;
-    weights[1][idx] = weights[0][idx] * d1_sum;
-    weights[2][idx] = weights[0][idx] * d2_sum +
-                      std::pow(weights[1][idx], 2) / weights[0][idx];
+    weights[0][basis_id] = d0_product;
+    weights[1][basis_id] = (weights[0][basis_id] * d1_sum) / dt;
+    weights[2][basis_id] =
+        (weights[0][basis_id] * d2_sum +
+         std::pow(weights[1][basis_id], 2) / weights[0][basis_id]) /
+        std::pow(dt, 2);
   }
 }

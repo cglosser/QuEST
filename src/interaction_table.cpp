@@ -16,7 +16,7 @@ InteractionTable::InteractionTable(const int n, DotTable qdots)
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
-  UniformLagrangeSet lagrange(interp_order);
+  UniformLagrangeSet lagrange(interp_order, config.dt);
   for(size_t src = 0; src < qdots.size() - 1; ++src) {
     for(size_t obs = src + 1; obs < qdots.size(); ++obs) {
       int idx = coord2idx(src, obs);
@@ -34,9 +34,9 @@ InteractionTable::InteractionTable(const int n, DotTable qdots)
             dyadic_product(qdots[obs], nearfield_dyadic(dr), qdots[src]) *
                 lagrange.weights[0][i] +
             dyadic_product(qdots[obs], midfield_dyadic(dr), qdots[src]) *
-                lagrange.weights[1][i] / config.dt +
+                lagrange.weights[1][i] +
             dyadic_product(qdots[obs], farfield_dyadic(dr), qdots[src]) *
-                lagrange.weights[2][i] / std::pow(config.dt, 2);
+                lagrange.weights[2][i];
       }
     }
   }
