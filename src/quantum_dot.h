@@ -25,8 +25,13 @@ class QuantumDot {
   const Eigen::Vector3d &position() { return pos; }
   const Eigen::Vector3d &dipole() { return dipole_moment; }
   friend Eigen::Vector3d separation(const QuantumDot &, const QuantumDot &);
-  friend double dyadic_product(const QuantumDot &, const Eigen::Matrix3d &,
-                               const QuantumDot &);
+
+  friend inline double dyadic_product(const QuantumDot &obs,
+                                      const Eigen::Matrix3d &dyad,
+                                      const QuantumDot &src)
+  {
+    return obs.dipole_moment.transpose() * dyad * src.dipole_moment;
+  }
 
   friend std::ostream &operator<<(std::ostream &, const QuantumDot &);
   friend std::istream &operator>>(std::istream &, QuantumDot &);
@@ -40,6 +45,9 @@ class QuantumDot {
 
 std::vector<QuantumDot> import_dots(const std::string &);
 
-double polarization(const matrix_elements &);
+inline double polarization(const matrix_elements &mel)
+{
+  return 2 * mel[1].real();
+}
 
 #endif

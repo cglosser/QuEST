@@ -22,12 +22,6 @@ Eigen::Vector3d separation(const QuantumDot &d1, const QuantumDot &d2)
   return d2.pos - d1.pos;
 }
 
-double dyadic_product(const QuantumDot &obs, const Eigen::Matrix3d &dyad,
-                      const QuantumDot &src)
-{
-  return obs.dipole_moment.transpose() * dyad * src.dipole_moment;
-}
-
 std::ostream &operator<<(std::ostream &os, const QuantumDot &qd)
 {
   os << qd.pos.transpose() << " " << qd.frequency << " " << qd.damping.first
@@ -49,5 +43,3 @@ std::vector<QuantumDot> import_dots(const std::string &fname)
   std::istream_iterator<QuantumDot> in_iter(ifs), eof;
   return std::vector<QuantumDot>(in_iter, eof);
 }
-
-double polarization(const matrix_elements &mel) { return 2 * mel[1].real(); }
