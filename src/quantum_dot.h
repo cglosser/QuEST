@@ -16,7 +16,7 @@ typedef Eigen::Vector2cd matrix_elements;
 
 class QuantumDot {
  public:
-  QuantumDot();
+  QuantumDot() = default;
   QuantumDot(const Eigen::Vector3d &, const double,
              const std::pair<double, double> &, const Eigen::Vector3d &);
 

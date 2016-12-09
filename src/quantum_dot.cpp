@@ -1,13 +1,5 @@
 #include "quantum_dot.h"
 
-QuantumDot::QuantumDot()
-    : pos(Eigen::Vector3d(0, 0, 0)),
-      frequency(0),
-      damping(std::pair<double, double>(0, 0)),
-      dipole_moment(Eigen::Vector3d(0, 0, 0))
-{
-}
-
 QuantumDot::QuantumDot(const Eigen::Vector3d &loc, const double omega,
                        const std::pair<double, double> &ts,
                        const Eigen::Vector3d &dipole)
