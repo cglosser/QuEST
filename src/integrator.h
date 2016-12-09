@@ -17,7 +17,7 @@ namespace PredictorCorrector {
 
 class PredictorCorrector::Weights {
  public:
-  Weights(const int, const int, const double, const double);
+  Weights(const int, const int, const double);
 
   Eigen::ArrayXXd ps, cs;
   double future_coef;
@@ -30,7 +30,7 @@ class PredictorCorrector::Weights {
 class PredictorCorrector::Integrator {
  public:
   Integrator(std::vector<QuantumDot>, const int, const double, const int,
-             const int, const double, const double);
+             const int, const double);
 
   void step();
 

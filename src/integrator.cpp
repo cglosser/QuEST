@@ -13,14 +13,14 @@ std::complex<double> semidisk(const double t)
 
 class WeightsBuilder {
  public:
-  WeightsBuilder(const int, const int, const double, const double);
+  WeightsBuilder(const int, const int, const double);
 
   Eigen::VectorXd predictors() { return compute_coeff(predictor_matrix()); }
   Eigen::VectorXd correctors() { return compute_coeff(corrector_matrix()); }
  private:
   Eigen::VectorXcd lambdas;
   Eigen::VectorXd times;
-  double timestep, future_time, tolerance;
+  double timestep, future_time;
 
   Eigen::MatrixXcd predictor_matrix() const;
   Eigen::MatrixXcd corrector_matrix() const;
@@ -30,12 +30,11 @@ class WeightsBuilder {
 };
 
 WeightsBuilder::WeightsBuilder(const int n_lambda, const int n_time,
-                               const double radius, const double toler)
+                               const double radius)
     : lambdas(n_lambda),
       times(Eigen::VectorXd::LinSpaced(n_time, -1, 1)),
       timestep(2.0 / (n_time - 1)),
-      future_time(1 + timestep),
-      tolerance(toler)
+      future_time(1 + timestep)
 {
   Eigen::VectorXd xs(Eigen::VectorXd::LinSpaced(n_lambda + 1, 0, M_PI + 2));
   for(int i = 0; i < n_lambda; ++i) lambdas[i] = radius * semidisk(xs[i]);
@@ -74,8 +73,7 @@ Eigen::VectorXcd WeightsBuilder::rhs_vector() const
 Eigen::VectorXd WeightsBuilder::compute_coeff(const Eigen::MatrixXcd &mat) const
 {
   Eigen::JacobiSVD<Eigen::MatrixXcd> decomp =
-      mat.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV)
-          .setThreshold(tolerance);
+      mat.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV);
 
   Eigen::VectorXcd b(rhs_vector()), least_squares(decomp.solve(b));
 
@@ -83,12 +81,11 @@ Eigen::VectorXd WeightsBuilder::compute_coeff(const Eigen::MatrixXcd &mat) const
 }
 
 PredictorCorrector::Weights::Weights(const int n_lambda, const int n_time,
-                                     const double radius,
-                                     const double tolerance)
+                                     const double radius)
     : n_time_(n_time)
 {
   const double step_factor = (n_time - 1) / 2.0;
-  WeightsBuilder builder(n_lambda, n_time, radius, tolerance);
+  WeightsBuilder builder(n_lambda, n_time, radius);
 
   Eigen::VectorXd predictors(builder.predictors());
   Eigen::VectorXd correctors(builder.correctors());
@@ -102,16 +99,15 @@ PredictorCorrector::Weights::Weights(const int n_lambda, const int n_time,
   future_coef = correctors(2 * n_time) * step_factor;
 }
 
-PredictorCorrector::Integrator::Integrator(
-    std::vector<QuantumDot> qds, const int n, const double timestep,
-    const int n_lambda, const int n_time, const double radius,
-    const double tolerance)
+PredictorCorrector::Integrator::Integrator(std::vector<QuantumDot> qds,
+                                           const int n, const double timestep,
+                                           const int n_lambda, const int n_time,
+                                           const double radius)
     : num_steps(n + 1),
       dt(timestep),
-      weights(n_lambda, n_time, radius, tolerance),
-      history(
-          boost::extents[qds.size()]
-                        [HistoryArray::extent_range(-n_time, num_steps)][2])
+      weights(n_lambda, n_time, radius),
+      history(boost::extents[qds.size()]
+                            [HistoryArray::extent_range(-n_time, num_steps)][2])
 {
   dots.swap(qds);
 
@@ -162,7 +158,7 @@ void PredictorCorrector::Integrator::corrector()
 
   for(int sol_idx = 0; sol_idx < static_cast<int>(dots.size()); ++sol_idx) {
     history[sol_idx][now][0] =
-          weights.future_coef * history[sol_idx][now][1] * dt;
+        weights.future_coef * history[sol_idx][now][1] * dt;
     for(int h = 0; h < static_cast<int>(weights.width()); ++h) {
       history[sol_idx][now][0] +=
           history[sol_idx][start + h][0] * weights.cs(0, h) +
@@ -171,6 +167,4 @@ void PredictorCorrector::Integrator::corrector()
   }
 }
 
-void PredictorCorrector::Integrator::evaluator()
-{
-}
+void PredictorCorrector::Integrator::evaluator() {}
