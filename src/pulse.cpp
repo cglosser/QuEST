@@ -12,7 +12,7 @@ Pulse::Pulse(const double a, const double t0, const double sigma,
 {
 }
 
-Eigen::Vector3d Pulse::operator()(const Eigen::Vector3d &r, const double t)
+Eigen::Vector3d Pulse::operator()(const Eigen::Vector3d &r, const double t) const
 {
   const double arg = wavevector.dot(r) - frequency * (t - delay);
   return (amplitude * polarization) * gaussian(arg / width) * cos(arg);

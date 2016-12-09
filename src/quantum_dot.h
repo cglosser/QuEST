@@ -22,10 +22,10 @@ class QuantumDot {
 
   matrix_elements liouville_rhs(const matrix_elements &, const double) const;
 
-  const Eigen::Vector3d &position() { return pos; }
-  const Eigen::Vector3d &dipole() { return dipole_moment; }
-  friend Eigen::Vector3d separation(const QuantumDot &, const QuantumDot &);
+  const Eigen::Vector3d &position() const { return pos; }
+  const Eigen::Vector3d &dipole() const { return dipole_moment; }
 
+  friend Eigen::Vector3d separation(const QuantumDot &, const QuantumDot &);
   friend inline double dyadic_product(const QuantumDot &obs,
                                       const Eigen::Matrix3d &dyad,
                                       const QuantumDot &src)

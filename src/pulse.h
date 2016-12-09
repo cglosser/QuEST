@@ -12,7 +12,7 @@ class Pulse {
   Pulse(const double, const double, const double, const double,
         const Eigen::Vector3d &, const Eigen::Vector3d &);
 
-  Eigen::Vector3d operator()(const Eigen::Vector3d &, const double);
+  Eigen::Vector3d operator()(const Eigen::Vector3d &, const double) const;
 
   friend std::ostream &operator<<(std::ostream &, const Pulse &);
   friend std::istream &operator>>(std::istream &, Pulse &);
