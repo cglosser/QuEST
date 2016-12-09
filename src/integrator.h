@@ -34,8 +34,7 @@ class PredictorCorrector::Integrator {
 
   void step();
 
-  // private:
-
+ private:
   typedef boost::multi_array<matrix_elements, 3,
                              Eigen::aligned_allocator<matrix_elements>>
       HistoryArray;
