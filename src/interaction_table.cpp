@@ -8,7 +8,7 @@ Eigen::Matrix3d nearfield_dyadic(const Vec3d &);
 Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
-InteractionTable::InteractionTable(const int n, DotTable qdots)
+InteractionTable::InteractionTable(const int n, std::vector<QuantumDot> qdots)
     : convolution(qdots.size()),
       interp_order(n),
       num_interactions(qdots.size() * (qdots.size() - 1) / 2),

@@ -17,7 +17,7 @@ class InteractionTable {
                              Eigen::aligned_allocator<matrix_elements>>
       HistoryArray;
 
-  InteractionTable(const int, DotTable);
+  InteractionTable(const int, std::vector<QuantumDot>);
 
   std::vector<double> convolution;
   void convolve_currents(const HistoryArray &, const int);
@@ -25,7 +25,7 @@ class InteractionTable {
  private:
   int interp_order;
   int num_interactions;
-  DotTable dots;
+  std::vector<QuantumDot> dots;
 
   std::vector<int> floor_delays;
   boost::multi_array<double, 2> coefficients;

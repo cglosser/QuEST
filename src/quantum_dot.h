@@ -38,10 +38,8 @@ class QuantumDot {
   Eigen::Vector3d dipole_moment;
 };
 
-typedef std::vector<QuantumDot> DotTable;
+std::vector<QuantumDot> import_dots(const std::string &);
 
 double polarization(const matrix_elements &);
-
-DotTable import_dots(const std::string &);
 
 #endif
