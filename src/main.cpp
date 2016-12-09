@@ -21,17 +21,13 @@ int main(int argc, char *argv[])
     cout << setprecision(12) << scientific;
     auto vm = parse_configs(argc, argv);
 
-    Pulse pulse(1, 2, 0.2, 1, Eigen::Vector3d(0,0,1), Eigen::Vector3d(2,3,4));
-    Pulse p;
-
-    cin >> p;
-    cout << p;
-
-    //for(int i = -1000; i <=1000; ++i) {
-      //const double x = i/250.;
-
-      //cout << x << " " << pulse(Eigen::Vector3d(0,0,x), 0).transpose() << endl;
-    //}
+    vector<QuantumDot> qds(2);
+    qds[0] = QuantumDot(Eigen::Vector3d(0, 0, 0), 100,
+                        std::pair<double, double>(10, 20),
+                        Eigen::Vector3d(1.00000, 0, 0));
+    qds[1] = QuantumDot(Eigen::Vector3d(0.1, 0.2, 0.3), 100,
+                        std::pair<double, double>(10, 20),
+                        Eigen::Vector3d(3.14159, 0, 0));
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently

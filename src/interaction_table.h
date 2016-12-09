@@ -9,6 +9,7 @@
 
 #include "configuration.h"
 #include "lagrange_set.h"
+#include "pulse.h"
 #include "quantum_dot.h"
 
 class InteractionTable {
@@ -18,9 +19,9 @@ class InteractionTable {
       HistoryArray;
 
   InteractionTable(const int, std::vector<QuantumDot>);
-
   std::vector<double> convolution;
-  void convolve_currents(const HistoryArray &, const int);
+
+  void compute_interactions(const Pulse &, const HistoryArray &, const int);
 
  private:
   int interp_order;
@@ -29,6 +30,9 @@ class InteractionTable {
 
   std::vector<int> floor_delays;
   boost::multi_array<double, 2> coefficients;
+
+  void compute_incident_interaction(const Pulse &, const double);
+  void convolve_currents(const HistoryArray &, const int);
 
   static int coord2idx(int, int);
   static std::pair<int, int> idx2coord(const int);

@@ -42,11 +42,25 @@ InteractionTable::InteractionTable(const int n, std::vector<QuantumDot> qdots)
   }
 }
 
+void InteractionTable::compute_interactions(const Pulse &pulse,
+                                            const HistoryArray &history,
+                                            const int time_idx)
+{
+  compute_incident_interaction(pulse, time_idx * config.dt);
+  convolve_currents(history, time_idx);
+}
+
+void InteractionTable::compute_incident_interaction(const Pulse &pulse,
+                                                    const double time)
+{
+  for(size_t i = 0; i < dots.size(); ++i) {
+    convolution[i] = pulse(dots[i].position(), time).dot(dots[i].dipole());
+  }
+}
+
 void InteractionTable::convolve_currents(const HistoryArray &history,
                                          const int time_idx)
 {
-  std::fill(convolution.begin(), convolution.end(), 0);
-
   for(size_t src = 0; src < dots.size() - 1; ++src) {
     for(size_t obs = src + 1; obs < dots.size(); ++obs) {
       const int idx = coord2idx(src, obs);
