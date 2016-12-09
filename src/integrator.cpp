@@ -111,8 +111,7 @@ PredictorCorrector::Integrator::Integrator(
       weights(n_lambda, n_time, radius, tolerance),
       history(
           boost::extents[qds.size()]
-                        [HistoryArray::extent_range(-n_time, num_steps)][2]),
-      rabi_freqs(qds.size(), 0)
+                        [HistoryArray::extent_range(-n_time, num_steps)][2])
 {
   dots.swap(qds);
 
@@ -132,13 +131,11 @@ void PredictorCorrector::Integrator::step()
 
   predictor();
 
-  set_rabi_freqs(now * dt);
   evaluator();
 
   for(int m = 1; m < 10; ++m) {
     corrector();
 
-    set_rabi_freqs(now * dt);
     evaluator();
   }
 
@@ -176,15 +173,4 @@ void PredictorCorrector::Integrator::corrector()
 
 void PredictorCorrector::Integrator::evaluator()
 {
-  for(size_t sol_idx = 0; sol_idx < dots.size(); ++sol_idx) {
-    history[sol_idx][now][1] = dots[sol_idx].liouville_rhs(
-        history[sol_idx][now][0], rabi_freqs[sol_idx]);
-  }
-}
-
-void PredictorCorrector::Integrator::set_rabi_freqs(const double time)
-{
-  const double chi_0 = M_PI / std::sqrt(2 * M_PI * std::pow(0.1, 2));
-  const double x = chi_0 * gaussian((time - 0.5) / 0.1) * cos(2278.9 * time);
-  std::fill(rabi_freqs.begin(), rabi_freqs.end(), x);
 }

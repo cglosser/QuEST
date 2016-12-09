@@ -46,13 +46,10 @@ class PredictorCorrector::Integrator {
   HistoryArray history;
 
   std::vector<QuantumDot> dots;
-  std::vector<double> rabi_freqs;
 
   void predictor();
   void evaluator();
   void corrector();
-
-  void set_rabi_freqs(const double);
 };
 
 #endif
