@@ -9,7 +9,8 @@ Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
 InteractionTable::InteractionTable(
-    const int interp_order, const std::shared_ptr<const std::vector<QuantumDot>> &dots)
+    const int interp_order,
+    const std::shared_ptr<const std::vector<QuantumDot>> &dots)
     : incident_interaction(dots->size()),
       history_interaction(dots->size()),
       interp_order(interp_order),
@@ -43,9 +44,9 @@ InteractionTable::InteractionTable(
   }
 }
 
-void InteractionTable::compute_interactions(const Pulse &pulse,
-                                            const HistoryArray &history,
-                                            const int time_idx)
+void InteractionTable::compute_interactions(
+    const Pulse &pulse, const PredictorCorrector::HistoryArray &history,
+    const int time_idx)
 {
   compute_incident_interaction(pulse, time_idx * config.dt);
   compute_history_interaction(history, time_idx);
@@ -60,8 +61,8 @@ void InteractionTable::compute_incident_interaction(const Pulse &pulse,
   }
 }
 
-void InteractionTable::compute_history_interaction(const HistoryArray &history,
-                                                   const int time_idx)
+void InteractionTable::compute_history_interaction(
+    const PredictorCorrector::HistoryArray &history, const int time_idx)
 {
   for(size_t pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;

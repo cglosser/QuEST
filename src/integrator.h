@@ -12,6 +12,9 @@
 namespace PredictorCorrector {
   class Weights;
   class Integrator;
+
+  typedef Eigen::Vector2cd soltype;
+  typedef boost::multi_array<soltype, 3> HistoryArray;
 }
 
 class PredictorCorrector::Weights {
@@ -28,15 +31,11 @@ class PredictorCorrector::Weights {
 
 class PredictorCorrector::Integrator {
  public:
-  typedef Eigen::Vector2cd soltype;
   Integrator(const int, const int, const double, const int, const int,
              const double);
   void step();
 
  private:
-  typedef boost::multi_array<soltype, 3>
-      HistoryArray;
-
   int now;
   int num_solutions, num_steps;
   double dt;
