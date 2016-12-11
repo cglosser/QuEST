@@ -9,12 +9,12 @@ Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
 InteractionTable::InteractionTable(
-    const int n, const std::shared_ptr<const std::vector<QuantumDot>> &qdots)
-    : incident_interaction(qdots->size()),
-      history_interaction(qdots->size()),
-      interp_order(n),
-      num_interactions(qdots->size() * (qdots->size() - 1) / 2),
-      dots(qdots),
+    const int interp_order, const std::shared_ptr<const std::vector<QuantumDot>> &dots)
+    : incident_interaction(dots->size()),
+      history_interaction(dots->size()),
+      interp_order(interp_order),
+      num_interactions(dots->size() * (dots->size() - 1) / 2),
+      dots(dots),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {

@@ -23,14 +23,14 @@ class QuantumDot {
   matrix_elements liouville_rhs(const matrix_elements &, const double) const;
 
   const Eigen::Vector3d &position() const { return pos; }
-  const Eigen::Vector3d &dipole() const { return dipole_moment; }
+  const Eigen::Vector3d &dipole() const { return dip; }
 
   friend Eigen::Vector3d separation(const QuantumDot &, const QuantumDot &);
   friend inline double dyadic_product(const QuantumDot &obs,
                                       const Eigen::Matrix3d &dyad,
                                       const QuantumDot &src)
   {
-    return obs.dipole_moment.transpose() * dyad * src.dipole_moment;
+    return obs.dip.transpose() * dyad * src.dip;
   }
 
   friend std::ostream &operator<<(std::ostream &, const QuantumDot &);
@@ -38,9 +38,9 @@ class QuantumDot {
 
  private:
   Eigen::Vector3d pos;
-  double frequency;
+  double freq;
   std::pair<double, double> damping;
-  Eigen::Vector3d dipole_moment;
+  Eigen::Vector3d dip;
 };
 
 std::vector<QuantumDot> import_dots(const std::string &);

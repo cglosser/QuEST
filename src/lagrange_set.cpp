@@ -2,14 +2,14 @@
 
 constexpr int NUM_DERIVATIVES = 3;
 
-UniformLagrangeSet::UniformLagrangeSet(const int n, const double timestep = 1)
-    : order(n), dt(timestep), weights(boost::extents[NUM_DERIVATIVES][n + 1])
+UniformLagrangeSet::UniformLagrangeSet(const int order, const double dt = 1)
+    : order(order), dt(dt), weights(boost::extents[NUM_DERIVATIVES][order + 1])
 {
 }
 
-UniformLagrangeSet::UniformLagrangeSet(const double x, const int n,
-                                       const double timestep = 1)
-    : UniformLagrangeSet(n, timestep)
+UniformLagrangeSet::UniformLagrangeSet(const double x, const int order,
+                                       const double dt = 1)
+    : UniformLagrangeSet(order, dt)
 {
   assert(x > 0);  // Don't extrapolate!
   calculate_weights(x);
