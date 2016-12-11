@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "math_utils.h"
-#include "quantum_dot.h"
 
 namespace PredictorCorrector {
   class Weights;
@@ -29,14 +28,13 @@ class PredictorCorrector::Weights {
 
 class PredictorCorrector::Integrator {
  public:
+  typedef Eigen::Vector2cd soltype;
   Integrator(const int, const int, const double, const int, const int,
              const double);
-
   void step();
 
  private:
-  typedef boost::multi_array<matrix_elements, 3,
-                             Eigen::aligned_allocator<matrix_elements>>
+  typedef boost::multi_array<soltype, 3>
       HistoryArray;
 
   int now;

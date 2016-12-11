@@ -112,8 +112,8 @@ PredictorCorrector::Integrator::Integrator(const int num_solutions,
 {
   for(int dot_idx = 0; dot_idx < num_solutions; ++dot_idx) {
     for(int i = -weights.width(); i <= 0; ++i) {
-      history[dot_idx][i][0] = matrix_elements(1, 0);
-      history[dot_idx][i][1] = matrix_elements(0, 0);
+      history[dot_idx][i][0] = soltype(1, 0);
+      history[dot_idx][i][1] = soltype(0, 0);
     }
   }
 
