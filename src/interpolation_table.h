@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <boost/multi_array.hpp>
 #include <cmath>
+#include <tuple>
 #include <vector>
 
 #include "configuration.h"

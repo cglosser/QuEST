@@ -17,27 +17,26 @@ InterpolationTable::InterpolationTable(const int n, std::vector<QuantumDot> qdot
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
   UniformLagrangeSet lagrange(interp_order, config.dt);
-  for(size_t src = 0; src < qdots.size() - 1; ++src) {
-    for(size_t obs = src + 1; obs < qdots.size(); ++obs) {
-      int idx = coord2idx(src, obs);
+  for(size_t pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
+    int src, obs;
+    std::tie(src, obs) = idx2coord(pair_idx);
 
-      Vec3d dr(separation(qdots[src], qdots[obs]));
+    Vec3d dr(separation(qdots[src], qdots[obs]));
 
-      std::pair<int, double> delay(
-          compute_delay(dr.norm() / (config.c0 * config.dt)));
+    std::pair<int, double> delay(
+        compute_delay(dr.norm() / (config.c0 * config.dt)));
 
-      floor_delays.at(idx) = delay.first;
-      lagrange.calculate_weights(delay.second);
+    floor_delays.at(pair_idx) = delay.first;
+    lagrange.calculate_weights(delay.second);
 
-      for(int i = 0; i <= interp_order; ++i) {
-        coefficients[idx][i] =
-            dyadic_product(qdots[obs], nearfield_dyadic(dr), qdots[src]) *
-                lagrange.weights[0][i] +
-            dyadic_product(qdots[obs], midfield_dyadic(dr), qdots[src]) *
-                lagrange.weights[1][i] +
-            dyadic_product(qdots[obs], farfield_dyadic(dr), qdots[src]) *
-                lagrange.weights[2][i];
-      }
+    for(int i = 0; i <= interp_order; ++i) {
+      coefficients[pair_idx][i] =
+          dyadic_product(qdots[obs], nearfield_dyadic(dr), qdots[src]) *
+              lagrange.weights[0][i] +
+          dyadic_product(qdots[obs], midfield_dyadic(dr), qdots[src]) *
+              lagrange.weights[1][i] +
+          dyadic_product(qdots[obs], farfield_dyadic(dr), qdots[src]) *
+              lagrange.weights[2][i];
     }
   }
 }
