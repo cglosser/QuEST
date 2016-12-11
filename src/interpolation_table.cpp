@@ -8,10 +8,10 @@ Eigen::Matrix3d nearfield_dyadic(const Vec3d &);
 Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
-InterpolationTable::InterpolationTable(const int n, std::vector<QuantumDot> qdots)
-    : convolution(qdots.size()),
+InterpolationTable::InterpolationTable(const int n, std::shared_ptr<const std::vector<QuantumDot>> qdots)
+    : convolution(qdots->size()),
       interp_order(n),
-      num_interactions(qdots.size() * (qdots.size() - 1) / 2),
+      num_interactions(qdots->size() * (qdots->size() - 1) / 2),
       dots(qdots),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
@@ -21,7 +21,7 @@ InterpolationTable::InterpolationTable(const int n, std::vector<QuantumDot> qdot
     int src, obs;
     std::tie(src, obs) = idx2coord(pair_idx);
 
-    Vec3d dr(separation(qdots[src], qdots[obs]));
+    Vec3d dr(separation((*dots)[src], (*dots)[obs]));
 
     std::pair<int, double> delay(
         compute_delay(dr.norm() / (config.c0 * config.dt)));
@@ -31,11 +31,11 @@ InterpolationTable::InterpolationTable(const int n, std::vector<QuantumDot> qdot
 
     for(int i = 0; i <= interp_order; ++i) {
       coefficients[pair_idx][i] =
-          dyadic_product(qdots[obs], nearfield_dyadic(dr), qdots[src]) *
+          dyadic_product((*dots)[obs], nearfield_dyadic(dr), (*dots)[src]) *
               lagrange.weights[0][i] +
-          dyadic_product(qdots[obs], midfield_dyadic(dr), qdots[src]) *
+          dyadic_product((*dots)[obs], midfield_dyadic(dr), (*dots)[src]) *
               lagrange.weights[1][i] +
-          dyadic_product(qdots[obs], farfield_dyadic(dr), qdots[src]) *
+          dyadic_product((*dots)[obs], farfield_dyadic(dr), (*dots)[src]) *
               lagrange.weights[2][i];
     }
   }
@@ -52,16 +52,16 @@ void InterpolationTable::compute_interactions(const Pulse &pulse,
 void InterpolationTable::compute_incident_interaction(const Pulse &pulse,
                                                     const double time)
 {
-  for(size_t i = 0; i < dots.size(); ++i) {
-    convolution[i] = pulse(dots[i].position(), time).dot(dots[i].dipole());
+  for(size_t i = 0; i < dots->size(); ++i) {
+    convolution[i] = pulse((*dots)[i].position(), time).dot((*dots)[i].dipole());
   }
 }
 
 void InterpolationTable::convolve_currents(const HistoryArray &history,
                                          const int time_idx)
 {
-  for(size_t src = 0; src < dots.size() - 1; ++src) {
-    for(size_t obs = src + 1; obs < dots.size(); ++obs) {
+  for(size_t src = 0; src < dots->size() - 1; ++src) {
+    for(size_t obs = src + 1; obs < dots->size(); ++obs) {
       const int idx = coord2idx(src, obs);
       const int s = time_idx - floor_delays[idx];
 

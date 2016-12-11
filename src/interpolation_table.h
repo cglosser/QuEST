@@ -19,7 +19,7 @@ class InterpolationTable {
                              Eigen::aligned_allocator<matrix_elements>>
       HistoryArray;
 
-  InterpolationTable(const int, std::vector<QuantumDot>);
+  InterpolationTable(const int, std::shared_ptr<const std::vector<QuantumDot>>);
   std::vector<double> convolution;
 
   void compute_interactions(const Pulse &, const HistoryArray &, const int);
@@ -27,7 +27,7 @@ class InterpolationTable {
  private:
   int interp_order;
   int num_interactions;
-  std::vector<QuantumDot> dots;
+  std::shared_ptr<const std::vector<QuantumDot>> dots;
 
   std::vector<int> floor_delays;
   boost::multi_array<double, 2> coefficients;
