@@ -22,9 +22,9 @@ class PredictorCorrector::Weights {
   Eigen::ArrayXXd ps, cs;
   double future_coef;
 
-  int width() const { return n_time_; }
+  int width() const { return n_time; }
  private:
-  int n_time_;
+  int n_time;
 };
 
 class PredictorCorrector::Integrator {
