@@ -8,7 +8,8 @@ Eigen::Matrix3d nearfield_dyadic(const Vec3d &);
 Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
-InterpolationTable::InterpolationTable(const int n, std::shared_ptr<const std::vector<QuantumDot>> qdots)
+InterpolationTable::InterpolationTable(
+    const int n, std::shared_ptr<const std::vector<QuantumDot>> qdots)
     : convolution(qdots->size()),
       interp_order(n),
       num_interactions(qdots->size() * (qdots->size() - 1) / 2),
@@ -42,23 +43,24 @@ InterpolationTable::InterpolationTable(const int n, std::shared_ptr<const std::v
 }
 
 void InterpolationTable::compute_interactions(const Pulse &pulse,
-                                            const HistoryArray &history,
-                                            const int time_idx)
+                                              const HistoryArray &history,
+                                              const int time_idx)
 {
   compute_incident_interaction(pulse, time_idx * config.dt);
   convolve_currents(history, time_idx);
 }
 
 void InterpolationTable::compute_incident_interaction(const Pulse &pulse,
-                                                    const double time)
+                                                      const double time)
 {
   for(size_t i = 0; i < dots->size(); ++i) {
-    convolution[i] = pulse((*dots)[i].position(), time).dot((*dots)[i].dipole());
+    convolution[i] =
+        pulse((*dots)[i].position(), time).dot((*dots)[i].dipole());
   }
 }
 
 void InterpolationTable::convolve_currents(const HistoryArray &history,
-                                         const int time_idx)
+                                           const int time_idx)
 {
   for(size_t pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
