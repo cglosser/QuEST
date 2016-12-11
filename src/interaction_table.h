@@ -1,5 +1,5 @@
-#ifndef INTERPOLATION_TABLE_H
-#define INTERPOLATION_TABLE_H
+#ifndef INTERACTION_TABLE_H
+#define INTERACTION_TABLE_H
 
 #include <Eigen/Dense>
 #include <algorithm>
@@ -13,15 +13,16 @@
 #include "pulse.h"
 #include "quantum_dot.h"
 
-class InterpolationTable {
+class InteractionTable {
  public:
   typedef boost::multi_array<matrix_elements, 3,
                              Eigen::aligned_allocator<matrix_elements>>
       HistoryArray;
 
-  InterpolationTable(const int,
+  InteractionTable(const int,
+                     std::unique_ptr<const Pulse> &,
                      const std::shared_ptr<const std::vector<QuantumDot>> &);
-  std::vector<double> convolution;
+  std::vector<double> incident_interaction, history_interaction;
 
   void compute_interactions(const Pulse &, const HistoryArray &, const int);
 
@@ -34,7 +35,7 @@ class InterpolationTable {
   boost::multi_array<double, 2> coefficients;
 
   void compute_incident_interaction(const Pulse &, const double);
-  void convolve_currents(const HistoryArray &, const int);
+  void compute_history_interaction(const HistoryArray &, const int);
 
   static int coord2idx(int, int);
   static std::pair<int, int> idx2coord(const int);
