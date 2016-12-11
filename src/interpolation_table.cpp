@@ -60,18 +60,17 @@ void InterpolationTable::compute_incident_interaction(const Pulse &pulse,
 void InterpolationTable::convolve_currents(const HistoryArray &history,
                                          const int time_idx)
 {
-  for(size_t src = 0; src < dots->size() - 1; ++src) {
-    for(size_t obs = src + 1; obs < dots->size(); ++obs) {
-      const int idx = coord2idx(src, obs);
-      const int s = time_idx - floor_delays[idx];
+  for(size_t pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
+    int src, obs;
+    std::tie(src, obs) = idx2coord(pair_idx);
+    const int s = time_idx - floor_delays[pair_idx];
 
-      for(int i = 0; i <= interp_order; ++i) {
-        if(s - i < history.index_bases()[1]) continue;
-        convolution[src] +=
-            polarization(history[obs][s - i][0]) * coefficients[idx][i];
-        convolution[obs] +=
-            polarization(history[src][s - i][0]) * coefficients[idx][i];
-      }
+    for(int i = 0; i <= interp_order; ++i) {
+      if(s - i < history.index_bases()[1]) continue;
+      convolution[src] +=
+          polarization(history[obs][s - i][0]) * coefficients[pair_idx][i];
+      convolution[obs] +=
+          polarization(history[src][s - i][0]) * coefficients[pair_idx][i];
     }
   }
 }
