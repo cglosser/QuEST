@@ -23,13 +23,16 @@ int main(int argc, char *argv[])
 
     shared_ptr<vector<QuantumDot>> qds(new vector<QuantumDot>(2));
     (*qds)[0] = QuantumDot(Eigen::Vector3d(0, 0, 0), 100,
-                        std::pair<double, double>(10, 20),
-                        Eigen::Vector3d(1.00000, 0, 0));
+                           std::pair<double, double>(10, 20),
+                           Eigen::Vector3d(1.00000, 0, 0));
     (*qds)[1] = QuantumDot(Eigen::Vector3d(0.1, 0.2, 0.3), 100,
-                        std::pair<double, double>(10, 20),
-                        Eigen::Vector3d(3.14159, 0, 0));
+                           std::pair<double, double>(10, 20),
+                           Eigen::Vector3d(3.14159, 0, 0));
 
-    InteractionTable it(3, qds);
+    std::shared_ptr<const Pulse> p(new Pulse(
+        1, 0, 0.1, 1, Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(1, 0, 0)));
+
+    InteractionTable it(3, qds, p);
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently

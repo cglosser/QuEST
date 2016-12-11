@@ -17,23 +17,23 @@
 class InteractionTable {
  public:
   InteractionTable(const int,
-                   const std::shared_ptr<const std::vector<QuantumDot>> &);
+                   const std::shared_ptr<const std::vector<QuantumDot>> &,
+                   const std::shared_ptr<const Pulse> &);
   std::vector<double> incident_interaction, history_interaction;
 
-  void compute_interactions(const Pulse &,
-                            const PredictorCorrector::HistoryArray &,
+  void compute_interactions(const PredictorCorrector::HistoryArray &,
                             const int);
+  void compute_history_interaction(const PredictorCorrector::HistoryArray &,
+                                   const int);
 
  private:
   int interp_order, num_interactions;
   std::shared_ptr<const std::vector<QuantumDot>> dots;
+  std::shared_ptr<const Pulse> pulse;
   std::vector<int> floor_delays;
   boost::multi_array<double, 2> coefficients;
 
-  void compute_incident_interaction(const Pulse &, const double);
-  void compute_history_interaction(const PredictorCorrector::HistoryArray &,
-                                   const int);
-
+  void compute_incident_interaction(const double);
   static int coord2idx(int, int);
   static std::pair<int, int> idx2coord(const int);
 };

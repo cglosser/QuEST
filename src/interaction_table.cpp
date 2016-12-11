@@ -10,12 +10,14 @@ Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
 InteractionTable::InteractionTable(
     const int interp_order,
-    const std::shared_ptr<const std::vector<QuantumDot>> &dots)
+    const std::shared_ptr<const std::vector<QuantumDot>> &dots,
+    const std::shared_ptr<const Pulse> &pulse)
     : incident_interaction(dots->size()),
       history_interaction(dots->size()),
       interp_order(interp_order),
       num_interactions(dots->size() * (dots->size() - 1) / 2),
       dots(dots),
+      pulse(pulse),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
@@ -45,19 +47,18 @@ InteractionTable::InteractionTable(
 }
 
 void InteractionTable::compute_interactions(
-    const Pulse &pulse, const PredictorCorrector::HistoryArray &history,
+    const PredictorCorrector::HistoryArray &history,
     const int time_idx)
 {
-  compute_incident_interaction(pulse, time_idx * config.dt);
+  compute_incident_interaction(time_idx * config.dt);
   compute_history_interaction(history, time_idx);
 }
 
-void InteractionTable::compute_incident_interaction(const Pulse &pulse,
-                                                    const double time)
+void InteractionTable::compute_incident_interaction(const double time)
 {
   for(size_t i = 0; i < dots->size(); ++i) {
     incident_interaction[i] =
-        pulse((*dots)[i].position(), time).dot((*dots)[i].dipole());
+        (*pulse)((*dots)[i].position(), time).dot((*dots)[i].dipole());
   }
 }
 
