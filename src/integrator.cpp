@@ -99,19 +99,18 @@ PredictorCorrector::Weights::Weights(const int n_lambda, const int n_time,
   future_coef = correctors(2 * n_time) * step_factor;
 }
 
-PredictorCorrector::Integrator::Integrator(std::vector<QuantumDot> qds,
+PredictorCorrector::Integrator::Integrator(const int num_solutions,
                                            const int n, const double timestep,
                                            const int n_lambda, const int n_time,
                                            const double radius)
-    : num_steps(n + 1),
+    : num_solutions(num_solutions),
+      num_steps(n + 1),
       dt(timestep),
       weights(n_lambda, n_time, radius),
-      history(boost::extents[qds.size()]
+      history(boost::extents[num_solutions]
                             [HistoryArray::extent_range(-n_time, num_steps)][2])
 {
-  dots.swap(qds);
-
-  for(int dot_idx = 0; dot_idx < static_cast<int>(dots.size()); ++dot_idx) {
+  for(int dot_idx = 0; dot_idx < num_solutions; ++dot_idx) {
     for(int i = -weights.width(); i <= 0; ++i) {
       history[dot_idx][i][0] = matrix_elements(1, 0);
       history[dot_idx][i][1] = matrix_elements(0, 0);
@@ -142,7 +141,7 @@ void PredictorCorrector::Integrator::predictor()
 {
   const int start = now - weights.width();
 
-  for(int sol_idx = 0; sol_idx < static_cast<int>(dots.size()); ++sol_idx) {
+  for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
     history[sol_idx][now][0].setZero();
     for(int h = 0; h < static_cast<int>(weights.width()); ++h) {
       history[sol_idx][now][0] +=
@@ -156,7 +155,7 @@ void PredictorCorrector::Integrator::corrector()
 {
   const int start = now - weights.width();
 
-  for(int sol_idx = 0; sol_idx < static_cast<int>(dots.size()); ++sol_idx) {
+  for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
     history[sol_idx][now][0] =
         weights.future_coef * history[sol_idx][now][1] * dt;
     for(int h = 0; h < static_cast<int>(weights.width()); ++h) {

@@ -29,8 +29,7 @@ class PredictorCorrector::Weights {
 
 class PredictorCorrector::Integrator {
  public:
-  Integrator(std::vector<QuantumDot>, const int, const double, const int,
-             const int, const double);
+  Integrator(const int, const int, const double, const int, const int, const double);
 
   void step();
 
@@ -40,12 +39,10 @@ class PredictorCorrector::Integrator {
       HistoryArray;
 
   int now;
-  int num_steps;
+  int num_solutions, num_steps;
   double dt;
   Weights weights;
   HistoryArray history;
-
-  std::vector<QuantumDot> dots;
 
   void predictor();
   void evaluator();
