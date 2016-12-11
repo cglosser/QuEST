@@ -1,4 +1,4 @@
-#include "interaction_table.h"
+#include "interpolation_table.h"
 
 using Vec3d = Eigen::Vector3d;
 
@@ -8,7 +8,7 @@ Eigen::Matrix3d nearfield_dyadic(const Vec3d &);
 Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
-InteractionTable::InteractionTable(const int n, std::vector<QuantumDot> qdots)
+InterpolationTable::InterpolationTable(const int n, std::vector<QuantumDot> qdots)
     : convolution(qdots.size()),
       interp_order(n),
       num_interactions(qdots.size() * (qdots.size() - 1) / 2),
@@ -42,7 +42,7 @@ InteractionTable::InteractionTable(const int n, std::vector<QuantumDot> qdots)
   }
 }
 
-void InteractionTable::compute_interactions(const Pulse &pulse,
+void InterpolationTable::compute_interactions(const Pulse &pulse,
                                             const HistoryArray &history,
                                             const int time_idx)
 {
@@ -50,7 +50,7 @@ void InteractionTable::compute_interactions(const Pulse &pulse,
   convolve_currents(history, time_idx);
 }
 
-void InteractionTable::compute_incident_interaction(const Pulse &pulse,
+void InterpolationTable::compute_incident_interaction(const Pulse &pulse,
                                                     const double time)
 {
   for(size_t i = 0; i < dots.size(); ++i) {
@@ -58,7 +58,7 @@ void InteractionTable::compute_incident_interaction(const Pulse &pulse,
   }
 }
 
-void InteractionTable::convolve_currents(const HistoryArray &history,
+void InterpolationTable::convolve_currents(const HistoryArray &history,
                                          const int time_idx)
 {
   for(size_t src = 0; src < dots.size() - 1; ++src) {
@@ -77,7 +77,7 @@ void InteractionTable::convolve_currents(const HistoryArray &history,
   }
 }
 
-int InteractionTable::coord2idx(int row, int col)
+int InterpolationTable::coord2idx(int row, int col)
 {
   assert(row != col);
   if(col > row) std::swap(row, col);
@@ -85,7 +85,7 @@ int InteractionTable::coord2idx(int row, int col)
   return row * (row - 1) / 2 + col;
 }
 
-std::pair<int, int> InteractionTable::idx2coord(const int idx)
+std::pair<int, int> InterpolationTable::idx2coord(const int idx)
 {
   const int row = std::floor((std::sqrt(1 + 8 * idx) + 1) / 2.0);
   const int col = idx - row * (row - 1) / 2;

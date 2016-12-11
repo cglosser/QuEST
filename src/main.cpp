@@ -7,7 +7,7 @@
 
 #include "configuration.h"
 #include "integrator.h"
-#include "interaction_table.h"
+#include "interpolation_table.h"
 #include "lagrange_set.h"
 #include "math_utils.h"
 #include "pulse.h"
