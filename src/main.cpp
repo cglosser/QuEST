@@ -21,13 +21,15 @@ int main(int argc, char *argv[])
     cout << setprecision(12) << scientific;
     auto vm = parse_configs(argc, argv);
 
-    vector<QuantumDot> qds(2);
-    qds[0] = QuantumDot(Eigen::Vector3d(0, 0, 0), 100,
+    shared_ptr<vector<QuantumDot>> qds(new vector<QuantumDot>(2));
+    (*qds)[0] = QuantumDot(Eigen::Vector3d(0, 0, 0), 100,
                         std::pair<double, double>(10, 20),
                         Eigen::Vector3d(1.00000, 0, 0));
-    qds[1] = QuantumDot(Eigen::Vector3d(0.1, 0.2, 0.3), 100,
+    (*qds)[1] = QuantumDot(Eigen::Vector3d(0.1, 0.2, 0.3), 100,
                         std::pair<double, double>(10, 20),
                         Eigen::Vector3d(3.14159, 0, 0));
+
+    InteractionTable it(3, qds);
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
