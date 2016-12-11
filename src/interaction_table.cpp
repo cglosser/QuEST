@@ -10,7 +10,8 @@ Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
 InteractionTable::InteractionTable(
     const int n, const std::shared_ptr<const std::vector<QuantumDot>> &qdots)
-    : convolution(qdots->size()),
+    : incident_interaction(qdots->size()),
+      history_interaction(qdots->size()),
       interp_order(n),
       num_interactions(qdots->size() * (qdots->size() - 1) / 2),
       dots(qdots),
@@ -43,24 +44,24 @@ InteractionTable::InteractionTable(
 }
 
 void InteractionTable::compute_interactions(const Pulse &pulse,
-                                              const HistoryArray &history,
-                                              const int time_idx)
+                                            const HistoryArray &history,
+                                            const int time_idx)
 {
   compute_incident_interaction(pulse, time_idx * config.dt);
-  convolve_currents(history, time_idx);
+  compute_history_interaction(history, time_idx);
 }
 
 void InteractionTable::compute_incident_interaction(const Pulse &pulse,
-                                                      const double time)
+                                                    const double time)
 {
   for(size_t i = 0; i < dots->size(); ++i) {
-    convolution[i] =
+    incident_interaction[i] =
         pulse((*dots)[i].position(), time).dot((*dots)[i].dipole());
   }
 }
 
-void InteractionTable::convolve_currents(const HistoryArray &history,
-                                           const int time_idx)
+void InteractionTable::compute_history_interaction(const HistoryArray &history,
+                                                   const int time_idx)
 {
   for(size_t pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
@@ -69,9 +70,9 @@ void InteractionTable::convolve_currents(const HistoryArray &history,
 
     for(int i = 0; i <= interp_order; ++i) {
       if(s - i < history.index_bases()[1]) continue;
-      convolution[src] +=
+      history_interaction[src] +=
           polarization(history[obs][s - i][0]) * coefficients[pair_idx][i];
-      convolution[obs] +=
+      history_interaction[obs] +=
           polarization(history[src][s - i][0]) * coefficients[pair_idx][i];
     }
   }

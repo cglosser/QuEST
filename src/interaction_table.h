@@ -20,8 +20,7 @@ class InteractionTable {
       HistoryArray;
 
   InteractionTable(const int,
-                     std::unique_ptr<const Pulse> &,
-                     const std::shared_ptr<const std::vector<QuantumDot>> &);
+                   const std::shared_ptr<const std::vector<QuantumDot>> &);
   std::vector<double> incident_interaction, history_interaction;
 
   void compute_interactions(const Pulse &, const HistoryArray &, const int);
