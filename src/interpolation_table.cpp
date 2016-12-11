@@ -9,7 +9,7 @@ Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
 InterpolationTable::InterpolationTable(
-    const int n, std::shared_ptr<const std::vector<QuantumDot>> qdots)
+    const int n, const std::shared_ptr<const std::vector<QuantumDot>> &qdots)
     : convolution(qdots->size()),
       interp_order(n),
       num_interactions(qdots->size() * (qdots->size() - 1) / 2),
