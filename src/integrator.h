@@ -29,7 +29,8 @@ class PredictorCorrector::Weights {
 
 class PredictorCorrector::Integrator {
  public:
-  Integrator(const int, const int, const double, const int, const int, const double);
+  Integrator(const int, const int, const double, const int, const int,
+             const double);
 
   void step();
 

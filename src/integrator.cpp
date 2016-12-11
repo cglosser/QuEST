@@ -99,8 +99,8 @@ PredictorCorrector::Weights::Weights(const int n_lambda, const int n_time,
   future_coef = correctors(2 * n_time) * step_factor;
 }
 
-PredictorCorrector::Integrator::Integrator(const int num_solutions,
-                                           const int n, const double timestep,
+PredictorCorrector::Integrator::Integrator(const int num_solutions, const int n,
+                                           const double timestep,
                                            const int n_lambda, const int n_time,
                                            const double radius)
     : num_solutions(num_solutions),
