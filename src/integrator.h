@@ -7,15 +7,14 @@
 #include <complex>
 #include <vector>
 
+#include "common.h"
 #include "math_utils.h"
 
 namespace PredictorCorrector {
   class Weights;
   class Integrator;
 
-  typedef Eigen::Vector2cd soltype;
   typedef std::function<soltype(const soltype &, const double)> rhs_func;
-  typedef boost::multi_array<soltype, 3> HistoryArray;
 }
 
 class PredictorCorrector::Weights {

@@ -45,8 +45,8 @@ InteractionTable::InteractionTable(const int interp_order,
   }
 }
 
-void InteractionTable::compute_interactions(
-    const PredictorCorrector::HistoryArray &history, const int time_idx)
+void InteractionTable::compute_interactions(const HistoryArray &history,
+                                            const int time_idx)
 {
   compute_incident_interaction(time_idx * config.dt);
   compute_history_interaction(history, time_idx);
@@ -60,8 +60,8 @@ void InteractionTable::compute_incident_interaction(const double time)
   }
 }
 
-void InteractionTable::compute_history_interaction(
-    const PredictorCorrector::HistoryArray &history, const int time_idx)
+void InteractionTable::compute_history_interaction(const HistoryArray &history,
+                                                   const int time_idx)
 {
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;

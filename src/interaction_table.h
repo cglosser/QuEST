@@ -8,8 +8,8 @@
 #include <tuple>
 #include <vector>
 
+#include "common.h"
 #include "configuration.h"
-#include "integrator.h"
 #include "lagrange_set.h"
 #include "pulse.h"
 #include "quantum_dot.h"
@@ -20,10 +20,8 @@ class InteractionTable {
                    const std::shared_ptr<const Pulse> &);
   std::vector<double> incident_interaction, history_interaction;
 
-  void compute_interactions(const PredictorCorrector::HistoryArray &,
-                            const int);
-  void compute_history_interaction(const PredictorCorrector::HistoryArray &,
-                                   const int);
+  void compute_interactions(const HistoryArray &, const int);
+  void compute_history_interaction(const HistoryArray &, const int);
 
   double result(const int i)
   {
