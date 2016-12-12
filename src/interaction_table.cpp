@@ -12,8 +12,8 @@ InteractionTable::InteractionTable(
     const int interp_order,
     const std::shared_ptr<const DotVector> &dots,
     const std::shared_ptr<const Pulse> &pulse)
-    : incident_interaction(dots->size()),
-      history_interaction(dots->size()),
+    : incident_interaction(dots->size(), 0),
+      history_interaction(dots->size(), 0),
       interp_order(interp_order),
       num_interactions(dots->size() * (dots->size() - 1) / 2),
       dots(dots),
