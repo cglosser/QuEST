@@ -22,25 +22,19 @@ int main(int argc, char *argv[])
     auto vm = parse_configs(argc, argv);
 
     shared_ptr<DotVector> qds(new vector<QuantumDot>(2));
-    (*qds)[0] = QuantumDot(Eigen::Vector3d(0, 0, 0), 100,
+    (*qds)[0] = QuantumDot(Eigen::Vector3d(0, 0, 0), 2278.9013,
                            std::pair<double, double>(10, 20),
-                           Eigen::Vector3d(1.00000, 0, 0));
-    (*qds)[1] = QuantumDot(Eigen::Vector3d(0.1, 0.2, 0.3), 100,
+                           Eigen::Vector3d(5.2917721e-4, 0, 0));
+    (*qds)[1] = QuantumDot(Eigen::Vector3d(0, 0, 0.010), 2278.9013,
                            std::pair<double, double>(10, 20),
-                           Eigen::Vector3d(3.14159, 0, 0));
+                           Eigen::Vector3d(5.2917721e-4, 0, 0));
 
     auto superops(rhs_functions(*qds));
 
-    cout << ((*qds)[0]).liouville_rhs(matrix_elements(3, 4), 100).transpose() << endl;
-    cout << ((*qds)[1]).liouville_rhs(matrix_elements(8, 8), 888).transpose() << endl;
+    shared_ptr<Pulse> p(new Pulse(15589.226, 0.5, 0.1, 2278.9013, Eigen::Vector3d(0,0,1), Eigen::Vector3d(1,0,0)));
 
-    cout << "----------" << endl;
-
-    cout << superops[0](matrix_elements(3, 4), 100).transpose() << endl;
-    cout << superops[1](matrix_elements(8, 8), 888).transpose() << endl;
-
-
-    cout << (*qds)[0] << endl;
+    InteractionTable interaction_table(config.interpolation_order, qds, p);
+    PredictorCorrector::Integrator solver(2, 10000, 1e-4, 18, 22, 3.15, superops, interaction_table);
 
 
   } catch(CommandLineException &e) {
