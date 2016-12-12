@@ -109,7 +109,8 @@ PredictorCorrector::Integrator::Integrator(
       weights(n_lambda, n_time, radius),
       history(
           boost::extents[num_solutions]
-                        [HistoryArray::extent_range(-n_time, num_steps)][2]),
+                        [HistoryArray::extent_range(-n_time, this->num_steps)]
+                        [2]),
       rhs_funcs(rhs_funcs),
       interaction_table(std::move(interaction_table))
 {
