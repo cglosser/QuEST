@@ -102,7 +102,7 @@ PredictorCorrector::Weights::Weights(const int n_lambda, const int n_time,
 PredictorCorrector::Integrator::Integrator(
     const int num_solutions, const int num_steps, const double dt,
     const int n_lambda, const int n_time, const double radius,
-    const std::vector<rhs_func> &rhs_funcs)
+    const std::vector<rhs_func> &rhs_funcs, InteractionTable &interaction_table)
     : num_solutions(num_solutions),
       num_steps(num_steps + 1),
       dt(dt),
@@ -110,7 +110,8 @@ PredictorCorrector::Integrator::Integrator(
       history(
           boost::extents[num_solutions]
                         [HistoryArray::extent_range(-n_time, num_steps)][2]),
-      rhs_funcs(rhs_funcs)
+      rhs_funcs(rhs_funcs),
+      interaction_table(std::move(interaction_table))
 {
   for(int dot_idx = 0; dot_idx < num_solutions; ++dot_idx) {
     for(int i = -weights.width(); i <= 0; ++i) {
@@ -127,12 +128,10 @@ void PredictorCorrector::Integrator::step()
   assert(now < static_cast<int>(num_steps));
 
   predictor();
-
   evaluator();
 
   for(int m = 1; m < 10; ++m) {
     corrector();
-
     evaluator();
   }
 
