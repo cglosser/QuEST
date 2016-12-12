@@ -12,8 +12,8 @@ matrix_elements QuantumDot::liouville_rhs(const matrix_elements &rho,
 {
   constexpr std::complex<double> iu(0, 1);
   double m0 = -2 * rho[1].imag() * rabi;
-  std::complex<double> m1(
-      iu * ((2 * rho[0].real() - 1) * rabi + rho[1] * freq));
+  std::complex<double> m1(iu *
+                          ((2 * rho[0].real() - 1) * rabi + rho[1] * freq));
   return matrix_elements(m0, m1);
 }
 
@@ -24,16 +24,15 @@ Eigen::Vector3d separation(const QuantumDot &d1, const QuantumDot &d2)
 
 std::ostream &operator<<(std::ostream &os, const QuantumDot &qd)
 {
-  os << qd.pos.transpose() << " " << qd.freq << " " << qd.damping.first
-     << " " << qd.damping.second << " " << qd.dip.transpose();
+  os << qd.pos.transpose() << " " << qd.freq << " " << qd.damping.first << " "
+     << qd.damping.second << " " << qd.dip.transpose();
   return os;
 }
 
 std::istream &operator>>(std::istream &is, QuantumDot &qd)
 {
-  is >> qd.pos[0] >> qd.pos[1] >> qd.pos[2] >> qd.freq >>
-      qd.damping.first >> qd.damping.second >> qd.dip[0] >>
-      qd.dip[1] >> qd.dip[2];
+  is >> qd.pos[0] >> qd.pos[1] >> qd.pos[2] >> qd.freq >> qd.damping.first >>
+      qd.damping.second >> qd.dip[0] >> qd.dip[1] >> qd.dip[2];
   return is;
 }
 
