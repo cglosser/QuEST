@@ -167,4 +167,12 @@ void PredictorCorrector::Integrator::corrector()
   }
 }
 
-void PredictorCorrector::Integrator::evaluator() {}
+void PredictorCorrector::Integrator::evaluator()
+{
+  interaction_table.predictor_eval(history, now);
+
+  for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
+    history[sol_idx][now][1] = rhs_funcs[sol_idx](
+        history[sol_idx][now][0], interaction_table.result(sol_idx));
+  }
+}
