@@ -43,7 +43,7 @@ class QuantumDot {
   Eigen::Vector3d dip;
 };
 
-std::vector<QuantumDot> import_dots(const std::string &);
+DotVector import_dots(const std::string &);
 
 inline double polarization(const matrix_elements &mel)
 {

@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     cout << setprecision(12) << scientific;
     auto vm = parse_configs(argc, argv);
 
-    shared_ptr<vector<QuantumDot>> qds(new vector<QuantumDot>(2));
+    shared_ptr<DotVector> qds(new vector<QuantumDot>(2));
     (*qds)[0] = QuantumDot(Eigen::Vector3d(0, 0, 0), 100,
                            std::pair<double, double>(10, 20),
                            Eigen::Vector3d(1.00000, 0, 0));

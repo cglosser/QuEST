@@ -17,7 +17,7 @@
 class InteractionTable {
  public:
   InteractionTable(const int,
-                   const std::shared_ptr<const std::vector<QuantumDot>> &,
+                   const std::shared_ptr<const DotVector> &,
                    const std::shared_ptr<const Pulse> &);
   std::vector<double> incident_interaction, history_interaction;
 
@@ -28,7 +28,7 @@ class InteractionTable {
 
  private:
   int interp_order, num_interactions;
-  std::shared_ptr<const std::vector<QuantumDot>> dots;
+  std::shared_ptr<const DotVector> dots;
   std::shared_ptr<const Pulse> pulse;
   std::vector<int> floor_delays;
   boost::multi_array<double, 2> coefficients;

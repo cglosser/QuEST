@@ -10,7 +10,7 @@ Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
 InteractionTable::InteractionTable(
     const int interp_order,
-    const std::shared_ptr<const std::vector<QuantumDot>> &dots,
+    const std::shared_ptr<const DotVector> &dots,
     const std::shared_ptr<const Pulse> &pulse)
     : incident_interaction(dots->size()),
       history_interaction(dots->size()),
