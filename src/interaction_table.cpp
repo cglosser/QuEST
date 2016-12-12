@@ -22,7 +22,7 @@ InteractionTable::InteractionTable(
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
   UniformLagrangeSet lagrange(interp_order, config.dt);
-  for(size_t pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
+  for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
     std::tie(src, obs) = idx2coord(pair_idx);
 
@@ -65,7 +65,7 @@ void InteractionTable::compute_incident_interaction(const double time)
 void InteractionTable::compute_history_interaction(
     const PredictorCorrector::HistoryArray &history, const int time_idx)
 {
-  for(size_t pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
+  for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
     std::tie(src, obs) = idx2coord(pair_idx);
     const int s = time_idx - floor_delays[pair_idx];
