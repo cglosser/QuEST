@@ -12,6 +12,9 @@
 #include <utility>
 #include <vector>
 
+class QuantumDot;
+
+typedef std::vector<QuantumDot> DotVector;
 typedef Eigen::Vector2cd matrix_elements;
 
 class QuantumDot {
