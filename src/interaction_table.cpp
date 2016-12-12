@@ -62,7 +62,7 @@ void InteractionTable::compute_incident_interaction(const double time)
 {
   for(size_t i = 0; i < dots->size(); ++i) {
     incident_interaction[i] =
-        (*pulse)((*dots)[i].position(), time).dot((*dots)[i].dipole());
+        (*pulse)((*dots)[i].position(), time).dot((*dots)[i].dipole()) / config.hbar;
   }
 }
 
