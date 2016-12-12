@@ -25,6 +25,11 @@ class InteractionTable {
   void compute_history_interaction(const PredictorCorrector::HistoryArray &,
                                    const int);
 
+  double result(const int i)
+  {
+    return incident_interaction[i] + history_interaction[i];
+  }
+
  private:
   int interp_order, num_interactions;
   std::shared_ptr<const DotVector> dots;
