@@ -120,60 +120,54 @@ PredictorCorrector::Integrator::Integrator(
       history[dot_idx][i][1] = soltype(0, 0);
     }
   }
-
-  now = 1;
 }
 
-void PredictorCorrector::Integrator::step()
+void PredictorCorrector::Integrator::solve(const int step)
 {
-  assert(now < static_cast<int>(num_steps));
-
-  predictor();
-  evaluator();
+  predictor(step);
+  evaluator(step);
 
   for(int m = 1; m < 10; ++m) {
-    corrector();
-    evaluator();
+    corrector(step);
+    evaluator(step);
   }
-
-  ++now;
 }
 
-void PredictorCorrector::Integrator::predictor()
+void PredictorCorrector::Integrator::predictor(const int step)
 {
-  const int start = now - weights.width();
+  const int start = step - weights.width();
 
   for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
-    history[sol_idx][now][0].setZero();
+    history[sol_idx][step][0].setZero();
     for(int h = 0; h < static_cast<int>(weights.width()); ++h) {
-      history[sol_idx][now][0] +=
+      history[sol_idx][step][0] +=
           history[sol_idx][start + h][0] * weights.ps(0, h) +
           history[sol_idx][start + h][1] * weights.ps(1, h) * dt;
     }
   }
 }
 
-void PredictorCorrector::Integrator::corrector()
+void PredictorCorrector::Integrator::corrector(const int step)
 {
-  const int start = now - weights.width();
+  const int start = step - weights.width();
 
   for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
-    history[sol_idx][now][0] =
-        weights.future_coef * history[sol_idx][now][1] * dt;
+    history[sol_idx][step][0] =
+        weights.future_coef * history[sol_idx][step][1] * dt;
     for(int h = 0; h < static_cast<int>(weights.width()); ++h) {
-      history[sol_idx][now][0] +=
+      history[sol_idx][step][0] +=
           history[sol_idx][start + h][0] * weights.cs(0, h) +
           history[sol_idx][start + h][1] * weights.cs(1, h) * dt;
     }
   }
 }
 
-void PredictorCorrector::Integrator::evaluator()
+void PredictorCorrector::Integrator::evaluator(const int step)
 {
-  interaction_table.predictor_eval(history, now);
+  interaction_table.predictor_eval(history, step);
 
   for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
-    history[sol_idx][now][1] = rhs_funcs[sol_idx](
-        history[sol_idx][now][0], interaction_table.result(sol_idx));
+    history[sol_idx][step][1] = rhs_funcs[sol_idx](
+        history[sol_idx][step][0], interaction_table.result(sol_idx));
   }
 }

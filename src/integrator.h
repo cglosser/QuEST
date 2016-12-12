@@ -34,10 +34,9 @@ class PredictorCorrector::Integrator {
  public:
   Integrator(const int, const int, const double, const int, const int,
              const double, const std::vector<rhs_func> &, InteractionTable &);
-  void step();
+  void solve(const int);
 
  private:
-  int now;
   int num_solutions, num_steps;
   double dt;
   Weights weights;
@@ -45,9 +44,9 @@ class PredictorCorrector::Integrator {
   std::vector<rhs_func> rhs_funcs;
   InteractionTable interaction_table;
 
-  void predictor();
-  void evaluator();
-  void corrector();
+  void predictor(const int);
+  void evaluator(const int);
+  void corrector(const int);
 };
 
 #endif
