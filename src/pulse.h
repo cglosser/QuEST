@@ -17,7 +17,7 @@ class Pulse {
   friend std::ostream &operator<<(std::ostream &, const Pulse &);
   friend std::istream &operator>>(std::istream &, Pulse &);
 
- private:
+ //private:
   double amplitude, delay, width, freq;
   Eigen::Vector3d wavevector, polarization;
 };

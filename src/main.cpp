@@ -31,10 +31,17 @@ int main(int argc, char *argv[])
 
     auto superops(rhs_functions(*qds));
 
-    shared_ptr<Pulse> p(new Pulse(15589.226, 0.5, 0.1, 2278.9013, Eigen::Vector3d(0,0,1), Eigen::Vector3d(1,0,0)));
+    shared_ptr<Pulse> p(new Pulse(15589.226/10, 5, 2278.9013, 2278.9013, Eigen::Vector3d(0,0,1), Eigen::Vector3d(1,0,0)));
 
     InteractionTable interaction_table(config.interpolation_order, qds, p);
-    PredictorCorrector::Integrator solver(2, 10000, 1e-4, 18, 22, 3.15, superops, interaction_table);
+    PredictorCorrector::Integrator solver(2, 100000, 1e-4, 18, 22, 3.15, superops, interaction_table);
+
+    for(int t = 1; t <= 100000; ++t) {
+      //cout << t*1e-4 << " " << (*p)(Eigen::Vector3d(), t*1e-4).transpose() << endl;
+
+      solver.solve(t);
+      cout << t*1e-4 << " " << 1 - 2*solver.history[0][t][0][0].real() << endl;
+    }
 
 
   } catch(CommandLineException &e) {
