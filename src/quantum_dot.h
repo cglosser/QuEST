@@ -2,9 +2,9 @@
 #define QUANTUM_DOT_H
 
 #include <Eigen/Dense>
-#include <Eigen/StdVector>
 #include <complex>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -27,7 +27,6 @@ class QuantumDot {
 
   const Eigen::Vector3d &position() const { return pos; }
   const Eigen::Vector3d &dipole() const { return dip; }
-
   friend Eigen::Vector3d separation(const QuantumDot &, const QuantumDot &);
   friend inline double dyadic_product(const QuantumDot &obs,
                                       const Eigen::Matrix3d &dyad,
@@ -52,5 +51,9 @@ inline double polarization(const matrix_elements &mel)
 {
   return 2 * mel[1].real();
 }
+
+std::vector<
+    std::function<matrix_elements(const matrix_elements &, const double)>>
+rhs_functions(const DotVector &);
 
 #endif

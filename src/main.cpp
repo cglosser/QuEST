@@ -29,10 +29,19 @@ int main(int argc, char *argv[])
                            std::pair<double, double>(10, 20),
                            Eigen::Vector3d(3.14159, 0, 0));
 
-    std::shared_ptr<const Pulse> p(new Pulse(
-        1, 0, 0.1, 1, Eigen::Vector3d(0, 0, 1), Eigen::Vector3d(1, 0, 0)));
+    auto superops(rhs_functions(*qds));
 
-    InteractionTable it(3, qds, p);
+    cout << ((*qds)[0]).liouville_rhs(matrix_elements(3, 4), 100).transpose() << endl;
+    cout << ((*qds)[1]).liouville_rhs(matrix_elements(8, 8), 888).transpose() << endl;
+
+    cout << "----------" << endl;
+
+    cout << superops[0](matrix_elements(3, 4), 100).transpose() << endl;
+    cout << superops[1](matrix_elements(8, 8), 888).transpose() << endl;
+
+
+    cout << (*qds)[0] << endl;
+
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently

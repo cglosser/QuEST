@@ -42,3 +42,19 @@ DotVector import_dots(const std::string &fname)
   std::istream_iterator<QuantumDot> in_iter(ifs), eof;
   return DotVector(in_iter, eof);
 }
+
+typedef std::vector<
+    std::function<matrix_elements(const matrix_elements &, const double)>>
+    rhs_func_vector;
+rhs_func_vector rhs_functions(const DotVector &dots)
+{
+  rhs_func_vector funcs(dots.size());
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+  std::transform(dots.begin(), dots.end(), funcs.begin(),
+                 [](const QuantumDot &d) {
+                   return std::bind(&QuantumDot::liouville_rhs, d, _1, _2);
+                 });
+  return funcs;
+}
