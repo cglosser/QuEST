@@ -16,8 +16,7 @@
 
 class InteractionTable {
  public:
-  InteractionTable(const int,
-                   const std::shared_ptr<const DotVector> &,
+  InteractionTable(const int, const std::shared_ptr<const DotVector> &,
                    const std::shared_ptr<const Pulse> &);
   std::vector<double> incident_interaction, history_interaction;
 

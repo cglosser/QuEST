@@ -8,10 +8,9 @@ Eigen::Matrix3d nearfield_dyadic(const Vec3d &);
 Eigen::Matrix3d midfield_dyadic(const Vec3d &);
 Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 
-InteractionTable::InteractionTable(
-    const int interp_order,
-    const std::shared_ptr<const DotVector> &dots,
-    const std::shared_ptr<const Pulse> &pulse)
+InteractionTable::InteractionTable(const int interp_order,
+                                   const std::shared_ptr<const DotVector> &dots,
+                                   const std::shared_ptr<const Pulse> &pulse)
     : incident_interaction(dots->size(), 0),
       history_interaction(dots->size(), 0),
       interp_order(interp_order),
@@ -47,8 +46,7 @@ InteractionTable::InteractionTable(
 }
 
 void InteractionTable::compute_interactions(
-    const PredictorCorrector::HistoryArray &history,
-    const int time_idx)
+    const PredictorCorrector::HistoryArray &history, const int time_idx)
 {
   compute_incident_interaction(time_idx * config.dt);
   compute_history_interaction(history, time_idx);

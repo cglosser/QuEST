@@ -99,16 +99,18 @@ PredictorCorrector::Weights::Weights(const int n_lambda, const int n_time,
   future_coef = correctors(2 * n_time) * step_factor;
 }
 
-PredictorCorrector::Integrator::Integrator(const int num_solutions,
-                                           const int num_steps, const double dt,
-                                           const int n_lambda, const int n_time,
-                                           const double radius)
+PredictorCorrector::Integrator::Integrator(
+    const int num_solutions, const int num_steps, const double dt,
+    const int n_lambda, const int n_time, const double radius,
+    const std::vector<rhs_func> &rhs_funcs)
     : num_solutions(num_solutions),
       num_steps(num_steps + 1),
       dt(dt),
       weights(n_lambda, n_time, radius),
-      history(boost::extents[num_solutions]
-                            [HistoryArray::extent_range(-n_time, num_steps)][2])
+      history(
+          boost::extents[num_solutions]
+                        [HistoryArray::extent_range(-n_time, num_steps)][2]),
+      rhs_funcs(rhs_funcs)
 {
   for(int dot_idx = 0; dot_idx < num_solutions; ++dot_idx) {
     for(int i = -weights.width(); i <= 0; ++i) {

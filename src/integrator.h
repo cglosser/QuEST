@@ -14,6 +14,7 @@ namespace PredictorCorrector {
   class Integrator;
 
   typedef Eigen::Vector2cd soltype;
+  typedef std::function<soltype(const soltype &, const double)> rhs_func;
   typedef boost::multi_array<soltype, 3> HistoryArray;
 }
 
@@ -32,7 +33,7 @@ class PredictorCorrector::Weights {
 class PredictorCorrector::Integrator {
  public:
   Integrator(const int, const int, const double, const int, const int,
-             const double);
+             const double, const std::vector<rhs_func> &);
   void step();
 
  private:
@@ -41,6 +42,7 @@ class PredictorCorrector::Integrator {
   double dt;
   Weights weights;
   HistoryArray history;
+  std::vector<rhs_func> rhs_funcs;
 
   void predictor();
   void evaluator();
