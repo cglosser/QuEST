@@ -20,7 +20,7 @@ InteractionTable::InteractionTable(const int interp_order,
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
-  UniformLagrangeSet lagrange(interp_order, config.dt);
+  UniformLagrangeSet lagrange(interp_order);
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
     std::tie(src, obs) = idx2coord(pair_idx);
@@ -35,12 +35,13 @@ InteractionTable::InteractionTable(const int interp_order,
 
     for(int i = 0; i <= interp_order; ++i) {
       coefficients[pair_idx][i] =
-          dyadic_product((*dots)[obs], nearfield_dyadic(dr), (*dots)[src]) *
-              lagrange.weights[0][i] +
-          dyadic_product((*dots)[obs], midfield_dyadic(dr), (*dots)[src]) *
-              lagrange.weights[1][i] +
-          dyadic_product((*dots)[obs], farfield_dyadic(dr), (*dots)[src]) *
-              lagrange.weights[2][i];
+          -config.mu0 / (4 * M_PI) *
+          (dyadic_product((*dots)[obs], nearfield_dyadic(dr), (*dots)[src]) *
+               lagrange.weights[0][i] +
+           dyadic_product((*dots)[obs], midfield_dyadic(dr), (*dots)[src]) *
+               lagrange.weights[1][i] / config.dt +
+           dyadic_product((*dots)[obs], farfield_dyadic(dr), (*dots)[src]) *
+               lagrange.weights[2][i] / std::pow(config.dt, 2));
     }
   }
 }

@@ -2,14 +2,13 @@
 
 constexpr int NUM_DERIVATIVES = 3;
 
-UniformLagrangeSet::UniformLagrangeSet(const int order, const double dt = 1)
-    : order(order), dt(dt), weights(boost::extents[NUM_DERIVATIVES][order + 1])
+UniformLagrangeSet::UniformLagrangeSet(const int order)
+    : order(order), weights(boost::extents[NUM_DERIVATIVES][order + 1])
 {
 }
 
-UniformLagrangeSet::UniformLagrangeSet(const double x, const int order,
-                                       const double dt = 1)
-    : UniformLagrangeSet(order, dt)
+UniformLagrangeSet::UniformLagrangeSet(const double x, const int order)
+    : UniformLagrangeSet(order)
 {
   assert(x > 0);  // Don't extrapolate!
   calculate_weights(x);
@@ -31,10 +30,9 @@ void UniformLagrangeSet::calculate_weights(const double x)
     }
 
     weights[0][basis_id] = d0_product;
-    weights[1][basis_id] = (weights[0][basis_id] * d1_sum) / dt;
+    weights[1][basis_id] = (weights[0][basis_id] * d1_sum);
     weights[2][basis_id] =
         (weights[0][basis_id] * d2_sum +
-         std::pow(weights[1][basis_id], 2) / weights[0][basis_id]) /
-        std::pow(dt, 2);
+         std::pow(weights[1][basis_id], 2) / weights[0][basis_id]);
   }
 }
