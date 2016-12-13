@@ -63,13 +63,16 @@ void InteractionTable::compute_incident_interaction(const double time)
 {
   for(size_t i = 0; i < dots->size(); ++i) {
     incident_interaction[i] =
-        (*pulse)((*dots)[i].position(), time).dot((*dots)[i].dipole()) / config.hbar;
+        (*pulse)((*dots)[i].position(), time).dot((*dots)[i].dipole()) /
+        config.hbar;
   }
 }
 
 void InteractionTable::compute_history_interaction(const HistoryArray &history,
                                                    const int time_idx)
 {
+  std::fill(history_interaction.begin(), history_interaction.end(), 0);
+
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
     std::tie(src, obs) = idx2coord(pair_idx);
