@@ -36,7 +36,7 @@ class PredictorCorrector::Integrator {
              const double, const std::vector<rhs_func> &, InteractionTable &);
   void solve(const int);
 
- //private:
+  // private:
   int num_solutions, num_steps;
   double dt;
   Weights weights;
