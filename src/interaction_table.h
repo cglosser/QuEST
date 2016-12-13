@@ -28,7 +28,7 @@ class InteractionTable {
     return incident_interaction[i] + history_interaction[i];
   }
 
-  // private:
+ private:
   int interp_order, num_interactions;
   std::shared_ptr<const DotVector> dots;
   std::shared_ptr<const Pulse> pulse;

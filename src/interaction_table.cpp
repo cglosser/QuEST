@@ -50,7 +50,7 @@ void InteractionTable::predictor_eval(const HistoryArray &history,
                                       const int time_idx)
 {
   compute_incident_interaction(time_idx * config.dt);
-  // compute_history_interaction(history, time_idx);
+  compute_history_interaction(history, time_idx);
 }
 
 void InteractionTable::corrector_eval(const HistoryArray &history,
