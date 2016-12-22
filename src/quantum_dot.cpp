@@ -39,6 +39,8 @@ std::istream &operator>>(std::istream &is, QuantumDot &qd)
 DotVector import_dots(const std::string &fname)
 {
   std::ifstream ifs(fname);
+  assert(ifs.is_open());
+
   std::istream_iterator<QuantumDot> in_iter(ifs), eof;
   return DotVector(in_iter, eof);
 }
