@@ -8,5 +8,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 find_package(Boost 1.55 COMPONENTS program_options REQUIRED)
 include_directories(${BOOST_INCLUDE_DIR})
 
+add_subdirectory(interactions)
+
 add_executable(quest ${SOURCES})
 target_link_libraries(quest ${Boost_LIBRARIES})

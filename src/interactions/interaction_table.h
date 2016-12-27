@@ -8,11 +8,11 @@
 #include <tuple>
 #include <vector>
 
-#include "common.h"
-#include "configuration.h"
-#include "lagrange_set.h"
-#include "pulse.h"
-#include "quantum_dot.h"
+#include "../common.h"
+#include "../configuration.h"
+#include "../lagrange_set.h"
+#include "../pulse.h"
+#include "../quantum_dot.h"
 
 class InteractionTable {
  public:

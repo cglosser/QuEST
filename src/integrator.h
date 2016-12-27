@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "common.h"
-#include "interaction_table.h"
+#include "interactions/interaction_table.h"
 #include "math_utils.h"
 
 namespace PredictorCorrector {
