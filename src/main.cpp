@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     auto vm = parse_configs(argc, argv);
 
     shared_ptr<DotVector> dots(new DotVector(import_dots(config.qd_path)));
-    shared_ptr<Pulse> pulse(new Pulse(15589.2260227, 5, 2278.9013, 2278.9013,
+    shared_ptr<Pulse> pulse(new Pulse(1558.92260227, 5, 2278.9013, 2278.9013,
                                       Eigen::Vector3d(0, 0, 1),
                                       Eigen::Vector3d(1, 0, 0)));
     InteractionTable interaction_table(config.interpolation_order, dots, pulse);
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
                                           interaction_table);
 
     ofstream bloch("bloch.dat");
-    bloch << scientific << setprecision(6);
+    bloch << scientific << setprecision(14);
 
     for(int i = 1; i < num_steps; ++i) {
       solver.solve(i);
