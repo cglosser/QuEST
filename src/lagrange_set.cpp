@@ -14,10 +14,6 @@ UniformLagrangeSet::UniformLagrangeSet(const double x, const int order)
   calculate_weights(x);
 }
 
-// This calculation assumes the x coordinates of each knot correspond to
-// *positive* integers -- because the resulting weights generally get used in
-// the calculation of retardation effects, odd derivatives need an extra minus
-// sign!
 void UniformLagrangeSet::calculate_weights(const double x)
 {
   for(int basis_id = 0; basis_id <= order; ++basis_id) {
@@ -25,7 +21,7 @@ void UniformLagrangeSet::calculate_weights(const double x)
     for(int m = 0; m <= order; ++m) {
       if(m == basis_id) continue;
       d0_product *= (x - m) / (basis_id - m);
-      d1_sum -= 1 / (x - m);
+      d1_sum -= 1 / (x - m); // Note the minus sign!
       d2_sum -= std::pow(x - m, -2);
     }
 
