@@ -46,14 +46,14 @@ InteractionTable::InteractionTable(const int interp_order,
   }
 }
 
-void InteractionTable::predictor_eval(const HistoryArray &history,
+void InteractionTable::predictor_eval(const History::HistoryArray &history,
                                       const int time_idx)
 {
   compute_incident_interaction(time_idx * config.dt);
   compute_history_interaction(history, time_idx);
 }
 
-void InteractionTable::corrector_eval(const HistoryArray &history,
+void InteractionTable::corrector_eval(const History::HistoryArray &history,
                                       const int time_idx)
 {
   compute_history_interaction(history, time_idx);
@@ -68,7 +68,7 @@ void InteractionTable::compute_incident_interaction(const double time)
   }
 }
 
-void InteractionTable::compute_history_interaction(const HistoryArray &history,
+void InteractionTable::compute_history_interaction(const History::HistoryArray &history,
                                                    const int time_idx)
 {
   std::fill(history_interaction.begin(), history_interaction.end(), 0);

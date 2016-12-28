@@ -109,15 +109,15 @@ PredictorCorrector::Integrator::Integrator(
       weights(n_lambda, n_time, radius),
       history(
           boost::extents[num_solutions]
-                        [HistoryArray::extent_range(-n_time, this->num_steps)]
+                        [History::HistoryArray::extent_range(-n_time, this->num_steps)]
                         [2]),
       rhs_funcs(rhs_funcs),
       interaction_table(std::move(interaction_table))
 {
   for(int dot_idx = 0; dot_idx < num_solutions; ++dot_idx) {
     for(int i = -weights.width(); i <= 0; ++i) {
-      history[dot_idx][i][0] = soltype(1, 0);
-      history[dot_idx][i][1] = soltype(0, 0);
+      history[dot_idx][i][0] = History::soltype(1, 0);
+      history[dot_idx][i][1] = History::soltype(0, 0);
     }
   }
 }

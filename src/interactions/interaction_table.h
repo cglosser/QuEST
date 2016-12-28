@@ -8,7 +8,7 @@
 #include <tuple>
 #include <vector>
 
-#include "../common.h"
+#include "../history.h"
 #include "../configuration.h"
 #include "../lagrange_set.h"
 #include "../pulse.h"
@@ -20,8 +20,8 @@ class InteractionTable {
                    const std::shared_ptr<const Pulse> &);
   std::vector<double> incident_interaction, history_interaction;
 
-  void predictor_eval(const HistoryArray &, const int);
-  void corrector_eval(const HistoryArray &, const int);
+  void predictor_eval(const History::HistoryArray &, const int);
+  void corrector_eval(const History::HistoryArray &, const int);
 
   double result(const int i)
   {
@@ -36,7 +36,7 @@ class InteractionTable {
   boost::multi_array<double, 2> coefficients;
 
   void compute_incident_interaction(const double);
-  void compute_history_interaction(const HistoryArray &, const int);
+  void compute_history_interaction(const History::HistoryArray &, const int);
   static int coord2idx(int, int);
   static std::pair<int, int> idx2coord(const int);
 };

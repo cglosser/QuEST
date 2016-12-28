@@ -7,7 +7,7 @@
 #include <complex>
 #include <vector>
 
-#include "common.h"
+#include "history.h"
 #include "interactions/interaction_table.h"
 #include "math_utils.h"
 
@@ -15,7 +15,9 @@ namespace PredictorCorrector {
   class Weights;
   class Integrator;
 
-  typedef std::function<soltype(const soltype &, const double)> rhs_func;
+  typedef std::function<History::soltype(const History::soltype &,
+                                         const double)>
+      rhs_func;
 }
 
 class PredictorCorrector::Weights {
@@ -40,7 +42,7 @@ class PredictorCorrector::Integrator {
   int num_solutions, num_steps;
   double dt;
   Weights weights;
-  HistoryArray history;
+  History::HistoryArray history;
   std::vector<rhs_func> rhs_funcs;
   InteractionTable interaction_table;
 

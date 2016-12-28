@@ -23,7 +23,8 @@ void test_history_interaction(int argc, char *argv[])
   auto dots = make_shared<DotVector>(import_dots(config.qd_path));
 
   const int num_steps = 100000;
-  auto history = make_shared<HistoryArray>(boost::extents[2][num_steps][2]);
+  auto history =
+      make_shared<History::HistoryArray>(boost::extents[2][num_steps][2]);
 
   cout << "Distance (dimensionless): "
        << ((*dots)[1].position() - (*dots)[0].position()).norm() /

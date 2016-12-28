@@ -12,7 +12,8 @@ namespace History {
 
 HistoryInteraction::HistoryInteraction(
     const std::shared_ptr<const DotVector> &dots,
-    const std::shared_ptr<const HistoryArray> &history, const int interp_order)
+    const std::shared_ptr<const History::HistoryArray> &history,
+    const int interp_order)
     : Interaction(dots),
       history(history),
       interp_order(interp_order),

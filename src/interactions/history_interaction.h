@@ -4,7 +4,7 @@
 #include <Eigen/Dense>
 #include <boost/multi_array.hpp>
 
-#include "../common.h"
+#include "../history.h"
 #include "../configuration.h"
 #include "../lagrange_set.h"
 #include "../quantum_dot.h"
@@ -13,11 +13,12 @@
 class HistoryInteraction : public Interaction {
  public:
   HistoryInteraction(const std::shared_ptr<const DotVector> &,
-                     const std::shared_ptr<const HistoryArray> &, const int);
+                     const std::shared_ptr<const History::HistoryArray> &,
+                     const int);
   void evaluate(const int);
 
  private:
-  std::shared_ptr<const HistoryArray> history;
+  std::shared_ptr<const History::HistoryArray> history;
   int interp_order, num_interactions;
   std::vector<int> floor_delays;
   boost::multi_array<double, 2> coefficients;

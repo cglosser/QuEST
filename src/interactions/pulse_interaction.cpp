@@ -1,5 +1,3 @@
-#include "../pulse.h"
-#include "../configuration.h"
 #include "pulse_interaction.h"
 
 PulseInteraction::PulseInteraction(const std::shared_ptr<const DotVector> &dots,
