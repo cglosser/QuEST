@@ -10,7 +10,7 @@
 #include "../quantum_dot.h"
 #include "interaction.h"
 
-class HistoryInteraction : Interaction {
+class HistoryInteraction : public Interaction {
  public:
   HistoryInteraction(const std::shared_ptr<const DotVector> &,
                      const std::shared_ptr<const HistoryArray> &, const int);
