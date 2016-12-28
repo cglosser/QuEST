@@ -35,14 +35,15 @@ class PredictorCorrector::Weights {
 class PredictorCorrector::Integrator {
  public:
   Integrator(const int, const int, const double, const int, const int,
-             const double, const std::vector<rhs_func> &, InteractionTable &);
+             const double, const std::shared_ptr<History::HistoryArray>,
+             const std::vector<rhs_func> &, InteractionTable &);
   void solve(const int);
 
-  // private:
+ private:
   int num_solutions, num_steps;
   double dt;
   Weights weights;
-  History::HistoryArray history;
+  std::shared_ptr<History::HistoryArray> history;
   std::vector<rhs_func> rhs_funcs;
   InteractionTable interaction_table;
 

@@ -102,24 +102,16 @@ PredictorCorrector::Weights::Weights(const int n_lambda, const int n_time,
 PredictorCorrector::Integrator::Integrator(
     const int num_solutions, const int num_steps, const double dt,
     const int n_lambda, const int n_time, const double radius,
+    const std::shared_ptr<History::HistoryArray> history,
     const std::vector<rhs_func> &rhs_funcs, InteractionTable &interaction_table)
     : num_solutions(num_solutions),
       num_steps(num_steps + 1),
       dt(dt),
       weights(n_lambda, n_time, radius),
-      history(
-          boost::extents[num_solutions]
-                        [History::HistoryArray::extent_range(-n_time, this->num_steps)]
-                        [2]),
+      history(history),
       rhs_funcs(rhs_funcs),
       interaction_table(std::move(interaction_table))
 {
-  for(int dot_idx = 0; dot_idx < num_solutions; ++dot_idx) {
-    for(int i = -weights.width(); i <= 0; ++i) {
-      history[dot_idx][i][0] = History::soltype(1, 0);
-      history[dot_idx][i][1] = History::soltype(0, 0);
-    }
-  }
 }
 
 void PredictorCorrector::Integrator::solve(const int step)
@@ -138,11 +130,11 @@ void PredictorCorrector::Integrator::predictor(const int step)
   const int start = step - weights.width();
 
   for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
-    history[sol_idx][step][0].setZero();
+    (*history)[sol_idx][step][0].setZero();
     for(int h = 0; h < static_cast<int>(weights.width()); ++h) {
-      history[sol_idx][step][0] +=
-          history[sol_idx][start + h][0] * weights.ps(0, h) +
-          history[sol_idx][start + h][1] * weights.ps(1, h) * dt;
+      (*history)[sol_idx][step][0] +=
+          (*history)[sol_idx][start + h][0] * weights.ps(0, h) +
+          (*history)[sol_idx][start + h][1] * weights.ps(1, h) * dt;
     }
   }
 }
@@ -152,22 +144,22 @@ void PredictorCorrector::Integrator::corrector(const int step)
   const int start = step - weights.width();
 
   for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
-    history[sol_idx][step][0] =
-        weights.future_coef * history[sol_idx][step][1] * dt;
+    (*history)[sol_idx][step][0] =
+        weights.future_coef * (*history)[sol_idx][step][1] * dt;
     for(int h = 0; h < static_cast<int>(weights.width()); ++h) {
-      history[sol_idx][step][0] +=
-          history[sol_idx][start + h][0] * weights.cs(0, h) +
-          history[sol_idx][start + h][1] * weights.cs(1, h) * dt;
+      (*history)[sol_idx][step][0] +=
+          (*history)[sol_idx][start + h][0] * weights.cs(0, h) +
+          (*history)[sol_idx][start + h][1] * weights.cs(1, h) * dt;
     }
   }
 }
 
 void PredictorCorrector::Integrator::evaluator(const int step)
 {
-  interaction_table.predictor_eval(history, step);
+  interaction_table.predictor_eval((*history), step);
 
   for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
-    history[sol_idx][step][1] = rhs_funcs[sol_idx](
-        history[sol_idx][step][0], interaction_table.result(sol_idx));
+    (*history)[sol_idx][step][1] = rhs_funcs[sol_idx](
+        (*history)[sol_idx][step][0], interaction_table.result(sol_idx));
   }
 }
