@@ -15,7 +15,7 @@
  *#include "quantum_dot.h"
  */
 
-#include "interactions/fixed_dyadic.h"
+#include "interactions/green_function.h"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     cout << setprecision(12);
     auto vm = parse_configs(argc, argv);
 
-    GreenFunction::FixedFrameDyadic ffd(1, 1);
+    GreenFunction::Dyadic ffd(1, 1);
     Interpolation::UniformLagrangeSet uls(0.5, 3);
 
     auto dyads(ffd.calculate_coefficients(Eigen::Vector3d(0.1, 0.2, 0.3), uls));

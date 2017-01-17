@@ -1,12 +1,8 @@
-#include "fixed_dyadic.h"
+#include "green_function.h"
 
-GreenFunction::FixedFrameDyadic::FixedFrameDyadic(const double mu0, const double c) : mu0_(mu0), c_(c)
-{
-}
-
-std::vector<Eigen::Matrix3cd>
-GreenFunction::FixedFrameDyadic::calculate_coefficients(
-    const Eigen::Vector3d &dr, const Interpolation::UniformLagrangeSet &interp) const
+std::vector<Eigen::Matrix3cd> GreenFunction::Dyadic::calculate_coefficients(
+    const Eigen::Vector3d &dr,
+    const Interpolation::UniformLagrangeSet &interp) const
 {
   std::vector<Eigen::Matrix3cd> coefficients(interp.order() + 1);
 

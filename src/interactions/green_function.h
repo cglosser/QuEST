@@ -7,13 +7,14 @@
 #include "../lagrange_set.h"
 
 namespace GreenFunction {
-  class TimeDomainGreenFunction;
+  class Dyadic;
 }
 
-class GreenFunction::TimeDomainGreenFunction{
+class GreenFunction::Dyadic {
  public:
+  Dyadic(const double mu0, const double c) : mu0_(mu0), c_(c){};
   virtual std::vector<Eigen::Matrix3cd> calculate_coefficients(
-      const Eigen::Vector3d &, const Interpolation::UniformLagrangeSet &) const = 0;
+      const Eigen::Vector3d &, const Interpolation::UniformLagrangeSet &) const;
 
   static Eigen::Matrix3d rhat_dyadic(const Eigen::Vector3d &dr)
   {
@@ -27,8 +28,11 @@ class GreenFunction::TimeDomainGreenFunction{
 
   static Eigen::Matrix3d identity_minus_3rsq(const Eigen::Vector3d &dr)
   {
-    return Eigen::Matrix3d::Identity() - 3*rhat_dyadic(dr);
+    return Eigen::Matrix3d::Identity() - 3 * rhat_dyadic(dr);
   }
+
+ private:
+  double mu0_, c_;
 };
 
 #endif
