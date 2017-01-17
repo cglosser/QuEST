@@ -3,7 +3,11 @@
 
 #include <boost/multi_array.hpp>
 
-class UniformLagrangeSet {
+namespace Interpolation {
+  class UniformLagrangeSet;
+}
+
+class Interpolation::UniformLagrangeSet {
  public:
   typedef boost::multi_array<double, 2> Array;
 

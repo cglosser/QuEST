@@ -2,19 +2,19 @@
 
 constexpr int NUM_DERIVATIVES = 3;
 
-UniformLagrangeSet::UniformLagrangeSet(const int order)
+Interpolation::UniformLagrangeSet::UniformLagrangeSet(const int order)
     : order(order), weights(boost::extents[NUM_DERIVATIVES][order + 1])
 {
 }
 
-UniformLagrangeSet::UniformLagrangeSet(const double x, const int order)
+Interpolation::UniformLagrangeSet::UniformLagrangeSet(const double x, const int order)
     : UniformLagrangeSet(order)
 {
   assert(x > 0);  // Don't extrapolate!
   calculate_weights(x);
 }
 
-void UniformLagrangeSet::calculate_weights(const double x)
+void Interpolation::UniformLagrangeSet::calculate_weights(const double x)
 {
   for(int basis_id = 0; basis_id <= order; ++basis_id) {
     double d0_product = 1, d1_sum = 0, d2_sum = 0;
