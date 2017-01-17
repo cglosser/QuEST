@@ -5,14 +5,14 @@
 
 namespace Interpolation {
   class UniformLagrangeSet;
+  typedef boost::multi_array<double, 2> InterpolationTable;
 }
 
 class Interpolation::UniformLagrangeSet {
  public:
-  typedef boost::multi_array<double, 2> Array;
 
   const int order;
-  Array weights;
+  InterpolationTable weights;
 
   UniformLagrangeSet(const int);
   UniformLagrangeSet(const double, const int);
