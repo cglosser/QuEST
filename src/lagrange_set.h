@@ -15,9 +15,9 @@ class Interpolation::UniformLagrangeSet {
   InterpolationTable weights;
 
   UniformLagrangeSet(const int);
-  UniformLagrangeSet(const double, const int);
+  UniformLagrangeSet(const double, const int, const double = 1);
 
-  void calculate_weights(const double);
+  void calculate_weights(const double, const double = 1);
 };
 
 #endif

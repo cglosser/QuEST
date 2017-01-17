@@ -37,7 +37,7 @@ void HistoryInteraction::build_coefficient_table()
         History::compute_delay(dr.norm() / (config.c0 * config.dt)));
 
     floor_delays.at(pair_idx) = delay.first;
-    lagrange.calculate_weights(delay.second);
+    lagrange.calculate_weights(delay.second, config.dt);
 
     for(int i = 0; i <= interp_order; ++i) {
       coefficients[pair_idx][i] =
@@ -45,9 +45,9 @@ void HistoryInteraction::build_coefficient_table()
           (dyadic_product((*dots)[obs], History::nearfield_dyadic(dr), (*dots)[src]) *
                lagrange.weights[0][i] +
            dyadic_product((*dots)[obs], History::midfield_dyadic(dr), (*dots)[src]) *
-               lagrange.weights[1][i] / config.dt +
+               lagrange.weights[1][i] +
            dyadic_product((*dots)[obs], History::farfield_dyadic(dr), (*dots)[src]) *
-               lagrange.weights[2][i] / std::pow(config.dt, 2));
+               lagrange.weights[2][i]);
     }
   }
 }
