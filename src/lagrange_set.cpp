@@ -3,7 +3,7 @@
 constexpr int NUM_DERIVATIVES = 3;
 
 Interpolation::UniformLagrangeSet::UniformLagrangeSet(const int order)
-    : order(order), weights(boost::extents[NUM_DERIVATIVES][order + 1])
+    : weights(boost::extents[NUM_DERIVATIVES][order + 1]), order_(order)
 {
 }
 
@@ -19,9 +19,9 @@ Interpolation::UniformLagrangeSet::UniformLagrangeSet(const double x,
 void Interpolation::UniformLagrangeSet::calculate_weights(
     const double x, const double dt /* = 1 */)
 {
-  for(int basis_id = 0; basis_id <= order; ++basis_id) {
+  for(int basis_id = 0; basis_id <= order_; ++basis_id) {
     double d0_product = 1, d1_sum = 0, d2_sum = 0;
-    for(int m = 0; m <= order; ++m) {
+    for(int m = 0; m <= order_; ++m) {
       if(m == basis_id) continue;
       d0_product *= (x - m) / (basis_id - m);
       d1_sum -= 1 / (x - m); // Note the minus sign!

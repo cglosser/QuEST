@@ -10,14 +10,16 @@ namespace Interpolation {
 
 class Interpolation::UniformLagrangeSet {
  public:
-
-  const int order;
   InterpolationTable weights;
 
   UniformLagrangeSet(const int);
   UniformLagrangeSet(const double, const int, const double = 1);
 
   void calculate_weights(const double, const double = 1);
+  int order() const { return order_; }
+
+ private:
+  int order_;
 };
 
 #endif
