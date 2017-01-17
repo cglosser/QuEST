@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "history.h"
-#include "interactions/interaction_table.h"
 #include "math_utils.h"
 
 namespace PredictorCorrector {
@@ -36,7 +35,7 @@ class PredictorCorrector::Integrator {
  public:
   Integrator(const int, const int, const double, const int, const int,
              const double, const std::shared_ptr<History::HistoryArray>,
-             const std::vector<rhs_func> &, InteractionTable &);
+             const std::vector<rhs_func> &);
   void solve(const int);
 
  private:
@@ -45,7 +44,6 @@ class PredictorCorrector::Integrator {
   Weights weights;
   std::shared_ptr<History::HistoryArray> history;
   std::vector<rhs_func> rhs_funcs;
-  InteractionTable interaction_table;
 
   void predictor(const int);
   void evaluator(const int);

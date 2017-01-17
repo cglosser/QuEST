@@ -103,14 +103,13 @@ PredictorCorrector::Integrator::Integrator(
     const int num_solutions, const int num_steps, const double dt,
     const int n_lambda, const int n_time, const double radius,
     const std::shared_ptr<History::HistoryArray> history,
-    const std::vector<rhs_func> &rhs_funcs, InteractionTable &interaction_table)
+    const std::vector<rhs_func> &rhs_funcs)
     : num_solutions(num_solutions),
       num_steps(num_steps + 1),
       dt(dt),
       weights(n_lambda, n_time, radius),
       history(history),
-      rhs_funcs(rhs_funcs),
-      interaction_table(std::move(interaction_table))
+      rhs_funcs(rhs_funcs)
 {
 }
 
@@ -156,10 +155,4 @@ void PredictorCorrector::Integrator::corrector(const int step)
 
 void PredictorCorrector::Integrator::evaluator(const int step)
 {
-  interaction_table.predictor_eval((*history), step);
-
-  for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
-    (*history)[sol_idx][step][1] = rhs_funcs[sol_idx](
-        (*history)[sol_idx][step][0], interaction_table.result(sol_idx));
-  }
 }

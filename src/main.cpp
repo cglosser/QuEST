@@ -7,7 +7,6 @@
 
 #include "configuration.h"
 #include "integrator.h"
-#include "interactions/interaction_table.h"
 #include "interactions/history_interaction.h"
 #include "lagrange_set.h"
 #include "math_utils.h"
