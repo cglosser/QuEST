@@ -4,21 +4,24 @@
 #include <Eigen/Dense>
 #include <boost/multi_array.hpp>
 
-#include "../history.h"
 #include "../configuration.h"
+#include "../history.h"
 #include "../lagrange_set.h"
 #include "../quantum_dot.h"
+#include "green_function.h"
 #include "interaction.h"
 
 class HistoryInteraction : public Interaction {
  public:
   HistoryInteraction(const std::shared_ptr<const DotVector> &,
                      const std::shared_ptr<const History::HistoryArray> &,
+                     const std::shared_ptr<GreenFunction::Dyadic> &,
                      const int);
   void evaluate(const int);
 
  private:
   std::shared_ptr<const History::HistoryArray> history;
+  std::shared_ptr<GreenFunction::Dyadic> dyadic;
   int interp_order, num_interactions;
   std::vector<int> floor_delays;
   boost::multi_array<double, 2> coefficients;

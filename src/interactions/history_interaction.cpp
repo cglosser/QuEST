@@ -4,18 +4,16 @@ using Vec3d = Eigen::Vector3d;
 
 namespace History {
   std::pair<int, double> compute_delay(const double);
-  Eigen::Matrix3d rhat_dyadic(const Vec3d &);
-  Eigen::Matrix3d nearfield_dyadic(const Vec3d &);
-  Eigen::Matrix3d midfield_dyadic(const Vec3d &);
-  Eigen::Matrix3d farfield_dyadic(const Vec3d &);
 }
 
 HistoryInteraction::HistoryInteraction(
     const std::shared_ptr<const DotVector> &dots,
     const std::shared_ptr<const History::HistoryArray> &history,
+    const std::shared_ptr<GreenFunction::Dyadic> &dyadic,
     const int interp_order)
     : Interaction(dots),
       history(history),
+      dyadic(dyadic),
       interp_order(interp_order),
       num_interactions(dots->size() * (dots->size() - 1) / 2),
       floor_delays(num_interactions),
@@ -26,6 +24,8 @@ HistoryInteraction::HistoryInteraction(
 
 void HistoryInteraction::build_coefficient_table()
 {
+  using std::cout; using std::endl;
+
   Interpolation::UniformLagrangeSet lagrange(interp_order);
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
@@ -39,15 +39,12 @@ void HistoryInteraction::build_coefficient_table()
     floor_delays.at(pair_idx) = delay.first;
     lagrange.calculate_weights(delay.second, config.dt);
 
-    for(int i = 0; i <= interp_order; ++i) {
-      coefficients[pair_idx][i] =
-          -config.mu0 / (4 * M_PI) *
-          (dyadic_product((*dots)[obs], History::nearfield_dyadic(dr), (*dots)[src]) *
-               lagrange.weights[0][i] +
-           dyadic_product((*dots)[obs], History::midfield_dyadic(dr), (*dots)[src]) *
-               lagrange.weights[1][i] +
-           dyadic_product((*dots)[obs], History::farfield_dyadic(dr), (*dots)[src]) *
-               lagrange.weights[2][i]);
+    std::vector<Eigen::Matrix3cd> interp_dyads(
+        dyadic->coefficients(dr, lagrange));
+
+    cout << std::scientific;
+    for(const auto &d : interp_dyads) {
+      cout << d.real() << endl << endl;
     }
   }
 }
@@ -96,27 +93,4 @@ std::pair<int, double> History::compute_delay(const double delay)
   result.first = static_cast<int>(idelay);
 
   return result;
-}
-
-Eigen::Matrix3d History::rhat_dyadic(const Vec3d &dr)
-{
-  return dr * dr.transpose() / dr.squaredNorm();
-}
-
-Eigen::Matrix3d History::nearfield_dyadic(const Vec3d &dr)
-{
-  Eigen::Matrix3d dyad = (Eigen::Matrix3d::Identity() - 3 * History::rhat_dyadic(dr));
-  return dyad * std::pow(config.c0, 2) / std::pow(dr.norm(), 3);
-}
-
-Eigen::Matrix3d History::midfield_dyadic(const Vec3d &dr)
-{
-  Eigen::Matrix3d dyad = (Eigen::Matrix3d::Identity() - 3 * History::rhat_dyadic(dr));
-  return dyad * config.c0 / dr.squaredNorm();
-}
-
-Eigen::Matrix3d History::farfield_dyadic(const Vec3d &dr)
-{
-  Eigen::Matrix3d dyad = (Eigen::Matrix3d::Identity() - History::rhat_dyadic(dr));
-  return dyad / dr.norm();
 }
