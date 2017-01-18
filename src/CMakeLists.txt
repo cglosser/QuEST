@@ -3,6 +3,9 @@ set(CMAKE_CXX_FLAGS "--std=c++11 -Wall -fdiagnostics-color=auto ${CMAKE_CXX_FLAG
 file(GLOB HEADERS *.h)
 file(GLOB SOURCES *.cpp)
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
+
 find_package(Eigen3 3.2.2 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 

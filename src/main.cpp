@@ -6,16 +6,9 @@
 #include <vector>
 
 #include "configuration.h"
-/*
- *#include "integrator.h"
- *#include "interactions/history_interaction.h"
- *#include "lagrange_set.h"
- *#include "math_utils.h"
- *#include "pulse.h"
- *#include "quantum_dot.h"
- */
-
 #include "interactions/green_function.h"
+#include "interactions/history_interaction.h"
+#include "quantum_dot.h"
 
 using namespace std;
 
@@ -25,13 +18,20 @@ int main(int argc, char *argv[])
     cout << setprecision(12);
     auto vm = parse_configs(argc, argv);
 
-    GreenFunction::Dyadic ffd(1, 1);
-    Interpolation::UniformLagrangeSet uls(0.5, 3);
 
-    auto dyads(ffd.calculate_coefficients(Eigen::Vector3d(0.1, 0.2, 0.3), uls));
+    auto qds(make_shared<DotVector>(2));
+    (*qds)[0] =
+        QuantumDot(Eigen::Vector3d(0, 0, 0), 2278.9013,
+                   std::pair<double, double>(10, 10), Eigen::Vector3d(1, 0, 0));
+    (*qds)[1] =
+        QuantumDot(Eigen::Vector3d(0, 0, 0.01), 2278.9013,
+                   std::pair<double, double>(10, 10), Eigen::Vector3d(1, 0, 0));
 
-    for(const auto &dyad : dyads) { cout << dyad.real() << endl << endl; }
+    auto hist(make_shared<History::HistoryArray>());
 
+    auto ffd(make_shared<GreenFunction::Dyadic>(config.mu0, config.c0));
+
+    HistoryInteraction(qds, hist, ffd, config.interpolation_order);
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
