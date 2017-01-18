@@ -30,6 +30,7 @@ class HistoryInteraction : public Interaction {
 
   static int coord2idx(int, int);
   static std::pair<int, int> idx2coord(const int);
+  static std::pair<int, double> split_double(const double);
 };
 
 #endif

@@ -2,10 +2,6 @@
 
 using Vec3d = Eigen::Vector3d;
 
-namespace History {
-  std::pair<int, double> compute_delay(const double);
-}
-
 HistoryInteraction::HistoryInteraction(
     const std::shared_ptr<const DotVector> &dots,
     const std::shared_ptr<const History::HistoryArray> &history,
@@ -34,19 +30,18 @@ void HistoryInteraction::build_coefficient_table()
     Vec3d dr(separation((*dots)[src], (*dots)[obs]));
 
     std::pair<int, double> delay(
-        History::compute_delay(dr.norm() / (config.c0 * config.dt)));
+        split_double(dr.norm() / (config.c0 * config.dt)));
 
-    floor_delays.at(pair_idx) = delay.first;
+    floor_delays[pair_idx] = delay.first;
     lagrange.calculate_weights(delay.second, config.dt);
 
     std::vector<Eigen::Matrix3d> interp_dyads(
         dyadic->coefficients(dr, lagrange));
 
     for(int i = 0; i <= interp_order; ++i) {
-      coefficients[pair_idx][i] = (*dots)[obs].dipole().transpose() *
-                                  interp_dyads[i] * (*dots)[src].dipole();
+      coefficients[pair_idx][i] =
+          (*dots)[obs].dipole().dot(interp_dyads[i] * (*dots)[src].dipole());
     }
-
   }
 }
 
@@ -85,7 +80,7 @@ std::pair<int, int> HistoryInteraction::idx2coord(const int idx)
   return std::pair<int, int>(row, col);
 }
 
-std::pair<int, double> History::compute_delay(const double delay)
+std::pair<int, double> HistoryInteraction::split_double(const double delay)
 {
   std::pair<int, double> result;
 
