@@ -13,7 +13,7 @@ namespace GreenFunction {
 class GreenFunction::Dyadic {
  public:
   Dyadic(const double mu0, const double c) : mu0_(mu0), c_(c){};
-  virtual std::vector<Eigen::Matrix3cd> calculate_coefficients(
+  virtual std::vector<Eigen::Matrix3cd> coefficients(
       const Eigen::Vector3d &, const Interpolation::UniformLagrangeSet &) const;
 
   static Eigen::Matrix3d rhat_dyadic(const Eigen::Vector3d &dr)
