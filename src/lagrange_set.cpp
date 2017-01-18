@@ -29,10 +29,15 @@ void Interpolation::UniformLagrangeSet::calculate_weights(
     }
 
     weights[0][basis_id] = d0_product;
-    weights[1][basis_id] = (weights[0][basis_id] * d1_sum)/dt;
+    weights[1][basis_id] = (weights[0][basis_id] * d1_sum);
     weights[2][basis_id] =
         (weights[0][basis_id] * d2_sum +
-         std::pow(weights[1][basis_id], 2) / weights[0][basis_id]) /
-        std::pow(dt, 2);
+         std::pow(weights[1][basis_id], 2) / weights[0][basis_id]);
   }
+
+  for(int i = 0; i <= order_; ++i) {
+    weights[1][i] *= std::pow(dt, -1);
+    weights[2][i] *= std::pow(dt, -2);
+  }
+
 }
