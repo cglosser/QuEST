@@ -24,7 +24,7 @@ class HistoryInteraction : public Interaction {
   std::shared_ptr<GreenFunction::Dyadic> dyadic;
   int interp_order, num_interactions;
   std::vector<int> floor_delays;
-  boost::multi_array<double, 2> coefficients;
+  boost::multi_array<cmplx, 2> coefficients;
 
   void build_coefficient_table();
 

@@ -35,7 +35,7 @@ void HistoryInteraction::build_coefficient_table()
     floor_delays[pair_idx] = delay.first;
     lagrange.calculate_weights(delay.second, config.dt);
 
-    std::vector<Eigen::Matrix3d> interp_dyads(
+    std::vector<Eigen::Matrix3cd> interp_dyads(
         dyadic->coefficients(dr, lagrange));
 
     for(int i = 0; i <= interp_order; ++i) {
