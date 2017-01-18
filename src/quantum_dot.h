@@ -2,7 +2,6 @@
 #define QUANTUM_DOT_H
 
 #include <Eigen/Dense>
-#include <complex>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -11,6 +10,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "common.h"
 
 class QuantumDot;
 
