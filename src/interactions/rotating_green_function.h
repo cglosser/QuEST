@@ -11,8 +11,14 @@ class GreenFunction::RotatingDyadic : public GreenFunction::Dyadic {
  public:
   RotatingDyadic(const double mu0, const double c, const double omega)
       : Dyadic(mu0, c), omega_(omega){};
-  std::vector<Eigen::Matrix3cd> coefficients(
+  virtual std::vector<Eigen::Matrix3cd> coefficients(
       const Eigen::Vector3d &, const Interpolation::UniformLagrangeSet &) const;
+
+  virtual cmplx polarization_prefactor(
+      const History::soltype &matrix_elements) const
+  {
+    return matrix_elements[1];
+  }
 
  private:
   double omega_;
