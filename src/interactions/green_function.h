@@ -18,6 +18,9 @@ class GreenFunction::Dyadic {
   virtual std::vector<Eigen::Matrix3cd> coefficients(
       const Eigen::Vector3d &, const Interpolation::UniformLagrangeSet &) const;
 
+ protected:
+  double mu0_, c_;
+
   std::array<Eigen::Matrix3d, 3> spatial_dyads(const Eigen::Vector3d &dr) const
   {
     std::array<Eigen::Matrix3d, 3> results = {
@@ -42,9 +45,6 @@ class GreenFunction::Dyadic {
   {
     return Eigen::Matrix3d::Identity() - 3 * rhat_dyadic(dr);
   }
-
- protected:
-  double mu0_, c_;
 };
 
 #endif
