@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../common.h"
+#include "../history.h"
 #include "../lagrange_set.h"
 
 namespace GreenFunction {
@@ -17,6 +18,12 @@ class GreenFunction::Dyadic {
   Dyadic(const double mu0, const double c) : mu0_(mu0), c_(c){};
   virtual std::vector<Eigen::Matrix3cd> coefficients(
       const Eigen::Vector3d &, const Interpolation::UniformLagrangeSet &) const;
+
+  virtual cmplx polarization_prefactor(
+      const History::soltype &matrix_elements) const
+  {
+    return 2 * matrix_elements[1].real();
+  }
 
  protected:
   double mu0_, c_;
