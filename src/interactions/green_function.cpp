@@ -4,21 +4,16 @@ std::vector<Eigen::Matrix3cd> GreenFunction::Dyadic::coefficients(
     const Eigen::Vector3d &dr,
     const Interpolation::UniformLagrangeSet &interp) const
 {
-  std::vector<Eigen::Matrix3cd> coefs(interp.order() + 1);
+  std::vector<Eigen::Matrix3cd> coefs(interp.order() + 1,
+                                      Eigen::Matrix3cd::Zero());
 
   const double alpha = -mu0_ / (4 * M_PI);
-  const Eigen::Matrix3d nearfield(identity_minus_3rsq(dr) * std::pow(c_, 2) /
-                                  std::pow(dr.norm(), 3));
-  const Eigen::Matrix3d midfield(identity_minus_3rsq(dr) * c_ /
-                                 dr.squaredNorm());
-  const Eigen::Matrix3d farfield(identity_minus_rsq(dr) / dr.norm());
+  const auto dyads(spatial_dyads(dr));
 
   for(int i = 0; i <= interp.order(); ++i) {
-    coefs[i] =
-        alpha *
-        (nearfield * interp.weights[0][i] + midfield * interp.weights[1][i] +
-         farfield * interp.weights[2][i])
-            .cast<cmplx>();
+    for(int term = 0; term < 3; ++term) {
+      coefs[i] += alpha * dyads[term].cast<cmplx>() * interp.weights[term][i];
+    }
   }
 
   return coefs;
