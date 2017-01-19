@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
     auto hist(make_shared<History::HistoryArray>());
 
-    GreenFunction::RotatingDyadic dy(config.mu0, config.c0, 2278.9013);
+    GreenFunction::RotatingDyadic dy(config.mu0, config.c0, config.omega);
 
     HistoryInteraction hits(qds, hist, config.interpolation_order, dy);
 

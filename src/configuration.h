@@ -10,7 +10,7 @@
 
 struct Configuration{
   size_t num_particles;
-  double c0, hbar, mu0;
+  double c0, hbar, mu0, omega;
   double simulation_time, dt;
   int interpolation_order;
   std::string qd_path;
