@@ -43,7 +43,7 @@ class GreenFunction::Dyadic {
     return Eigen::Matrix3d::Identity() - 3 * rhat_dyadic(dr);
   }
 
- private:
+ protected:
   double mu0_, c_;
 };
 
