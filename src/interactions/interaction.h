@@ -9,7 +9,6 @@ class Interaction {
  public:
   Interaction(const std::shared_ptr<const DotVector> &dots)
       : dots(dots), results(dots->size()){};
-  virtual ~Interaction() = 0;
   cmplx result(const int i) { return results[i]; }
   virtual void evaluate(const int) = 0;
 
@@ -17,7 +16,5 @@ class Interaction {
   std::shared_ptr<const DotVector> dots;
   std::vector<cmplx> results;
 };
-
-inline Interaction::~Interaction() = default;
 
 #endif
