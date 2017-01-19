@@ -5,18 +5,20 @@ using Vec3d = Eigen::Vector3d;
 HistoryInteraction::HistoryInteraction(
     const std::shared_ptr<const DotVector> &dots,
     const std::shared_ptr<const History::HistoryArray> &history,
-    const int interp_order, const GreenFunction::Dyadic &dyadic)
+    const std::shared_ptr<GreenFunction::Dyadic> &dyadic,
+    const int interp_order)
     : Interaction(dots),
       history(history),
+      dyadic(dyadic),
       interp_order(interp_order),
       num_interactions(dots->size() * (dots->size() - 1) / 2),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
-  build_coefficient_table(dyadic);
+  build_coefficient_table();
 }
 
-void HistoryInteraction::build_coefficient_table(const GreenFunction::Dyadic &dyadic)
+void HistoryInteraction::build_coefficient_table()
 {
   Interpolation::UniformLagrangeSet lagrange(interp_order);
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
@@ -32,7 +34,7 @@ void HistoryInteraction::build_coefficient_table(const GreenFunction::Dyadic &dy
     lagrange.calculate_weights(delay.second, config.dt);
 
     std::vector<Eigen::Matrix3cd> interp_dyads(
-        dyadic.coefficients(dr, lagrange));
+        dyadic->coefficients(dr, lagrange));
 
     for(int i = 0; i <= interp_order; ++i) {
       coefficients[pair_idx][i] =

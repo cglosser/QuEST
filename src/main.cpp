@@ -8,6 +8,7 @@
 #include "configuration.h"
 #include "interactions/history_interaction.h"
 #include "interactions/rotating_green_function.h"
+#include "interactions/history_interaction.h"
 #include "math_utils.h"
 
 using namespace std;
@@ -39,16 +40,12 @@ int main(int argc, char *argv[])
                                        (config.simulation_time / 10)));
     }
 
-    ofstream ipol("input_polarization.dat");
-    ipol << scientific << setprecision(12);
-    for(int i = 0; i < 1000; ++i) {
-      ipol << i * config.dt << " " << polarization((*history)[0][i][0]) << endl;
-    }
+    auto gf = std::static_pointer_cast<GreenFunction::Dyadic>(
+        std::make_shared<GreenFunction::RotatingDyadic>(config.mu0, config.c0,
+                                                        config.omega));
 
-    // Initalize an interaction
-    GreenFunction::RotatingDyadic dy(config.mu0, config.c0, config.omega);
-    HistoryInteraction history_interaction(qds, history,
-                                           config.interpolation_order, dy);
+    HistoryInteraction history_interaction(qds, history, gf,
+                                           config.interpolation_order);
 
     ofstream fd("data.dat");
     fd << scientific << setprecision(12);
