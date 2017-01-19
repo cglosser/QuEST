@@ -18,8 +18,6 @@ HistoryInteraction::HistoryInteraction(
 
 void HistoryInteraction::build_coefficient_table(const GreenFunction::Dyadic &dyadic)
 {
-  using std::cout; using std::endl;
-
   Interpolation::UniformLagrangeSet lagrange(interp_order);
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
