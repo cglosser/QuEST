@@ -48,9 +48,9 @@ class QuantumDot {
 
 DotVector import_dots(const std::string &);
 
-inline double polarization(const matrix_elements &mel)
+inline cmplx polarization(const matrix_elements &mel)
 {
-  return 2 * mel[1].real();
+  return mel[1];
 }
 
 std::vector<
