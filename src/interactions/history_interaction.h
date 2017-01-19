@@ -19,7 +19,7 @@ class HistoryInteraction : public Interaction {
                      const int);
   void evaluate(const int);
 
- private:
+ //private:
   std::shared_ptr<const History::HistoryArray> history;
   std::shared_ptr<GreenFunction::Dyadic> dyadic;
   int interp_order, num_interactions;
