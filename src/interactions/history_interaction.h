@@ -15,18 +15,17 @@ class HistoryInteraction : public Interaction {
  public:
   HistoryInteraction(const std::shared_ptr<const DotVector> &,
                      const std::shared_ptr<const History::HistoryArray> &,
-                     const std::shared_ptr<GreenFunction::Dyadic> &,
-                     const int);
+                     const int,
+                     const GreenFunction::Dyadic &);
   void evaluate(const int);
 
  //private:
   std::shared_ptr<const History::HistoryArray> history;
-  std::shared_ptr<GreenFunction::Dyadic> dyadic;
   int interp_order, num_interactions;
   std::vector<int> floor_delays;
   boost::multi_array<cmplx, 2> coefficients;
 
-  void build_coefficient_table();
+  void build_coefficient_table(const GreenFunction::Dyadic &);
 
   static int coord2idx(int, int);
   static std::pair<int, int> idx2coord(const int);

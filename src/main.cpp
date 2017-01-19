@@ -28,11 +28,9 @@ int main(int argc, char *argv[])
 
     auto hist(make_shared<History::HistoryArray>());
 
-    auto ffd = std::static_pointer_cast<GreenFunction::Dyadic>(
-        std::make_shared<GreenFunction::RotatingDyadic>(config.mu0, config.c0,
-                                                        2278.9013));
+    GreenFunction::RotatingDyadic dy(config.mu0, config.c0, 2278.9013);
 
-    HistoryInteraction hits(qds, hist, ffd, config.interpolation_order);
+    HistoryInteraction hits(qds, hist, config.interpolation_order, dy);
 
     cout << hits.floor_delays[0] << endl;
     for(int i = 0; i <= 3; ++i) {
