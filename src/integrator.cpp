@@ -105,7 +105,7 @@ PredictorCorrector::Integrator::Integrator(
     const double dt, const int n_lambda, const int n_time, const double radius,
     const std::shared_ptr<History::HistoryArray> &history,
     const std::vector<rhs_func> &rhs_funcs,
-    const std::shared_ptr<const PulseInteraction> &pulse)
+    const std::shared_ptr<PulseInteraction> &pulse)
     : num_solutions(rhs_funcs.size()),
       time_idx_ubound(history->index_bases()[1] + history->shape()[1]),
       dt(dt),

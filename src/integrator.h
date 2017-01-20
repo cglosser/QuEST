@@ -36,7 +36,7 @@ class PredictorCorrector::Integrator {
   Integrator(const double, const int, const int,
              const double, const std::shared_ptr<History::HistoryArray> &,
              const std::vector<rhs_func> &,
-             const std::shared_ptr<const PulseInteraction> &);
+             const std::shared_ptr<PulseInteraction> &);
   void solve(const int) const;
 
  private:
@@ -45,7 +45,7 @@ class PredictorCorrector::Integrator {
   Weights weights;
   std::shared_ptr<History::HistoryArray> history;
   std::vector<rhs_func> rhs_funcs;
-  std::shared_ptr<const PulseInteraction> pulse;
+  std::shared_ptr<PulseInteraction> pulse;
 
   void predictor(const int) const;
   void evaluator(const int) const;
