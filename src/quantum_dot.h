@@ -48,11 +48,6 @@ class QuantumDot {
 
 DotVector import_dots(const std::string &);
 
-inline cmplx polarization(const matrix_elements &mel)
-{
-  return mel[1];
-}
-
 std::vector<
     std::function<matrix_elements(const matrix_elements &, const double)>>
 rhs_functions(const DotVector &);

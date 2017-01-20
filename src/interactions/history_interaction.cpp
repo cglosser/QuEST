@@ -55,9 +55,11 @@ void HistoryInteraction::evaluate(const int time_idx)
     for(int i = 0; i <= interp_order; ++i) {
       if(s - i < (*history).index_bases()[1]) continue;
       results[src] +=
-          polarization((*history)[obs][s - i][0]) * coefficients[pair_idx][i];
+          (*dyadic).polarization_prefactor((*history)[obs][s - i][0]) *
+          coefficients[pair_idx][i];
       results[obs] +=
-          polarization((*history)[src][s - i][0]) * coefficients[pair_idx][i];
+          (*dyadic).polarization_prefactor((*history)[src][s - i][0]) *
+          coefficients[pair_idx][i];
     }
   }
 }
