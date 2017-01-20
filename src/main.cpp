@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 
     // Set up Pulse and Interaction
     auto pulse(
-        make_shared<Pulse>(15589.2260227, 5, config.omega, config.omega,
+        make_shared<Pulse>(1558.92260227, 5, config.omega, config.omega,
                            Eigen::Vector3d(0, 0, config.omega / config.c0),
                            Eigen::Vector3d(1, 0, 0)));
 
@@ -42,6 +42,16 @@ int main(int argc, char *argv[])
     // Set up Integrator
     PredictorCorrector::Integrator integrator(config.dt, 18, 22, 3.15, history,
                                               rhs_funs, field_interarction);
+
+    // Solve the system
+    for(int i = 0; i < 1000; ++i) {
+      integrator.solve(i);
+    }
+
+    for(int t = 0; t < 1000; ++t) {
+      const double time = t * config.dt;
+      cout << time << " " << (*history)[0][t][0].transpose() << endl;
+    }
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
     // move on
