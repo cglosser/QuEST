@@ -1,5 +1,7 @@
 #include "integrator.h"
 
+constexpr int NUM_CORRECTOR_STEPS = 10;
+
 std::complex<double> semidisk(const double t)
 {
   const std::complex<double> iu(0, 1);
@@ -120,7 +122,7 @@ void PredictorCorrector::Integrator::solve(const int step) const
   predictor(step);
   evaluator(step);
 
-  for(int m = 1; m < 10; ++m) {
+  for(int m = 0; m < NUM_CORRECTOR_STEPS; ++m) {
     corrector(step);
     evaluator(step);
   }
