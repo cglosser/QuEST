@@ -9,13 +9,13 @@
 
 #include "history.h"
 #include "math_utils.h"
+#include "interactions/pulse_interaction.h"
 
 namespace PredictorCorrector {
   class Weights;
   class Integrator;
 
-  typedef std::function<History::soltype(const History::soltype &,
-                                         const double)>
+  typedef std::function<History::soltype(const History::soltype &, const cmplx)>
       rhs_func;
 }
 
@@ -34,8 +34,9 @@ class PredictorCorrector::Weights {
 class PredictorCorrector::Integrator {
  public:
   Integrator(const double, const int, const int,
-             const double, const std::shared_ptr<History::HistoryArray>,
-             const std::vector<rhs_func> &);
+             const double, const std::shared_ptr<History::HistoryArray> &,
+             const std::vector<rhs_func> &,
+             const std::shared_ptr<const PulseInteraction> &);
   void solve(const int) const;
 
  private:
@@ -44,6 +45,7 @@ class PredictorCorrector::Integrator {
   Weights weights;
   std::shared_ptr<History::HistoryArray> history;
   std::vector<rhs_func> rhs_funcs;
+  std::shared_ptr<const PulseInteraction> pulse;
 
   void predictor(const int) const;
   void evaluator(const int) const;

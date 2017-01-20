@@ -8,11 +8,11 @@ QuantumDot::QuantumDot(const Eigen::Vector3d &pos, const double freq,
 }
 
 matrix_elements QuantumDot::liouville_rhs(const matrix_elements &rho,
-                                          const double rabi) const
+                                          const cmplx rabi, const double laser_freq) const
 {
-  const double m0 = -2 * rho[1].imag() * rabi;
-  cmplx m1(iu * ((2 * rho[0].real() - 1) * rabi + rho[1] * freq));
-  return matrix_elements(m0, m1);
+  const cmplx m0 = (rabi * std::conj(rho[1]) - std::conj(rabi) * rho[1]);
+  const cmplx m1 = rabi * (1.0 - 2.0 * rho[0]) + rho[1] * (laser_freq - freq);
+  return -iu * matrix_elements(m0, m1);
 }
 
 Eigen::Vector3d separation(const QuantumDot &d1, const QuantumDot &d2)
@@ -44,17 +44,18 @@ DotVector import_dots(const std::string &fname)
 }
 
 typedef std::vector<
-    std::function<matrix_elements(const matrix_elements &, const double)>>
+    std::function<matrix_elements(const matrix_elements &, const cmplx)>>
     rhs_func_vector;
-rhs_func_vector rhs_functions(const DotVector &dots)
+rhs_func_vector rhs_functions(const DotVector &dots, const double laser_frequency)
 {
   rhs_func_vector funcs(dots.size());
 
   using std::placeholders::_1;
   using std::placeholders::_2;
   std::transform(dots.begin(), dots.end(), funcs.begin(),
-                 [](const QuantumDot &d) {
-                   return std::bind(&QuantumDot::liouville_rhs, d, _1, _2);
+                 [laser_frequency](const QuantumDot &d) {
+                   return std::bind(&QuantumDot::liouville_rhs, d, _1, _2,
+                                    laser_frequency);
                  });
   return funcs;
 }

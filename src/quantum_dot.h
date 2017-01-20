@@ -24,7 +24,8 @@ class QuantumDot {
   QuantumDot(const Eigen::Vector3d &, const double,
              const std::pair<double, double> &, const Eigen::Vector3d &);
 
-  matrix_elements liouville_rhs(const matrix_elements &, const double) const;
+  matrix_elements liouville_rhs(const matrix_elements &, const cmplx,
+                                const double) const;
 
   const Eigen::Vector3d &position() const { return pos; }
   const Eigen::Vector3d &dipole() const { return dip; }
@@ -49,7 +50,7 @@ class QuantumDot {
 DotVector import_dots(const std::string &);
 
 std::vector<
-    std::function<matrix_elements(const matrix_elements &, const double)>>
-rhs_functions(const DotVector &);
+    std::function<matrix_elements(const matrix_elements &, const cmplx)>>
+rhs_functions(const DotVector &, const double);
 
 #endif
