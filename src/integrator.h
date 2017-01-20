@@ -33,21 +33,21 @@ class PredictorCorrector::Weights {
 
 class PredictorCorrector::Integrator {
  public:
-  Integrator(const int, const int, const double, const int, const int,
+  Integrator(const double, const int, const int,
              const double, const std::shared_ptr<History::HistoryArray>,
              const std::vector<rhs_func> &);
-  void solve(const int);
+  void solve(const int) const;
 
  private:
-  int num_solutions, num_steps;
+  int num_solutions, max_time_idx;
   double dt;
   Weights weights;
   std::shared_ptr<History::HistoryArray> history;
   std::vector<rhs_func> rhs_funcs;
 
-  void predictor(const int);
-  void evaluator(const int);
-  void corrector(const int);
+  void predictor(const int) const;
+  void evaluator(const int) const;
+  void corrector(const int) const;
 };
 
 #endif

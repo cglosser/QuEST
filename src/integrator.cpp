@@ -100,21 +100,23 @@ PredictorCorrector::Weights::Weights(const int n_lambda, const int n_time,
 }
 
 PredictorCorrector::Integrator::Integrator(
-    const int num_solutions, const int num_steps, const double dt,
-    const int n_lambda, const int n_time, const double radius,
+    const double dt, const int n_lambda, const int n_time, const double radius,
     const std::shared_ptr<History::HistoryArray> history,
     const std::vector<rhs_func> &rhs_funcs)
-    : num_solutions(num_solutions),
-      num_steps(num_steps + 1),
+    : num_solutions(rhs_funcs.size()),
+      max_time_idx(history->index_bases()[1] + history->shape()[1]),
       dt(dt),
       weights(n_lambda, n_time, radius),
       history(history),
       rhs_funcs(rhs_funcs)
 {
+  assert(rhs_funcs.size() == history->shape()[0]);
 }
 
-void PredictorCorrector::Integrator::solve(const int step)
+void PredictorCorrector::Integrator::solve(const int step) const
 {
+  assert(0 <= step && step < max_time_idx);
+
   predictor(step);
   evaluator(step);
 
@@ -124,7 +126,7 @@ void PredictorCorrector::Integrator::solve(const int step)
   }
 }
 
-void PredictorCorrector::Integrator::predictor(const int step)
+void PredictorCorrector::Integrator::predictor(const int step) const
 {
   const int start = step - weights.width();
 
@@ -138,7 +140,7 @@ void PredictorCorrector::Integrator::predictor(const int step)
   }
 }
 
-void PredictorCorrector::Integrator::corrector(const int step)
+void PredictorCorrector::Integrator::corrector(const int step) const
 {
   const int start = step - weights.width();
 
@@ -153,6 +155,6 @@ void PredictorCorrector::Integrator::corrector(const int step)
   }
 }
 
-void PredictorCorrector::Integrator::evaluator(const int step)
+void PredictorCorrector::Integrator::evaluator(const int step) const
 {
 }
