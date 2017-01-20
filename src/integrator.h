@@ -39,7 +39,7 @@ class PredictorCorrector::Integrator {
   void solve(const int) const;
 
  private:
-  int num_solutions, max_time_idx;
+  int num_solutions, time_idx_ubound;
   double dt;
   Weights weights;
   std::shared_ptr<History::HistoryArray> history;

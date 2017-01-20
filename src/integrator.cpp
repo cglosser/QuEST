@@ -106,7 +106,7 @@ PredictorCorrector::Integrator::Integrator(
     const std::shared_ptr<History::HistoryArray> history,
     const std::vector<rhs_func> &rhs_funcs)
     : num_solutions(rhs_funcs.size()),
-      max_time_idx(history->index_bases()[1] + history->shape()[1]),
+      time_idx_ubound(history->index_bases()[1] + history->shape()[1]),
       dt(dt),
       weights(n_lambda, n_time, radius),
       history(history),
@@ -117,7 +117,7 @@ PredictorCorrector::Integrator::Integrator(
 
 void PredictorCorrector::Integrator::solve(const int step) const
 {
-  assert(0 <= step && step < max_time_idx);
+  assert(0 <= step && step < time_idx_ubound);
 
   predictor(step);
   evaluator(step);
