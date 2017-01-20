@@ -161,4 +161,9 @@ void PredictorCorrector::Integrator::corrector(const int step) const
 
 void PredictorCorrector::Integrator::evaluator(const int step) const
 {
+  (*pulse).evaluate(step);
+  for(int solution = 0; solution < num_solutions; ++solution) {
+    (*history)[solution][step][1] = rhs_funcs[solution](
+        (*history)[solution][step][0], (*pulse).result(solution));
+  }
 }
