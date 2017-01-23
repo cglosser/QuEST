@@ -9,9 +9,10 @@
 #include <string>
 
 struct Configuration{
-  size_t num_particles;
+  int num_particles;
+  int num_timesteps;
   double c0, hbar, mu0, omega;
-  double simulation_time, dt;
+  double dt;
   int interpolation_order;
   std::string qd_path;
 };

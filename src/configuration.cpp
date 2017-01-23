@@ -18,8 +18,8 @@ po::variables_map parse_configs(int argc, char *argv[]) {
   file_description.add_options()
     ("files.qd_path", po::value<std::string>(&config.qd_path)->default_value("dots.dat"), "path to dot configuration file")
 
-    ("parameters.num_particles",       po::value<size_t>(&config.num_particles)->required(), "number of particles in the system")
-    ("parameters.simulation_time",     po::value<double>(&config.simulation_time)->required(), "total (time-domain) simulation duration")
+    ("parameters.num_particles",       po::value<int>(&config.num_particles)->required(), "number of particles in the system")
+    ("parameters.num_timesteps",       po::value<int>(&config.num_timesteps)->required(), "number of solution timesteps")
     ("parameters.timestep",            po::value<double>(&config.dt)->required(), "timestep size")
     ("parameters.interpolation_order", po::value<int>(&config.interpolation_order)->required(), "order of the interpolants")
 
