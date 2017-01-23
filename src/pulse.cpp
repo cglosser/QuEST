@@ -16,7 +16,7 @@ Eigen::Vector3d Pulse::operator()(const Eigen::Vector3d &r,
                                   const double t) const
 {
   const double arg = wavevector.dot(r) - freq * (t - delay);
-  return (amplitude * polarization) * gaussian(arg / width); // * cos(arg);
+  return (amplitude / 2 * polarization) * gaussian(arg / width);  // * cos(arg);
 }
 
 std::ostream &operator<<(std::ostream &os, const Pulse &p)
