@@ -45,7 +45,7 @@ void HistoryInteraction::build_coefficient_table()
 
 void HistoryInteraction::evaluate(const int time_idx)
 {
-  std::fill(results.begin(), results.end(), 0);
+  results.setZero();
 
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
