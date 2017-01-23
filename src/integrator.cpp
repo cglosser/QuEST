@@ -105,14 +105,14 @@ PredictorCorrector::Integrator::Integrator(
     const double dt, const int n_lambda, const int n_time, const double radius,
     const std::shared_ptr<History::HistoryArray> &history,
     const std::vector<rhs_func> &rhs_funcs,
-    const std::shared_ptr<PulseInteraction> &pulse)
+    const std::vector<std::shared_ptr<Interaction>> &interactions)
     : num_solutions(rhs_funcs.size()),
       time_idx_ubound(history->index_bases()[1] + history->shape()[1]),
       dt(dt),
       weights(n_lambda, n_time, radius),
       history(history),
       rhs_funcs(rhs_funcs),
-      pulse(pulse)
+      interactions(interactions)
 {
   assert(rhs_funcs.size() == history->shape()[0]);
 }
@@ -161,9 +161,16 @@ void PredictorCorrector::Integrator::corrector(const int step) const
 
 void PredictorCorrector::Integrator::evaluator(const int step) const
 {
-  (*pulse).evaluate(step);
+  auto projected_efields =
+      std::accumulate(interactions.begin(), interactions.end(),
+                      Interaction::ResultArray::Zero(num_solutions, 1).eval(),
+                      [step](const Interaction::ResultArray &r,
+                             const std::shared_ptr<Interaction> &interaction) {
+                        return r + interaction->evaluate(step);
+                      });
+
   for(int solution = 0; solution < num_solutions; ++solution) {
     (*history)[solution][step][1] =
-        rhs_funcs[solution]((*history)[solution][step][0], (*pulse)[solution]);
+        rhs_funcs[solution]((*history)[solution][step][0], projected_efields[solution]);
   }
 }
