@@ -11,8 +11,8 @@ class Interaction {
 
   Interaction(const std::shared_ptr<const DotVector> &dots)
       : dots(dots), results(dots->size()){};
-  cmplx &operator[](const int i) { return results[i]; }
-  virtual void evaluate(const int) = 0;
+  const cmplx &operator[](const int i) const { return results[i]; }
+  virtual const ResultArray &evaluate(const int) = 0;
 
  protected:
   std::shared_ptr<const DotVector> dots;

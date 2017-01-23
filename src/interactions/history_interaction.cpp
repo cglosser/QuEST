@@ -43,7 +43,7 @@ void HistoryInteraction::build_coefficient_table()
   }
 }
 
-void HistoryInteraction::evaluate(const int time_idx)
+const Interaction::ResultArray &HistoryInteraction::evaluate(const int time_idx)
 {
   results.setZero();
 
@@ -62,6 +62,8 @@ void HistoryInteraction::evaluate(const int time_idx)
           coefficients[pair_idx][i];
     }
   }
+
+  return results;
 }
 
 int HistoryInteraction::coord2idx(int row, int col)

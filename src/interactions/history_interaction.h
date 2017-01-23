@@ -17,7 +17,8 @@ class HistoryInteraction : public Interaction {
                      const std::shared_ptr<const History::HistoryArray> &,
                      const std::shared_ptr<GreenFunction::Dyadic> &,
                      const int);
-  void evaluate(const int);
+
+  virtual const ResultArray &evaluate(const int);
 
  //private:
   std::shared_ptr<const History::HistoryArray> history;

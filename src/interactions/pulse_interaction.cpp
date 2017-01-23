@@ -6,7 +6,7 @@ PulseInteraction::PulseInteraction(const std::shared_ptr<const DotVector> &dots,
 {
 }
 
-void PulseInteraction::evaluate(const int time_idx)
+const Interaction::ResultArray &PulseInteraction::evaluate(const int time_idx)
 {
   const double time = time_idx * config.dt;
 
@@ -15,4 +15,6 @@ void PulseInteraction::evaluate(const int time_idx)
         (*pulse)((*dots)[i].position(), time).dot((*dots)[i].dipole()) /
         config.hbar;
   }
+
+  return results;
 }
