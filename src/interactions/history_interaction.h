@@ -1,5 +1,5 @@
-#ifndef PULSE_INTERACTION_H
-#define PULSE_INTERACTION_H
+#ifndef HISTORY_INTERACTION_H
+#define HISTORY_INTERACTION_H
 
 #include <Eigen/Dense>
 #include <boost/multi_array.hpp>
@@ -20,7 +20,7 @@ class HistoryInteraction : public Interaction {
 
   virtual const ResultArray &evaluate(const int);
 
- //private:
+ private:
   std::shared_ptr<const History::HistoryArray> history;
   std::shared_ptr<GreenFunction::Dyadic> dyadic;
   int interp_order, num_interactions;
