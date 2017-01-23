@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "configuration.h"
+#include "history.h"
 #include "integrator.h"
 #include "interactions/pulse_interaction.h"
 #include "pulse.h"
@@ -25,8 +26,7 @@ int main(int argc, char *argv[])
     auto rhs_funs(rhs_functions(*qds, config.omega));
 
     // Set up History
-    typedef History::HistoryArray::extent_range range;
-    auto history(make_shared<History::HistoryArray>(boost::extents[config.num_particles][range(-22, 1000)][2]));
+    auto history(History::make_shared_history(config.num_particles, 22, 1000));
     for(int t = -22; t <= 0 ; ++t) {
       (*history)[0][t][0] = Eigen::Vector2cd(1, 0); // Ground state
     }
