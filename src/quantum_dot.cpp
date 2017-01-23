@@ -10,9 +10,12 @@ QuantumDot::QuantumDot(const Eigen::Vector3d &pos, const double freq,
 matrix_elements QuantumDot::liouville_rhs(const matrix_elements &rho,
                                           const cmplx rabi, const double laser_freq) const
 {
-  const cmplx m0 = (rabi * std::conj(rho[1]) - std::conj(rabi) * rho[1]);
-  const cmplx m1 = rabi * (1.0 - 2.0 * rho[0]) + rho[1] * (laser_freq - freq);
-  return -iu * matrix_elements(m0, m1);
+  const cmplx m0 = -iu * (rabi * std::conj(rho[1]) - std::conj(rabi) * rho[1]) -
+                   (rho[0] - 1.0) / damping.first;
+  const cmplx m1 =
+      -iu * (rabi * (1.0 - 2.0 * rho[0]) + rho[1] * (laser_freq - freq)) -
+      rho[1] / damping.second;
+  return matrix_elements(m0, m1);
 }
 
 Eigen::Vector3d separation(const QuantumDot &d1, const QuantumDot &d2)
