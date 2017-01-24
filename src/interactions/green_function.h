@@ -15,7 +15,8 @@ namespace GreenFunction {
 
 class GreenFunction::Dyadic {
  public:
-  Dyadic(const double mu0, const double c) : mu0_(mu0), c_(c){};
+  Dyadic(const double mu0, const double c, const double hbar)
+      : c_(c), mu0_over_4pi_hbar_(mu0 / (4 * M_PI * hbar)){};
   virtual std::vector<Eigen::Matrix3cd> coefficients(
       const Eigen::Vector3d &, const Interpolation::UniformLagrangeSet &) const;
 
@@ -26,7 +27,7 @@ class GreenFunction::Dyadic {
   }
 
  protected:
-  double mu0_, c_;
+  double c_, mu0_over_4pi_hbar_;
 
   std::array<Eigen::Matrix3d, 3> spatial_dyads(const Eigen::Vector3d &dr) const
   {

@@ -7,12 +7,11 @@ std::vector<Eigen::Matrix3cd> GreenFunction::RotatingDyadic::coefficients(
   std::vector<Eigen::Matrix3cd> coefs(interp.order() + 1,
                                       Eigen::Matrix3cd::Zero());
 
-  const double alpha = -mu0_ / (4 * M_PI);
   const auto dyads(spatial_dyads(dr));
 
   for(int i = 0; i <= interp.order(); ++i) {
     coefs[i] =
-        alpha *
+        mu0_over_4pi_hbar_ *
         (dyads[0].cast<cmplx>() * interp.weights[0][i] +
          dyads[1].cast<cmplx>() *
              (interp.weights[1][i] + iu * omega_ * interp.weights[0][i]) +

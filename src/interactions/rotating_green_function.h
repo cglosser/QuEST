@@ -9,8 +9,8 @@ namespace GreenFunction {
 
 class GreenFunction::RotatingDyadic : public GreenFunction::Dyadic {
  public:
-  RotatingDyadic(const double mu0, const double c, const double omega)
-      : Dyadic(mu0, c), omega_(omega){};
+  RotatingDyadic(const double mu0, const double c, const double hbar, const double omega)
+      : Dyadic(mu0, c, hbar), omega_(omega){};
   virtual std::vector<Eigen::Matrix3cd> coefficients(
       const Eigen::Vector3d &, const Interpolation::UniformLagrangeSet &) const;
 
