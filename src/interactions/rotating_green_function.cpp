@@ -11,7 +11,7 @@ std::vector<Eigen::Matrix3cd> GreenFunction::RotatingDyadic::coefficients(
 
   for(int i = 0; i <= interp.order(); ++i) {
     coefs[i] =
-        mu0_over_4pi_hbar_ *
+        -mu0_over_4pi_hbar_ * std::exp(-iu * omega_ * dr.norm() / c_) *
         (dyads[0].cast<cmplx>() * interp.weights[0][i] +
          dyads[1].cast<cmplx>() *
              (interp.weights[1][i] + iu * omega_ * interp.weights[0][i]) +
