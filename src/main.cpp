@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 
     // Set up Pulse and Interaction
     auto pulse1(
-        make_shared<Pulse>(0.8*15589.2260227, 0.5, config.omega, 10*config.omega,
+        make_shared<Pulse>(15589.2260227, 0.5, config.omega, 10*config.omega,
                            Eigen::Vector3d(0, 0, config.omega / config.c0),
                            Eigen::Vector3d(1, 0, 0)));
 
