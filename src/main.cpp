@@ -35,7 +35,6 @@ int main(int argc, char *argv[])
       }
     }
 
-    // Set up Pulse and Interaction
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
 
     auto rotating_dyadic(make_shared<GreenFunction::RotatingDyadic>(
@@ -48,19 +47,11 @@ int main(int argc, char *argv[])
         static_pointer_cast<Interaction>(hits)
     };
 
-    // Set up Integrator
     PredictorCorrector::Integrator integrator(config.dt, 18, 22, 3.15, history,
                                               rhs_funs, std::move(interactions));
 
     cout << "Solving..." << endl;
-
-    // Solve the system
-    for(int i = 0; i < config.num_timesteps; ++i) {
-      cout << "  " << i << endl;
-      integrator.solve(i);
-
-
-    }
+    integrator.solve();
 
     cout << "Writing output..." << endl;
 

@@ -117,7 +117,12 @@ PredictorCorrector::Integrator::Integrator(
   assert(rhs_funcs.size() == history->shape()[0]);
 }
 
-void PredictorCorrector::Integrator::solve(const int step) const
+void PredictorCorrector::Integrator::solve() const
+{
+  for(int step = 0; step < time_idx_ubound; ++step) solve_step(step);
+}
+
+void PredictorCorrector::Integrator::solve_step(const int step) const
 {
   assert(0 <= step && step < time_idx_ubound);
 

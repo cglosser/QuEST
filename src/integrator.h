@@ -37,7 +37,7 @@ class PredictorCorrector::Integrator {
              const double, const std::shared_ptr<History::HistoryArray> &,
              const std::vector<rhs_func> &,
              const std::vector<std::shared_ptr<Interaction>> &);
-  void solve(const int) const;
+  void solve() const;
 
  private:
   int num_solutions, time_idx_ubound;
@@ -47,6 +47,7 @@ class PredictorCorrector::Integrator {
   std::vector<rhs_func> rhs_funcs;
   std::vector<std::shared_ptr<Interaction>> interactions;
 
+  void solve_step(const int) const;
   void predictor(const int) const;
   void evaluator(const int) const;
   void corrector(const int) const;
