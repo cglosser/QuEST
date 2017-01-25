@@ -105,14 +105,14 @@ PredictorCorrector::Integrator::Integrator(
     const double dt, const int n_lambda, const int n_time, const double radius,
     const std::shared_ptr<History::HistoryArray> &history,
     const std::vector<rhs_func> &rhs_funcs,
-    const std::vector<std::shared_ptr<Interaction>> &interactions)
+    std::vector<std::shared_ptr<Interaction>> interactions)
     : num_solutions(rhs_funcs.size()),
       time_idx_ubound(history->index_bases()[1] + history->shape()[1]),
       dt(dt),
       weights(n_lambda, n_time, radius),
       history(history),
       rhs_funcs(rhs_funcs),
-      interactions(interactions)
+      interactions(std::move(interactions))
 {
   assert(rhs_funcs.size() == history->shape()[0]);
 }

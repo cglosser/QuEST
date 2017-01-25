@@ -36,7 +36,7 @@ class PredictorCorrector::Integrator {
   Integrator(const double, const int, const int,
              const double, const std::shared_ptr<History::HistoryArray> &,
              const std::vector<rhs_func> &,
-             const std::vector<std::shared_ptr<Interaction>> &);
+             std::vector<std::shared_ptr<Interaction>>);
   void solve() const;
 
  private:
