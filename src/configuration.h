@@ -14,7 +14,7 @@ struct Configuration{
   double c0, hbar, mu0, omega;
   double dt;
   int interpolation_order;
-  std::string qd_path;
+  std::string qd_path, pulse_path;
 };
 
 // This Exception really just allows parse_configs to return control

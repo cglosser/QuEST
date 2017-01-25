@@ -16,7 +16,8 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
   po::options_description file_description("System parameters");
   file_description.add_options()
-    ("files.qd_path", po::value<std::string>(&config.qd_path)->default_value("dots.dat"), "path to dot configuration file")
+    ("files.qd_path",    po::value<std::string>(&config.qd_path)->default_value("dots.dat"), "path to dot configuration file")
+    ("files.pulse_path", po::value<std::string>(&config.pulse_path)->default_value("pulse.cfg"), "path to pulse configuration file")
 
     ("parameters.num_particles",       po::value<int>(&config.num_particles)->required(), "number of particles in the system")
     ("parameters.num_timesteps",       po::value<int>(&config.num_timesteps)->required(), "number of solution timesteps")
