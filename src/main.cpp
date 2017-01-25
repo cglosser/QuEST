@@ -37,15 +37,13 @@ int main(int argc, char *argv[])
 
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
 
-    auto rotating_dyadic(make_shared<GreenFunction::RotatingDyadic>(
-        config.mu0, config.c0, config.hbar, config.omega));
-
-    auto hits = make_shared<HistoryInteraction>(qds, history, rotating_dyadic, config.interpolation_order);
+    auto rotating_dyadic = make_shared<GreenFunction::RotatingDyadic>(
+        config.mu0, config.c0, config.hbar, config.omega);
 
     std::vector<std::shared_ptr<Interaction>> interactions{
-        static_pointer_cast<Interaction>(make_shared<PulseInteraction>(qds, pulse1)),
-        static_pointer_cast<Interaction>(hits)
-    };
+        make_shared<PulseInteraction>(qds, pulse1),
+        make_shared<HistoryInteraction>(qds, history, rotating_dyadic,
+                                        config.interpolation_order)};
 
     PredictorCorrector::Integrator integrator(config.dt, 18, 22, 3.15, history,
                                               rhs_funs, std::move(interactions));
