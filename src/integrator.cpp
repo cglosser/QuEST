@@ -119,7 +119,13 @@ PredictorCorrector::Integrator::Integrator(
 
 void PredictorCorrector::Integrator::solve() const
 {
-  for(int step = 0; step < time_idx_ubound; ++step) solve_step(step);
+  int ten_percent = 0;
+  for(int step = 0; step < time_idx_ubound; ++step) {
+    solve_step(step);
+    if(step % time_idx_ubound / 10 == 0) {
+      std::cout << "\t" << 10*ten_percent++ << "%" << std::endl;
+    }
+  }
 }
 
 void PredictorCorrector::Integrator::solve_step(const int step) const
