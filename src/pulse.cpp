@@ -37,7 +37,7 @@ std::istream &operator>>(std::istream &is, Pulse &p)
 Pulse read_pulse_config(const std::string &fname)
 {
   std::ifstream ifs(fname);
-  assert(ifs.is_open());
+  if(!ifs) throw std::runtime_error("Could not open " + fname);
 
   Pulse p;
   ifs >> p;
