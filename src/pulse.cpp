@@ -33,3 +33,14 @@ std::istream &operator>>(std::istream &is, Pulse &p)
       p.polarization[1] >> p.polarization[2];
   return is;
 }
+
+Pulse read_pulse_config(const std::string &fname)
+{
+  std::ifstream ifs(fname);
+  assert(ifs.is_open());
+
+  Pulse p;
+  ifs >> p;
+
+  return p;
+}

@@ -2,6 +2,7 @@
 #define PULSE_H
 
 #include <Eigen/Dense>
+#include <fstream>
 #include <iostream>
 
 #include "math_utils.h"
@@ -21,5 +22,7 @@ class Pulse {
   double amplitude, delay, width, freq;
   Eigen::Vector3d wavevector, polarization;
 };
+
+Pulse read_pulse_config(const std::string &);
 
 #endif
