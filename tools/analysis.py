@@ -36,6 +36,7 @@ class SimPlotter(object):
 
         axes_abs.set_ylabel("Magnitude")
         axes_abs.set_title(self.fname)
+        axes_abs.set_ylim((-0.08,0.54))
 
         axes_arg.set_xlabel("Time (ps)")
         axes_arg.set_ylabel("Phase")
