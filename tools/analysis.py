@@ -87,11 +87,22 @@ class SimPlotter(object):
         self.edwards_anderson_plot().savefig(os.path.join(path, "edwards-anderson.png"))
         self.phase_order_plot().savefig(os.path.join(path, "phase_order.png"))
         self.inverse_participation_plot().savefig(os.path.join(path, "inverse_participation_ratio.png"))
-base_path = "/home/connor/Scratch/extensive"
-data_paths = glob(os.path.join(base_path,"*_pi_pulse/sim/density*"))
 
-sp = SimPlotter("/home/connor/Scratch/extensive/0.5_pi_pulse/sim/density_01/output.dat", 1024, 3)
+def main():
+    base_path = "/home/connor/Scratch/extensive"
+    data_paths = sorted(glob(os.path.join(base_path,"*_pi_pulse/sim/density*")))
 
-fig = sp.population_plot()
+    for source in data_paths:
+        print(source)
 
-plt.show()
+        output_dir = os.path.join(source, "figures")
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        sp = SimPlotter(os.path.join(source, "output.dat"), 1024, 3)
+        sp.save_plots(output_dir)
+
+        plt.close('all')
+
+if __name__=="__main__":
+    main()
