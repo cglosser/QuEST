@@ -27,7 +27,20 @@ class SimPlotter(object):
 
         return fig
 
+    def polarization_plot(self):
+        fig, (axes_abs, axes_arg) = plt.subplots(2, sharex = True)
 
+        for i in range(self.num_cols):
+            axes_abs.plot(self.times, np.abs(self.polarizations[:,i]))
+            axes_arg.plot(self.times, np.angle(self.polarizations[:,i]))
+
+        axes_abs.set_ylabel("Magnitude")
+        axes_abs.set_title(self.fname)
+
+        axes_arg.set_xlabel("Time (ps)")
+        axes_arg.set_ylabel("Phase")
+
+        return fig
 
 base_path = "/home/connor/Scratch/extensive"
 data_paths = glob(os.path.join(base_path,"*_pi_pulse/sim/density*"))
