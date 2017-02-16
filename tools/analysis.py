@@ -42,6 +42,18 @@ class SimPlotter(object):
 
         return fig
 
+    def edwards_anderson_plot(self):
+        fig, axes = plt.subplots()
+
+        dthetas = np.angle(self.polarizations) - np.angle(self.polarizations[0])
+        axes.plot(self.times, np.abs(np.mean(np.exp(1j*dthetas), axis = 1)))
+
+        axes.set_xlabel("Time (ps)")
+        axes.set_ylabel("Edwards-Anderson order parameter")
+        axes.set_ylim((-0.08,1.08))
+        axes.set_title(self.fname)
+
+        return fig
 base_path = "/home/connor/Scratch/extensive"
 data_paths = glob(os.path.join(base_path,"*_pi_pulse/sim/density*"))
 
