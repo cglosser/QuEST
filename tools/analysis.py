@@ -81,6 +81,12 @@ class SimPlotter(object):
 
         return fig
 
+    def save_plots(self, path):
+        self.population_plot().savefig(os.path.join(path, "population.png"))
+        self.polarization_plot().savefig(os.path.join(path, "polarization.png"))
+        self.edwards_anderson_plot().savefig(os.path.join(path, "edwards-anderson.png"))
+        self.phase_order_plot().savefig(os.path.join(path, "phase_order.png"))
+        self.inverse_participation_plot().savefig(os.path.join(path, "inverse_participation_ratio.png"))
 base_path = "/home/connor/Scratch/extensive"
 data_paths = glob(os.path.join(base_path,"*_pi_pulse/sim/density*"))
 
