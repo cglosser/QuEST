@@ -70,6 +70,17 @@ class SimPlotter(object):
 
         return fig
 
+    def inverse_participation_plot(self):
+        fig, axes = plt.subplots()
+
+        axes.plot(self.times, np.sum(np.abs(self.polarizations)**4, axis = 1)/np.sum(np.abs(self.polarizations)**2, axis = 1)**2)
+
+        axes.set_xlabel("Time (ps)")
+        axes.set_ylabel("Inverse participation ratio")
+        axes.set_title(self.fname)
+
+        return fig
+
 base_path = "/home/connor/Scratch/extensive"
 data_paths = glob(os.path.join(base_path,"*_pi_pulse/sim/density*"))
 
