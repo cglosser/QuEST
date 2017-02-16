@@ -54,6 +54,22 @@ class SimPlotter(object):
         axes.set_title(self.fname)
 
         return fig
+
+    def phase_order_plot(self):
+        fig, axes = plt.subplots()
+
+        sinusoids = np.mean(np.exp(1j*np.angle(self.polarizations)), axis = 1)
+        axes.plot(self.times, np.real(sinusoids), label = "real part")
+        axes.plot(self.times, np.imag(sinusoids), label = "imag part")
+
+        axes.set_xlabel("Time (ps)")
+        axes.set_ylabel("Phase order parameter")
+        axes.set_ylim((-1.08,1.08))
+        axes.set_title(self.fname)
+        axes.legend(loc="upper right")
+
+        return fig
+
 base_path = "/home/connor/Scratch/extensive"
 data_paths = glob(os.path.join(base_path,"*_pi_pulse/sim/density*"))
 
