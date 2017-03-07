@@ -9,7 +9,7 @@ def grouper(iterable, n, fillvalue=None):
     return zip_longest(*args, fillvalue=fillvalue)
 
 # Settings
-npts = 32
+npts = 1024
 lo_alpha, hi_alpha = 0.075, 1
 
 # External data
@@ -37,7 +37,7 @@ for group in grouper(enumerate(chain.from_iterable(lines)), 10):
 
     plt.draw()
 
-    query = input("Any interesting?")
+    query = input("Any interesting? ")
     if query.lower() in ['y', 'yes']:
         for idx, line in valid_entries:
             line.set_alpha(lo_alpha)
