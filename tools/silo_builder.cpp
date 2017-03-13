@@ -1,6 +1,7 @@
 #include <silo.h>
 #include <Eigen/Dense>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -46,9 +47,34 @@ class SiloFile {
 
 PosArray read_coords(const std::string &);
 
-int main() {
+int main()
+{
+  auto xyz(read_coords("/home/connor/Scratch/high_density/high_density.cfg"));
+  std::ifstream datafile("/home/connor/Scratch/high_density/output.dat");
 
-  auto xyz(read_coords("/home/connor/Scratch/neighborhood_00/dots_neighborhood00.cfg"));
+  std::string line;
+  for(int t = 0; t < 8000; ++t) {
+    std::getline(datafile, line);  // Must advance input!
+    if(t % 10 != 0) continue;
+
+    std::istringstream ss(line);
+    ss.ignore(256, ' ');  // Skip time token
+
+    std::vector<double> pop(nmax), pol_re(nmax), pol_im(nmax);
+    for(int i = 0; i < nmax; ++i) {
+      double dummy;
+      ss >> pop[i] >> dummy >> pol_re[i] >> pol_im[i];
+    }
+
+    std::stringstream namestring;
+    namestring << "vis_" << std::setw(4) << std::setfill('0') << t << ".silo";
+
+    SiloFile silo(namestring.str());
+    silo.write_point_mesh(xyz, "coordinates");
+    silo.write_point_data(pop, "population", "coordinates");
+    silo.write_point_data(pol_re, "re_polarization", "coordinates");
+    silo.write_point_data(pol_im, "im_polarization", "coordinates");
+  }
 
   return 0;
 }
@@ -56,6 +82,10 @@ int main() {
 PosArray read_coords(const std::string &fname)
 {
   std::ifstream ifs(fname);
+  if(!ifs) {
+    throw std::runtime_error("Could not open " + fname);
+  }
+
   PosArray result;
   std::string line;
 
