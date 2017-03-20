@@ -9,9 +9,9 @@
 using std::cout;
 using std::endl;
 
-constexpr int nmax = 1024;
+constexpr int nmax = 10000;
 
-typedef Eigen::Matrix<double, nmax, 3> PosArray;  // Column major!
+typedef Eigen::Matrix<double, Eigen::Dynamic, 3> PosArray;  // Column major!
 
 class SiloFile {
  public:
@@ -86,7 +86,7 @@ PosArray read_coords(const std::string &fname)
     throw std::runtime_error("Could not open " + fname);
   }
 
-  PosArray result;
+  PosArray result(nmax, 3);
   std::string line;
 
   for(int i = 0; i < nmax; ++i) {
