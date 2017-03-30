@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 project(quest)
 
+# Location of custom detection scripts
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
+
 set(CMAKE_CXX_FLAGS "--std=c++11 -Wall -fdiagnostics-color=auto ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
