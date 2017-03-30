@@ -22,7 +22,6 @@ void HistoryInteraction::build_coefficient_table()
 {
   Interpolation::UniformLagrangeSet lagrange(interp_order);
 
-  #pragma omp parallel for firstprivate(lagrange)
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
     std::tie(src, obs) = idx2coord(pair_idx);
