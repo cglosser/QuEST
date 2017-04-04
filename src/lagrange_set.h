@@ -6,6 +6,7 @@
 namespace Interpolation {
   class UniformLagrangeSet;
   typedef boost::multi_array<double, 2> InterpolationTable;
+  constexpr int NUM_DERIVATIVES = 3;
 }
 
 class Interpolation::UniformLagrangeSet {
