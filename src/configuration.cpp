@@ -55,7 +55,8 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
   if (vm.count("version")) {
     cout << "Quantum Electromagnetics Simulation Toolbox (QuEST), version 0" << endl;
-    cout << "Compiled with " << __VERSION__ << " on " << __TIMESTAMP__ << endl;
+    cout << "Compiled with " << __VERSION__ << " on " << __DATE__ << " ("
+         << __TIME__ << ")" << endl;
     throw CommandLineException();
   }
 
