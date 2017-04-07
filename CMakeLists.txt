@@ -1,25 +1,18 @@
-cmake_minimum_required(VERSION 2.6)
-project(quest)
+cmake_minimum_required(VERSION 3.1)
+project(QuEST VERSION 0.1 LANGUAGES CXX)
 
 # Location of custom detection scripts
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
 
-set(CMAKE_CXX_FLAGS "--std=c++11 -Wall -fdiagnostics-color=auto ${CMAKE_CXX_FLAGS}")
+add_executable(quest "")
+target_compile_features(quest PRIVATE
+  cxx_auto_type
+  cxx_constexpr
+  cxx_delegating_constructors
+  cxx_lambdas
+  cxx_range_for
+  cxx_strong_enums
+)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
+include(src/CMakeLists.txt)
 
-set(quest_VERSION_MAJOR 0)
-set(quest_VERSION_MINOR 0)
-
-find_package(Eigen3 3.2.2 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
-
-find_package(Boost 1.55 COMPONENTS program_options REQUIRED)
-include_directories(${BOOST_INCLUDE_DIR})
-
-add_subdirectory(src)
-add_subdirectory(src/interactions)
-
-add_executable(quest ${SOURCES})
-target_link_libraries(quest ${Boost_LIBRARIES})
