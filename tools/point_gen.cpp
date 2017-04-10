@@ -28,10 +28,10 @@ double dist(const Qdot &qd1, const Qdot &qd2)
 
 double min_dist(const std::vector<Qdot> &dots)
 {
-  int idx1, idx2;
+  int idx1 = -1, idx2 = -1;
   double min = 1e100;
-  for(int i = 0; i < dots.size() - 1; ++i) {
-    for(int j = i + 1; j < dots.size(); ++j) {
+  for(size_t i = 0; i < dots.size() - 1; ++i) {
+    for(size_t j = i + 1; j < dots.size(); ++j) {
       double dij = dist(dots[i], dots[j]);
       if(dij < min) {
         min = dij;
