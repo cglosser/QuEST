@@ -4,6 +4,12 @@ project(QuEST VERSION 0.1 LANGUAGES CXX)
 # Location of custom detection scripts
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
 
+include("${PROJECT_SOURCE_DIR}/cmake/flag_check.cmake")
+
+enable_cxx_compiler_flag_if_supported("-Wall")
+enable_cxx_compiler_flag_if_supported("-Wextra")
+enable_cxx_compiler_flag_if_supported("-pedantic")
+
 add_executable(quest "")
 target_compile_features(quest PRIVATE
   cxx_auto_type
@@ -15,4 +21,3 @@ target_compile_features(quest PRIVATE
 )
 
 include(src/CMakeLists.txt)
-
