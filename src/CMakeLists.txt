@@ -19,7 +19,12 @@ target_sources(libquest
     "${CMAKE_CURRENT_LIST_DIR}/quantum_dot.h"
 )
 
+add_executable(quest "")
+
 target_sources(quest
   PUBLIC
     "${CMAKE_CURRENT_LIST_DIR}/main.cpp"
 )
+
+target_compile_features(quest PRIVATE ${CPP_FEATURES})
+target_link_libraries(quest PUBLIC libquest ${Boost_LIBRARIES})
