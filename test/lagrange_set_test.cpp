@@ -1,7 +1,4 @@
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE "Lagrange set"
 #include <boost/test/unit_test.hpp>
-
 #include "../src/lagrange_set.h"
 
 BOOST_AUTO_TEST_CASE(table)
