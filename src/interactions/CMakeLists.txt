@@ -1,4 +1,4 @@
-target_sources(quest
+target_sources(libquest
   PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/green_function.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/green_function.h"
