@@ -55,6 +55,7 @@ class PredictorCorrector::Integrator {
 
   bool all_finite(const int) const;
   void throw_if_unbounded_solution(const int) const;
+  void log_percentage_complete(const int) const;
 };
 
 #endif
