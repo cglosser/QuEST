@@ -5,6 +5,7 @@ if(${Boost_FOUND})
   target_sources(qtest PRIVATE "${CMAKE_CURRENT_LIST_DIR}/main.cpp")
   target_sources(qtest
     PUBLIC
+      "${CMAKE_CURRENT_LIST_DIR}/history_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/lagrange_set_test.cpp"
   )
   target_link_libraries(qtest PUBLIC libquest ${Boost_LIBRARIES})
