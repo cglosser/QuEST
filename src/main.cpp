@@ -52,17 +52,8 @@ int main(int argc, char *argv[])
     integrator.solve();
 
     cout << "Writing output..." << endl;
+    History::write_history(history, "output.dat");
 
-    ofstream output("output.dat");
-    output << setprecision(12) << scientific;
-    for(int t = 0; t < config.num_timesteps; ++t) {
-      const double time = t * config.dt;
-      output << time << " ";
-      for(int sol_idx = 0; sol_idx < config.num_particles; ++sol_idx) {
-        output << (*history)[sol_idx][t][0].transpose() << " ";
-      }
-      output << endl;
-    }
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
     // move on
