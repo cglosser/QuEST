@@ -29,6 +29,9 @@ target_include_directories(libquest PUBLIC ${EIGEN3_INCLUDE_DIR})
 find_package(Boost 1.55 COMPONENTS program_options REQUIRED)
 target_include_directories(libquest PUBLIC ${Boost_INCLUDE_DIR})
 
+include("${PROJECT_SOURCE_DIR}/cmake/set_git_hash.cmake")
+set_git_macros(libquest)
+
 include(src/CMakeLists.txt)
 include(test/CMakeLists.txt)
 include(tools/CMakeLists.txt)
