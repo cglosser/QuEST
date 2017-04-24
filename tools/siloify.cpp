@@ -47,13 +47,18 @@ class SiloFile {
 
 PosArray read_coords(const std::string &);
 
-int main()
+int main(int argc, char *argv[])
 {
-  auto xyz(read_coords("/home/connor/Scratch/high_density/high_density.cfg"));
-  std::ifstream datafile("/home/connor/Scratch/high_density/output.dat");
+  auto xyz(read_coords(argv[1]));
+
+  std::cout << "Reading trajectories from " << argv[2] << std::endl;
+  std::ifstream datafile(argv[2]);
+  if(!datafile) {
+    throw std::runtime_error("Could not open " + std::string(argv[2]));
+  }
 
   std::string line;
-  for(int t = 0; t < 8000; ++t) {
+  for(int t = 0; t < 2000; ++t) {
     std::getline(datafile, line);  // Must advance input!
     if(t % 10 != 0) continue;
 
@@ -85,6 +90,8 @@ PosArray read_coords(const std::string &fname)
   if(!ifs) {
     throw std::runtime_error("Could not open " + fname);
   }
+
+  std::cout << "Reading coords from " << fname << std::endl;
 
   PosArray result(nmax, 3);
   std::string line;
