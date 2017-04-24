@@ -47,7 +47,7 @@ class SiloFile {
 
 PosArray read_coords(const std::string &);
 
-int main(int argc, char *argv[])
+int main(int, char *argv[])
 {
   auto xyz(read_coords(argv[1]));
 
