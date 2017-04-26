@@ -15,8 +15,9 @@ endif (NOT CMAKE_BUILD_TYPE)
 include("${PROJECT_SOURCE_DIR}/cmake/flag_check.cmake")
 enable_cxx_compiler_flag_if_supported("-Wall")
 enable_cxx_compiler_flag_if_supported("-Wextra")
-enable_cxx_compiler_flag_if_supported("-pedantic")
 enable_cxx_compiler_flag_if_supported("-fdiagnostics-color=auto")
+enable_cxx_compiler_flag_if_supported("-march=native")
+enable_cxx_compiler_flag_if_supported("-pedantic")
 
 set(CPP_FEATURES cxx_auto_type cxx_constexpr cxx_delegating_constructors cxx_lambdas cxx_range_for cxx_strong_enums)
 

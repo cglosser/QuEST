@@ -14,15 +14,15 @@ bool History::isfinite(const soltype &sol)
          std::isfinite(sol[1].real()) && std::isfinite(sol[1].imag());
 }
 
-void History::write_history(const std::shared_ptr<const History::HistoryArray> &history,
-                   const std::string &filename, const int n /* = 0 */)
+void History::write_history(
+    const std::shared_ptr<const History::HistoryArray> &history,
+    const std::string &filename, const int n /* = 0 */)
 {
   std::ofstream output(filename);
   output << std::setprecision(12) << std::scientific;
 
   const int max_t =
       (n != 0) ? n : history->shape()[1] + history->index_bases()[1];
-  std::cout << history->shape()[1] + history->index_bases()[1] << std::endl;
 
   for(int t = 0; t < max_t; ++t) {
     for(int sol_idx = 0; sol_idx < static_cast<int>(history->shape()[0]);
