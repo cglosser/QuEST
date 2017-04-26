@@ -9,7 +9,8 @@
 using std::cout;
 using std::endl;
 
-constexpr int nmax = 10000;
+constexpr int num_particles = 10000;
+constexpr int max_time = 2000;
 
 typedef Eigen::Matrix<double, Eigen::Dynamic, 3> PosArray;  // Column major!
 
@@ -58,15 +59,14 @@ int main(int, char *argv[])
   }
 
   std::string line;
-  for(int t = 0; t < 2000; ++t) {
+  for(int t = 0; t < max_time; ++t) {
     std::getline(datafile, line);  // Must advance input!
     if(t % 10 != 0) continue;
 
     std::istringstream ss(line);
-    ss.ignore(256, ' ');  // Skip time token
 
-    std::vector<double> pop(nmax), pol_re(nmax), pol_im(nmax);
-    for(int i = 0; i < nmax; ++i) {
+    std::vector<double> pop(num_particles), pol_re(num_particles), pol_im(num_particles);
+    for(int i = 0; i < num_particles; ++i) {
       double dummy;
       ss >> pop[i] >> dummy >> pol_re[i] >> pol_im[i];
     }
@@ -93,10 +93,10 @@ PosArray read_coords(const std::string &fname)
 
   std::cout << "Reading coords from " << fname << std::endl;
 
-  PosArray result(nmax, 3);
+  PosArray result(num_particles, 3);
   std::string line;
 
-  for(int i = 0; i < nmax; ++i) {
+  for(int i = 0; i < num_particles; ++i) {
     std::getline(ifs, line);
     std::istringstream ss(line);
     ss >> result(i, 0) >> result(i, 1) >> result(i, 2);

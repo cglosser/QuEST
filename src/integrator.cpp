@@ -122,7 +122,7 @@ void PredictorCorrector::Integrator::solve() const
   for(int step = 0; step < time_idx_ubound; ++step) {
     solve_step(step);
     log_percentage_complete(step);
-    //throw_if_unbounded_solution(step);
+    throw_if_unbounded_solution(step);
   }
 }
 
