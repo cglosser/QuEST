@@ -25,7 +25,7 @@ followed by
 
 This will attempt to build
 
-* `quest`---the simulation executable
-* `qtest`---the suite of unit tests
-* `point_gen`---utility to quickly generate distributions of points
-* `siloify`---utility to convert `quest` output to the [SILO](https://wci.llnl.gov/simulation/computer-codes/silo) file format for use in e.g. [VisIt](https://wci.llnl.gov/simulation/computer-codes/visit/)
+* `quest` (simulation executable)
+* `qtest` (unit test executable)
+* `point_gen` (utility to quickly generate distributions of points)
+* `siloify` (utility to convert `quest` output to the [SILO](https://wci.llnl.gov/simulation/computer-codes/silo) file format for use in e.g. [VisIt](https://wci.llnl.gov/simulation/computer-codes/visit/))
