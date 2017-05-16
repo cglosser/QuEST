@@ -1,25 +1,33 @@
-cmake_minimum_required(VERSION 2.6)
-project(quest)
+cmake_minimum_required(VERSION 3.1)
+project(QuEST VERSION 0.1 LANGUAGES CXX)
 
 # Location of custom detection scripts
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
 
-set(CMAKE_CXX_FLAGS "--std=c++11 -Wall -fdiagnostics-color=auto ${CMAKE_CXX_FLAGS}")
+# Set RELEASE as default build type
+if (NOT CMAKE_BUILD_TYPE)
+  set (CMAKE_BUILD_TYPE RELEASE CACHE STRING
+      "Choose the type of build, options are: None Debug Release."
+      FORCE)
+endif (NOT CMAKE_BUILD_TYPE)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall")
+# Enable warning flags if available
+include("${PROJECT_SOURCE_DIR}/cmake/flag_check.cmake")
+enable_cxx_compiler_flag_if_supported("-Wall")
+enable_cxx_compiler_flag_if_supported("-Wextra")
+enable_cxx_compiler_flag_if_supported("-pedantic")
 
-set(quest_VERSION_MAJOR 0)
-set(quest_VERSION_MINOR 0)
+set(CPP_FEATURES cxx_auto_type cxx_constexpr cxx_delegating_constructors cxx_lambdas cxx_range_for cxx_strong_enums)
+
+add_library(libquest "")
+target_compile_features(libquest PRIVATE ${CPP_FEATURES})
 
 find_package(Eigen3 3.2.2 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
+target_include_directories(libquest PUBLIC ${EIGEN3_INCLUDE_DIR})
 
 find_package(Boost 1.55 COMPONENTS program_options REQUIRED)
-include_directories(${BOOST_INCLUDE_DIR})
+target_include_directories(libquest PUBLIC ${Boost_INCLUDE_DIR})
 
-add_subdirectory(src)
-add_subdirectory(src/interactions)
-
-add_executable(quest ${SOURCES})
-target_link_libraries(quest ${Boost_LIBRARIES})
+include(src/CMakeLists.txt)
+include(test/CMakeLists.txt)
+include(tools/CMakeLists.txt)

@@ -124,6 +124,8 @@ void PredictorCorrector::Integrator::solve() const
     if(step % (time_idx_ubound / 10) == 0) {
       std::cout << "\t" << static_cast<double>(step) / time_idx_ubound
                 << std::endl;
+
+      throw_if_unbounded_solution(step);
     }
   }
 }
@@ -181,7 +183,29 @@ void PredictorCorrector::Integrator::evaluator(const int step) const
                       });
 
   for(int solution = 0; solution < num_solutions; ++solution) {
-    (*history)[solution][step][1] =
-        rhs_funcs[solution]((*history)[solution][step][0], projected_efields[solution]);
+    (*history)[solution][step][1] = rhs_funcs[solution](
+        (*history)[solution][step][0], projected_efields[solution]);
+  }
+}
+
+bool PredictorCorrector::Integrator::all_finite(const int step) const
+{
+  for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
+    History::soltype &sol = (*history)[sol_idx][step][0];
+    History::soltype &dsol = (*history)[sol_idx][step][1];
+
+    if(!History::isfinite(sol) || !History::isfinite(dsol)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void PredictorCorrector::Integrator::throw_if_unbounded_solution(
+    const int step) const
+{
+  if(!all_finite(step)) {
+    const std::string msg = "unbounded history values at or before step ";
+    throw std::domain_error(msg + std::to_string(step));
   }
 }

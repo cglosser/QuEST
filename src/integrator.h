@@ -5,11 +5,12 @@
 #include <algorithm>
 #include <boost/multi_array.hpp>
 #include <complex>
+#include <string>
 #include <vector>
 
 #include "history.h"
-#include "math_utils.h"
 #include "interactions/pulse_interaction.h"
+#include "math_utils.h"
 
 namespace PredictorCorrector {
   class Weights;
@@ -33,8 +34,8 @@ class PredictorCorrector::Weights {
 
 class PredictorCorrector::Integrator {
  public:
-  Integrator(const double, const int, const int,
-             const double, const std::shared_ptr<History::HistoryArray> &,
+  Integrator(const double, const int, const int, const double,
+             const std::shared_ptr<History::HistoryArray> &,
              const std::vector<rhs_func> &,
              std::vector<std::shared_ptr<Interaction>>);
   void solve() const;
@@ -51,6 +52,9 @@ class PredictorCorrector::Integrator {
   void predictor(const int) const;
   void evaluator(const int) const;
   void corrector(const int) const;
+
+  bool all_finite(const int) const;
+  void throw_if_unbounded_solution(const int) const;
 };
 
 #endif

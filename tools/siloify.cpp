@@ -24,7 +24,7 @@ class SiloFile {
   ~SiloFile() { DBClose(db_file_ptr); }
   void write_point_mesh(const PosArray &coords, const std::string &mesh_id)
   {
-    double data_ptr[coords.size()];
+    double *data_ptr = new double[coords.size()];
     Eigen::Map<PosArray>(data_ptr, coords.rows(), coords.cols()) = coords;
 
     double *coord_ptrs[] = {&data_ptr[0], &data_ptr[coords.rows()],

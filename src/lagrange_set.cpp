@@ -1,11 +1,9 @@
 #include "lagrange_set.h"
 
-constexpr int NUM_DERIVATIVES = 3;
 
-Interpolation::UniformLagrangeSet::UniformLagrangeSet(const int order)
-    : weights(boost::extents[NUM_DERIVATIVES][order + 1]), order_(order)
-{
-}
+Interpolation::UniformLagrangeSet::UniformLagrangeSet(const int order) :
+  weights(boost::extents[Interpolation::NUM_DERIVATIVES][order + 1]),
+  order_(order) { }
 
 Interpolation::UniformLagrangeSet::UniformLagrangeSet(const double x,
                                                       const int order,
