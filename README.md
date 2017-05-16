@@ -5,14 +5,14 @@ two-level quantum dots. Designed and built at Michigan State University.
 
 ## Prerequisites
 
-* C++14-compatible compiler (tested with [gcc](https://gcc.gnu.org/) and
-  [clang](https://clang.llvm.org/))
+* C++14-compatible compiler (tested with [GCC](https://gcc.gnu.org/) and
+  [Clang](https://clang.llvm.org/))
 * [Eigen3](http://eigen.tuxfamily.org) (at least v3.2.2)
 * Boost (at least v.1.55.0):
-  * [program
-    options](http://www.boost.org/doc/libs/1_55_0/doc/html/program_options.html)
-  * [multiarray](http://www.boost.org/doc/libs/1_55_0/libs/multi_array/doc/index.html)
-  * [test](http://www.boost.org/doc/libs/1_64_0/libs/test/doc/html/index.html)
+  * [Program
+    Options](http://www.boost.org/doc/libs/1_55_0/doc/html/program_options.html)
+  * [MultiArray](http://www.boost.org/doc/libs/1_55_0/libs/multi_array/doc/index.html)
+  * [Test](http://www.boost.org/doc/libs/1_64_0/libs/test/doc/html/index.html)
 * [SILO](https://wci.llnl.gov/simulation/computer-codes/silo) (optional)
 
 ## Building
@@ -34,7 +34,7 @@ This will attempt to build
 * `point_gen` (utility to quickly generate distributions of points)
 * `siloify` (utility to convert `quest` output to the
   [SILO](https://wci.llnl.gov/simulation/computer-codes/silo) file format for
-  use in e.g. [VisIt](https://wci.llnl.gov/simulation/computer-codes/visit/)
+  use in e.g. [VisIt](https://wci.llnl.gov/simulation/computer-codes/visit/))
 
 ## Running
 
@@ -48,26 +48,34 @@ parameter options.
 `dots.cfg` contains a list of quantum dots, one-per-line, each with the
 following format:
 
-    x y z omega_0 T1 T2 dx dy dz
-    ──┬── ───┬─── ──┬── ───┬────
-      │      │      │      └──── transition dipole moment
-      │      │      └─────────── decay time constants   
-      │      └────────────────── transition frequency
-      └───────────────────────── spatial coordinates
+```
+x y z omega_0 T1 T2 dx dy dz
+──┬── ───┬─── ──┬── ───┬────
+  │      │      │      └──── transition dipole moment
+  │      │      └─────────── decay time constants   
+  │      └────────────────── transition frequency
+  └───────────────────────── spatial coordinates
+```
 
 `pulse.cfg` specifies the incident Gaussian pulse(s) with the following format:
 
-    E_0 delay sigma omega_L kx ky kz px py pz
-    ─┬─ ──┬── ──┬── ───┬─── ───┬──── ───┬────
-     │    │     │      │       │        └──── polarization vector (normalized)
-     │    │     │      │       └───────────── wavevector
-     │    │     │      └───────────────────── laser frequency
-     │    │     └──────────────────────────── pulse width (dimensionless)
-     │    └────────────────────────────────── peak shift
-     └─────────────────────────────────────── amplitude
+```
+E_0 delay sigma omega_L kx ky kz px py pz
+─┬─ ──┬── ──┬── ───┬─── ───┬──── ───┬────
+ │    │     │      │       │        └──── polarization vector (normalized)
+ │    │     │      │       └───────────── wavevector
+ │    │     │      └───────────────────── laser frequency
+ │    │     └──────────────────────────── pulse width (dimensionless)
+ │    └────────────────────────────────── peak shift
+ └─────────────────────────────────────── amplitude
+```
 
 
 With all three input files in place, simply run the simulation with `./quest`.
 The executable will read everything in, perform the calculation with a
-percentage complete indicator, and then produce `output.dat` which contains
-the trajectory of the matrix elements for every quantum dot in the system.
+percentage complete indicator, and then produce `output.dat` which contains the
+trajectory of the matrix elements for every particle in the system.
+
+## Contributing
+
+Please see CONTRIBUTING.md for details on submitting changes.
