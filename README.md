@@ -47,9 +47,19 @@ details of the possible parameter options.
 following format:
 
     x y z omega_0 T1 T2 dx dy dz
+    ──┬── ───┬─── ──┬── ───┬────
+      │      │      │      └──── transition dipole moment
+      │      │      └─────────── decay time constants   
+      │      └────────────────── transition frequency
+      └───────────────────────── spatial coordinates
 
-`pulse.cfg` specifies the incident pulse(s) with the following format:
+`pulse.cfg` specifies the incident Gaussian pulse(s) with the following format:
 
-    E0 delay sigma omega_L kx ky kz px py pz
-
-
+    E_0 delay sigma omega_L kx ky kz px py pz
+    ─┬─ ──┬── ──┬── ───┬─── ───┬──── ───┬────
+     │    │     │      │       │        └──── polarization vector (normalized)
+     │    │     │      │       └───────────── wavevector
+     │    │     │      └───────────────────── laser frequency
+     │    │     └──────────────────────────── pulse width (dimensionless)
+     │    └────────────────────────────────── peak shift
+     └─────────────────────────────────────── amplitude
