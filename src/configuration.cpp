@@ -30,11 +30,16 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
   po::options_description parameters_description("System parameters");
   parameters_description.add_options()
-    ("parameters.num_particles",       po::value<int>(&config.num_particles)->required(), "number of particles in the system")
-    ("parameters.num_timesteps",       po::value<int>(&config.num_timesteps)->required(), "number of solution timesteps")
-    ("parameters.timestep",            po::value<double>(&config.dt)->required(), "timestep size")
-    ("parameters.interpolation_order", po::value<int>(&config.interpolation_order)->required(), "order of the interpolants")
-  ;
+    ("parameters.num_particles", po::value<int>(&config.num_particles)->required(), "number of particles in the system")
+    ("parameters.total_time",
+     po::value<double>(&config.total_time)
+         ->required()
+         ->notifier([](const double total_time) {
+           config.num_timesteps =
+             static_cast<int>(std::ceil(total_time / config.dt));
+         }),"total simulation duration")
+    ("parameters.timestep", po::value<double>(&config.dt)->required(), "timestep size")
+    ("parameters.interpolation_order", po::value<int>(&config.interpolation_order)->required(), "order of the Lagrange interpolants");
 
   po::options_description cmdline_options, file_options;
   cmdline_options.add(cmd_line_description);
@@ -54,9 +59,12 @@ po::variables_map parse_configs(int argc, char *argv[]) {
   }
 
   if (vm.count("version")) {
-    cout << "Quantum Electromagnetics Simulation Toolbox (QuEST), version 0" << endl;
+    cout << "Quantum Electromagnetics Simulation Toolbox (QuEST), version 0"
+         << endl;
     cout << "Compiled with " << __VERSION__ << " on " << __DATE__ << " ("
          << __TIME__ << ")" << endl;
+    cout << "Git revision: " << __GIT_HASH__ << " (branch: " << __GIT_BRANCH__
+         << ")" << endl;
     throw CommandLineException();
   }
 

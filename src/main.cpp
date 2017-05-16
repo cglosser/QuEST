@@ -20,7 +20,6 @@ int main(int argc, char *argv[])
     cout << setprecision(12) << scientific;
     auto vm = parse_configs(argc, argv);
 
-
     cout << "Initializing..." << endl;
 
     auto qds = make_shared<DotVector>(import_dots(config.qd_path));
@@ -28,10 +27,11 @@ int main(int argc, char *argv[])
     auto rhs_funs = rhs_functions(*qds, config.omega);
 
     // Set up History
-    auto history(History::make_shared_history(config.num_particles, 22, config.num_timesteps));
-    for(int t = -22; t <= 0 ; ++t) {
+    auto history(History::make_shared_history(config.num_particles, 22,
+                                              config.num_timesteps));
+    for(int t = -22; t <= 0; ++t) {
       for(int sol_idx = 0; sol_idx < config.num_particles; ++sol_idx) {
-        (*history)[sol_idx][t][0] = Eigen::Vector2cd(1, 0); // Ground state
+        (*history)[sol_idx][t][0] = Eigen::Vector2cd(1, 0);  // Ground state
       }
     }
 
@@ -45,24 +45,15 @@ int main(int argc, char *argv[])
         make_shared<HistoryInteraction>(qds, history, rotating_dyadic,
                                         config.interpolation_order)};
 
-    PredictorCorrector::Integrator integrator(config.dt, 18, 22, 3.15, history,
-                                              rhs_funs, std::move(interactions));
+    PredictorCorrector::Integrator integrator(
+        config.dt, 18, 22, 3.15, history, rhs_funs, std::move(interactions));
 
     cout << "Solving..." << endl;
     integrator.solve();
 
     cout << "Writing output..." << endl;
+    History::write_history(history, "output.dat");
 
-    ofstream output("output.dat");
-    output << setprecision(12) << scientific;
-    for(int t = 0; t < config.num_timesteps; ++t) {
-      const double time = t * config.dt;
-      output << time << " ";
-      for(int sol_idx = 0; sol_idx < config.num_particles; ++sol_idx) {
-        output << (*history)[sol_idx][t][0].transpose() << " ";
-      }
-      output << endl;
-    }
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
     // move on

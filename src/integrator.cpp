@@ -121,12 +121,8 @@ void PredictorCorrector::Integrator::solve() const
 {
   for(int step = 0; step < time_idx_ubound; ++step) {
     solve_step(step);
-    if(step % (time_idx_ubound / 10) == 0) {
-      std::cout << "\t" << static_cast<double>(step) / time_idx_ubound
-                << std::endl;
-
-      throw_if_unbounded_solution(step);
-    }
+    log_percentage_complete(step);
+    throw_if_unbounded_solution(step);
   }
 }
 
@@ -207,5 +203,14 @@ void PredictorCorrector::Integrator::throw_if_unbounded_solution(
   if(!all_finite(step)) {
     const std::string msg = "unbounded history values at or before step ";
     throw std::domain_error(msg + std::to_string(step));
+  }
+}
+
+void PredictorCorrector::Integrator::log_percentage_complete(
+    const int step) const
+{
+  if(step % (time_idx_ubound / 10) == 0) {
+    std::cout << "\t" << static_cast<double>(step) / time_idx_ubound
+              << std::endl;
   }
 }
