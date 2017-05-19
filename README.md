@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/37320094.svg)](https://zenodo.org/badge/latestdoi/37320094)
+
 # Quantum Electromagnetics Simulation Toolbox (QuEST)
 
 Simulation software to model the evolution & electromagnetic interactions of
