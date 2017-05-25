@@ -1,7 +1,5 @@
 #include "../src/lagrange_set.h"
-#include <stdio.h>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 #include <vector>
 
 BOOST_AUTO_TEST_SUITE(lagrange_interpolation)
