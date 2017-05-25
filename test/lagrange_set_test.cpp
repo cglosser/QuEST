@@ -36,17 +36,12 @@ BOOST_AUTO_TEST_CASE(full_constructor_d0)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][0], compare_array.at(0), 0.0001); //.at will check for 
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][1], compare_array.at(1), 0.0001); // within bounds of array
+  BOOST_CHECK_CLOSE(ULS_full.weights[0][0], compare_array.at(0), 0.0001); 
+  BOOST_CHECK_CLOSE(ULS_full.weights[0][1], compare_array.at(1), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[0][2], compare_array.at(2), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[0][3], compare_array.at(3), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[0][4], compare_array.at(4), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[0][5], compare_array.at(5), 0.0001);
-
-  for(int i=0; i<=order; ++i) {
-    std::cout << ULS_full.weights[0][i] << std::endl;
-    std::cout << compare_array[i] << std::endl;
-  }
 
 }
 
@@ -59,8 +54,8 @@ BOOST_AUTO_TEST_CASE(full_constructor_d1)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][0], -compare_array.at(0), 0.0001); //.at will check for 
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][1], -compare_array.at(1), 0.0001); // within bounds of array
+  BOOST_CHECK_CLOSE(ULS_full.weights[1][0], -compare_array.at(0), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.weights[1][1], -compare_array.at(1), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[1][2], -compare_array.at(2), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[1][3], -compare_array.at(3), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[1][4], -compare_array.at(4), 0.0001);
@@ -77,8 +72,8 @@ BOOST_AUTO_TEST_CASE(full_constructor_d2)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][0], compare_array.at(0), 0.0001); //.at will check for 
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][1], compare_array.at(1), 0.0001); // within bounds of array
+  BOOST_CHECK_CLOSE(ULS_full.weights[2][0], compare_array.at(0), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.weights[2][1], compare_array.at(1), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[2][2], compare_array.at(2), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[2][3], compare_array.at(3), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[2][4], compare_array.at(4), 0.0001);
@@ -104,17 +99,12 @@ BOOST_AUTO_TEST_CASE(full_constructor_d0)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][0], compare_array.at(0), 0.0001); //.at will check for 
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][1], compare_array.at(1), 0.0001); // within bounds of array
+  BOOST_CHECK_CLOSE(ULS_full.weights[0][0], compare_array.at(0), 0.0001); 
+  BOOST_CHECK_CLOSE(ULS_full.weights[0][1], compare_array.at(1), 0.0001); 
   BOOST_CHECK_CLOSE(ULS_full.weights[0][2], compare_array.at(2), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[0][3], compare_array.at(3), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[0][4], compare_array.at(4), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[0][5], compare_array.at(5), 0.0001);
-
-//for(int i=0; i<=order; ++i) {
-//  std::cout << ULS_full.weights[0][i] << std::endl;
-//  std::cout << compare_array[i] << std::endl;
-//}
 
 }
 
@@ -132,8 +122,8 @@ BOOST_AUTO_TEST_CASE(full_constructor_d1)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][0], -compare_array.at(0), 0.0001); //.at will check for 
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][1], -compare_array.at(1), 0.0001); // within bounds of array
+  BOOST_CHECK_CLOSE(ULS_full.weights[1][0], -compare_array.at(0), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.weights[1][1], -compare_array.at(1), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[1][2], -compare_array.at(2), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[1][3], -compare_array.at(3), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[1][4], -compare_array.at(4), 0.0001);
@@ -155,8 +145,8 @@ BOOST_AUTO_TEST_CASE(full_constructor_d2)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][0], compare_array.at(0), 0.0001); //.at will check for 
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][1], compare_array.at(1), 0.0001); // within bounds of array
+  BOOST_CHECK_CLOSE(ULS_full.weights[2][0], compare_array.at(0), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.weights[2][1], compare_array.at(1), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[2][2], compare_array.at(2), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[2][3], compare_array.at(3), 0.0001);
   BOOST_CHECK_CLOSE(ULS_full.weights[2][4], compare_array.at(4), 0.0001);
