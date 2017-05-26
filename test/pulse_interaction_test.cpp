@@ -3,8 +3,6 @@
 
 BOOST_AUTO_TEST_SUITE(pulse_interaction)
 
-BOOST_AUTO_TEST_CASE(pulse_shape_1)
-{
   const double amplitude = 15589.2260227;
   const double delay = 5;
   const double width = 227.89013;
@@ -12,6 +10,8 @@ BOOST_AUTO_TEST_CASE(pulse_shape_1)
   const Eigen::Vector3d wavevector(1, 0, 0);
   const Eigen::Vector3d polarization(1, 0, 0);
 
+BOOST_AUTO_TEST_CASE(pulse_shape_1)
+{
   const Eigen::Vector3d compare_array(7.7945379681e3,0,0);
 
   auto pulse = Pulse(amplitude, delay, width, freq, wavevector, polarization);
@@ -24,13 +24,6 @@ BOOST_AUTO_TEST_CASE(pulse_shape_1)
 
 BOOST_AUTO_TEST_CASE(pulse_shape_2)
 {
-  const double amplitude = 15589.2260227;
-  const double delay = 5;
-  const double width = 227.89013;
-  const double freq = 2278.9013;
-  const Eigen::Vector3d wavevector(1, 0, 0);
-  const Eigen::Vector3d polarization(1, 0, 0);
-
   const Eigen::Vector3d compare_array(1.0456587493e3,0,0);
 
   auto pulse = Pulse(amplitude, delay, width, freq, wavevector, polarization);
