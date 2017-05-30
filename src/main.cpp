@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         config.mu0, config.c0, config.hbar, config.omega);
 
     std::vector<std::shared_ptr<Interaction>> interactions{
-        make_shared<PulseInteraction>(qds, pulse1),
+        make_shared<PulseInteraction>(qds, pulse1, config.hbar),
         make_shared<HistoryInteraction>(qds, history, rotating_dyadic,
                                         config.interpolation_order)};
 

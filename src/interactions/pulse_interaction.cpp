@@ -1,8 +1,9 @@
 #include "pulse_interaction.h"
 
 PulseInteraction::PulseInteraction(const std::shared_ptr<const DotVector> &dots,
-                                   const std::shared_ptr<const Pulse> pulse)
-    : Interaction(dots), pulse(std::move(pulse))
+                                   const std::shared_ptr<const Pulse> pulse,
+                                   const double x)
+    : Interaction(dots), pulse(std::move(pulse)), hbar(x)
 {
 }
 
@@ -12,8 +13,7 @@ const Interaction::ResultArray &PulseInteraction::evaluate(const int time_idx)
 
   for(size_t i = 0; i < dots->size(); ++i) {
     results[i] =
-        (*pulse)((*dots)[i].position(), time).dot((*dots)[i].dipole()) /
-        config.hbar;
+        (*pulse)((*dots)[i].position(), time).dot((*dots)[i].dipole()) / hbar;
   }
 
   return results;
