@@ -4,7 +4,6 @@
 #include <Eigen/Dense>
 #include <boost/multi_array.hpp>
 
-#include "../configuration.h"
 #include "../history.h"
 #include "../lagrange_set.h"
 #include "../quantum_dot.h"
@@ -16,7 +15,7 @@ class HistoryInteraction : public Interaction {
   HistoryInteraction(const std::shared_ptr<const DotVector> &,
                      const std::shared_ptr<const History::HistoryArray> &,
                      const std::shared_ptr<GreenFunction::Dyadic> &,
-                     const int);
+                     const int, const double, const double);
 
   virtual const ResultArray &evaluate(const int);
 
@@ -26,6 +25,8 @@ class HistoryInteraction : public Interaction {
   int interp_order, num_interactions;
   std::vector<int> floor_delays;
   boost::multi_array<cmplx, 2> coefficients;
+  const double dt;
+  const double c0;
 
   void build_coefficient_table();
 
