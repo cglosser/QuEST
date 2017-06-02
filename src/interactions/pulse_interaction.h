@@ -1,7 +1,6 @@
 #ifndef PULSE_INTERACTION_H
 #define PULSE_INTERACTION_H
 
-#include "../configuration.h"
 #include "../pulse.h"
 #include "interaction.h"
 
