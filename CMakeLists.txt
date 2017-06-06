@@ -20,17 +20,17 @@ enable_cxx_compiler_flag_if_supported("-pedantic")
 
 set(CPP_FEATURES cxx_auto_type cxx_constexpr cxx_delegating_constructors cxx_lambdas cxx_range_for cxx_strong_enums)
 
-add_library(libquest "")
-target_compile_features(libquest PRIVATE ${CPP_FEATURES})
+add_library(quest "")
+target_compile_features(quest PRIVATE ${CPP_FEATURES})
 
 find_package(Eigen3 3.2.2 REQUIRED)
-target_include_directories(libquest PUBLIC ${EIGEN3_INCLUDE_DIR})
+target_include_directories(quest PUBLIC ${EIGEN3_INCLUDE_DIR})
 
 find_package(Boost 1.55 COMPONENTS program_options REQUIRED)
-target_include_directories(libquest PUBLIC ${Boost_INCLUDE_DIR})
+target_include_directories(quest PUBLIC ${Boost_INCLUDE_DIR})
 
 include("${PROJECT_SOURCE_DIR}/cmake/set_git_hash.cmake")
-set_git_macros(libquest)
+set_git_macros(quest)
 
 include(src/CMakeLists.txt)
 include(test/CMakeLists.txt)
