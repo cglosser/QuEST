@@ -10,6 +10,7 @@ if(${Boost_FOUND})
       "${CMAKE_CURRENT_LIST_DIR}/history_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/lagrange_set_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/quantum_dot_test.cpp"
+      "${CMAKE_CURRENT_LIST_DIR}/pulse_interaction_test.cpp"
   )
   target_link_libraries(qtest-bin PUBLIC quest ${Boost_LIBRARIES})
 endif(${Boost_FOUND})
