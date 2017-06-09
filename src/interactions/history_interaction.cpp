@@ -6,14 +6,16 @@ HistoryInteraction::HistoryInteraction(
     const std::shared_ptr<const DotVector> &dots,
     const std::shared_ptr<const History::HistoryArray> &history,
     const std::shared_ptr<GreenFunction::Dyadic> &dyadic,
-    const int interp_order)
+    const int interp_order, const double dt, const double c0)
     : Interaction(dots),
       history(history),
       dyadic(dyadic),
       interp_order(interp_order),
       num_interactions(dots->size() * (dots->size() - 1) / 2),
       floor_delays(num_interactions),
-      coefficients(boost::extents[num_interactions][interp_order + 1])
+      coefficients(boost::extents[num_interactions][interp_order + 1]),
+      dt(dt),
+      c0(c0)
 {
   build_coefficient_table();
 }
@@ -29,10 +31,10 @@ void HistoryInteraction::build_coefficient_table()
     Vec3d dr(separation((*dots)[src], (*dots)[obs]));
 
     std::pair<int, double> delay(
-        split_double(dr.norm() / (config.c0 * config.dt)));
+        split_double(dr.norm() / (c0 * dt)));
 
     floor_delays[pair_idx] = delay.first;
-    lagrange.calculate_weights(delay.second, config.dt);
+    lagrange.calculate_weights(delay.second, dt);
 
     std::vector<Eigen::Matrix3cd> interp_dyads(
         dyadic->coefficients(dr, lagrange));
