@@ -4,7 +4,7 @@
 
 BOOST_AUTO_TEST_SUITE(history_interaction)
 
-BOOST_AUTO_TEST_CASE(greens_function_coefficients)
+BOOST_AUTO_TEST_CASE(history_interaction)
 {
   Eigen::Vector3d pos1(0, 0, 0);
   Eigen::Vector3d pos2(1, 1, 1);
