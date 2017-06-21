@@ -2,6 +2,7 @@
 #define RHS_H
 
 #include <memory>
+#include "../history.h"
 
 namespace Integrator {
   template <class soltype>
