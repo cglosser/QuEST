@@ -10,16 +10,21 @@ namespace Integrator {
 
 class Integrator::ODE_RHS : public RHS<double> {
  public:
-  ODE_RHS(double dt) : RHS<double>(dt){};
-  double operator()(const double &, const int) const;
+  ODE_RHS(const double dt,
+          const std::shared_ptr<History::HistoryArray> &history)
+      : RHS(dt, history){};
+  virtual void evaluate(const int);
 
  private:
 };
 
-double Integrator::ODE_RHS::operator()(const double &f, const int n) const
+void Integrator::ODE_RHS::evaluate(const int n) const
 {
   const double time = n * dt;
-  return 1 / (1 + std::exp(-(time - 10))) + f;
+  for(int i = 0; i < history->shape()[0]; ++i) {
+    (*history)[i][n][1] =
+        1 / (1 + std::exp(-(time - 10))) + (*history)[i][n][0];
+  }
 }
 
 #endif
