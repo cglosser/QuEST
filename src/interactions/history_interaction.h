@@ -4,7 +4,7 @@
 #include <Eigen/Dense>
 #include <boost/multi_array.hpp>
 
-#include "../history.h"
+#include "../integrator/history.h"
 #include "../lagrange_set.h"
 #include "../quantum_dot.h"
 #include "green_function.h"
@@ -12,15 +12,16 @@
 
 class HistoryInteraction : public Interaction {
  public:
-  HistoryInteraction(const std::shared_ptr<const DotVector> &,
-                     const std::shared_ptr<const History::HistoryArray> &,
-                     const std::shared_ptr<GreenFunction::Dyadic> &,
-                     const int, const double, const double);
+  HistoryInteraction(
+      const std::shared_ptr<const DotVector> &,
+      const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &,
+      const std::shared_ptr<GreenFunction::Dyadic> &, const int, const double,
+      const double);
 
   virtual const ResultArray &evaluate(const int);
 
  private:
-  std::shared_ptr<const History::HistoryArray> history;
+  std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history;
   std::shared_ptr<GreenFunction::Dyadic> dyadic;
   int interp_order, num_interactions;
   std::vector<int> floor_delays;

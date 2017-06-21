@@ -4,7 +4,7 @@ using Vec3d = Eigen::Vector3d;
 
 HistoryInteraction::HistoryInteraction(
     const std::shared_ptr<const DotVector> &dots,
-    const std::shared_ptr<const History::HistoryArray> &history,
+    const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &history,
     const std::shared_ptr<GreenFunction::Dyadic> &dyadic,
     const int interp_order, const double dt, const double c0)
     : Interaction(dots),
@@ -56,14 +56,14 @@ const Interaction::ResultArray &HistoryInteraction::evaluate(const int time_idx)
     const int s = time_idx - floor_delays[pair_idx];
 
     for(int i = 0; i <= interp_order; ++i) {
-      if(s - i < (*history).index_bases()[1]) continue;
+      if(s - i < history->array.index_bases()[1]) continue;
 
       results[src] +=
-          (*dyadic).polarization_prefactor((*history)[obs][s - i][0]) *
+          (*dyadic).polarization_prefactor(history->array[obs][s - i][0]) *
           coefficients[pair_idx][i];
 
       results[obs] +=
-          (*dyadic).polarization_prefactor((*history)[src][s - i][0]) *
+          (*dyadic).polarization_prefactor(history->array[src][s - i][0]) *
           coefficients[pair_idx][i];
     }
   }

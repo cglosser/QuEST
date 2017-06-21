@@ -7,7 +7,6 @@ if(${Boost_FOUND})
   target_sources(qtest-bin PRIVATE "${CMAKE_CURRENT_LIST_DIR}/main.cpp")
   target_sources(qtest-bin
     PUBLIC
-      "${CMAKE_CURRENT_LIST_DIR}/history_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/lagrange_set_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/quantum_dot_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/pulse_interaction_test.cpp"

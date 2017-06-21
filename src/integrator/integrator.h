@@ -4,6 +4,7 @@
 #include <string>
 
 #include "../math_utils.h"
+#include "RHS/rhs.h"
 #include "history.h"
 #include "weights.h"
 
