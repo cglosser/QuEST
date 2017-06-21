@@ -3,24 +3,28 @@
 
 BOOST_AUTO_TEST_SUITE(integrator)
 
-BOOST_AUTO_TEST_SUITE(history)
+struct Shape {
+  int num_particles, window, num_timesteps;
+  Shape() : num_particles(2), window(4), num_timesteps(8){};
+};
+
+BOOST_FIXTURE_TEST_SUITE(history, Shape)
 
 BOOST_AUTO_TEST_CASE(templated_types)
 {
-  Integrator::History<int> int_hist(0, 0, 0);
-  Integrator::History<double> dbl_hist(0, 0, 0);
-  Integrator::History<Eigen::Vector2cd> cvec_hist(0, 0, 0);
+  Integrator::History<int> int_hist(num_particles, window, num_timesteps);
+  Integrator::History<double> dbl_hist(num_particles, window, num_timesteps);
+  Integrator::History<Eigen::Vector2cd> cvec_hist(num_particles, window,
+                                                  num_timesteps);
 }
 
 BOOST_AUTO_TEST_CASE(shape)
 {
-  const int num_particles = 2;
-  const int window = 4;
-  const int num_timesteps = 8;
   Integrator::History<int> hist(num_particles, window, num_timesteps);
 
-  BOOST_CHECK(hist.array.shape()[0] == num_particles);
-  BOOST_CHECK(hist.array.shape()[1] == num_timesteps + window);
+  BOOST_CHECK(hist.array.shape()[0] == static_cast<size_t>(num_particles));
+  BOOST_CHECK(hist.array.shape()[1] ==
+              static_cast<size_t>(num_timesteps + window));
   BOOST_CHECK(hist.array.shape()[2] == 2);
 
   BOOST_CHECK(hist.array.index_bases()[0] == 0);
