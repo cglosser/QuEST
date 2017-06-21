@@ -7,9 +7,10 @@ if(${Boost_FOUND})
   target_sources(qtest-bin PRIVATE "${CMAKE_CURRENT_LIST_DIR}/main.cpp")
   target_sources(qtest-bin
     PUBLIC
+      "${CMAKE_CURRENT_LIST_DIR}/integrator_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/lagrange_set_test.cpp"
-      "${CMAKE_CURRENT_LIST_DIR}/quantum_dot_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/pulse_interaction_test.cpp"
+      "${CMAKE_CURRENT_LIST_DIR}/quantum_dot_test.cpp"
   )
   target_link_libraries(qtest-bin PUBLIC quest ${Boost_LIBRARIES})
 endif(${Boost_FOUND})
