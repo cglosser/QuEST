@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "history.h"
-#include "interactions/pulse_interaction.h"
-#include "math_utils.h"
+#include "../history.h"
+#include "../interactions/pulse_interaction.h"
+#include "../math_utils.h"
 
 namespace PredictorCorrector {
   class Weights;
