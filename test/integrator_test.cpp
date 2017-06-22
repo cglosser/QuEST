@@ -1,5 +1,8 @@
-#include "../src/integrator/integrator.h"
 #include <boost/test/unit_test.hpp>
+#include <cmath>
+
+#include "../src/integrator/RHS/ode_rhs.h"
+#include "../src/integrator/integrator.h"
 
 BOOST_AUTO_TEST_SUITE(integrator)
 
@@ -47,5 +50,34 @@ BOOST_AUTO_TEST_CASE(filling)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+struct SigmoidalSystem {
+  double rhs(double f, double t) { return 1 / (1 + std::exp(-(t - 10))) - f; }
+  double solution(double t)
+  {
+    return (-1 + std::exp(t) + std::exp(10) * std::log(1 + std::exp(10)) -
+            std::exp(10) * std::log(std::exp(10) + std::exp(t))) /
+           std::exp(t);
+  }
+};
+
+BOOST_FIXTURE_TEST_CASE(ODE_ERROR, SigmoidalSystem)
+{
+  const double dt = 0.1;
+  auto hist = std::make_shared<Integrator::History<double>>(1, 22, 201);
+  auto system_rhs = std::make_shared<Integrator::ODE_RHS>(dt, hist);
+
+  hist->fill(0);
+  for(int i = -22; i <= 0; ++i) {
+    hist->array[0][i][0] = solution(i * dt);
+    hist->array[0][i][1] = rhs(hist->array[0][i][0], i * dt);
+  }
+
+  Integrator::PredictorCorrector<double> solver(dt, 18, 22, 3.15, hist,
+                                                system_rhs);
+  solver.solve();
+
+  BOOST_CHECK_CLOSE(hist->array[0][200][0], solution(20), 1e-12);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
