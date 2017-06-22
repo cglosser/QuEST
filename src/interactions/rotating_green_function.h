@@ -15,7 +15,7 @@ class GreenFunction::RotatingDyadic : public GreenFunction::Dyadic {
       const Eigen::Vector3d &, const Interpolation::UniformLagrangeSet &) const;
 
   virtual cmplx polarization_prefactor(
-      const History::soltype &matrix_elements) const
+      const Eigen::Vector2cd &matrix_elements) const
   {
     return matrix_elements[1];
   }
