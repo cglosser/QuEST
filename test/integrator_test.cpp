@@ -32,6 +32,20 @@ BOOST_AUTO_TEST_CASE(shape)
   BOOST_CHECK(hist.array.index_bases()[2] == 0);
 }
 
+BOOST_AUTO_TEST_CASE(filling)
+{
+  const int fill_value = 4;
+  Integrator::History<int> hist(num_particles, window, num_timesteps);
+  hist.fill(fill_value);
+
+  for(int n = 0; n < num_particles; ++n) {
+    for(int t = -window; t < num_timesteps; ++t) {
+      BOOST_CHECK(hist.array[n][t][0] == fill_value);
+      BOOST_CHECK(hist.array[n][t][1] == fill_value);
+    }
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -21,6 +21,8 @@ class Integrator::History {
   History(const int, const int, const int);
   soltype_array<soltype> array;
 
+  void fill(const soltype &);
+
  private:
 };
 
@@ -29,9 +31,15 @@ Integrator::History<soltype>::History(const int num_particles, const int window,
                                       const int num_timesteps)
     : array(boost::extents[num_particles][
           typename soltype_array<soltype>::extent_range(-window, num_timesteps)]
-                            [2])
+                          [2])
 
 {
+}
+
+template <class soltype>
+void Integrator::History<soltype>::fill(const soltype &val)
+{
+  std::fill(array.data(), array.data() + array.num_elements(), val);
 }
 
 #endif
