@@ -18,7 +18,7 @@ class Integrator::PredictorCorrector {
  public:
   PredictorCorrector(const double, const int, const int, const double,
                      const std::shared_ptr<Integrator::History<soltype>> &,
-                     const std::shared_ptr<Integrator::RHS<soltype>> &);
+                     std::unique_ptr<Integrator::RHS<soltype>> &);
   void solve() const;
 
  private:
@@ -26,7 +26,7 @@ class Integrator::PredictorCorrector {
   double dt;
   Weights weights;
   std::shared_ptr<Integrator::History<soltype>> history;
-  std::shared_ptr<Integrator::RHS<soltype>> rhs;
+  std::unique_ptr<Integrator::RHS<soltype>> rhs;
 
   void solve_step(const int) const;
   void predictor(const int) const;
@@ -39,14 +39,14 @@ template <class soltype>
 Integrator::PredictorCorrector<soltype>::PredictorCorrector(
     const double dt, const int n_lambda, const int n_time, const double radius,
     const std::shared_ptr<Integrator::History<soltype>> &history,
-    const std::shared_ptr<Integrator::RHS<soltype>> &rhs)
+    std::unique_ptr<Integrator::RHS<soltype>> &rhs)
     : num_solutions(history->array.shape()[0]),
       time_idx_ubound(history->array.index_bases()[1] +
                       history->array.shape()[1]),
       dt(dt),
       weights(n_lambda, n_time, radius),
       history(history),
-      rhs(rhs)
+      rhs(std::move(rhs))
 {
 }
 

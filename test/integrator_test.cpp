@@ -65,7 +65,7 @@ BOOST_FIXTURE_TEST_CASE(ODE_ERROR, SigmoidalSystem)
 {
   const double dt = 0.1;
   auto hist = std::make_shared<Integrator::History<double>>(1, 22, 201);
-  auto system_rhs = std::make_shared<Integrator::ODE_RHS>(dt, hist);
+  std::unique_ptr<Integrator::RHS<double>> system_rhs = std::make_unique<Integrator::ODE_RHS>(dt, hist);
 
   hist->fill(0);
   for(int i = -22; i <= 0; ++i) {
