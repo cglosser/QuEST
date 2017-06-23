@@ -52,8 +52,8 @@ BOOST_AUTO_TEST_CASE(filling)
 BOOST_AUTO_TEST_SUITE_END()
 
 struct SigmoidalSystem {
-  double rhs(double f, double t) { return 1 / (1 + std::exp(-(t - 10))) - f; }
-  double solution(double t)
+  static double rhs(double f, double t) { return 1 / (1 + std::exp(-(t - 10))) - f; }
+  static double solution(double t)
   {
     return (-1 + std::exp(t) + std::exp(10) * std::log(1 + std::exp(10)) -
             std::exp(10) * std::log(std::exp(10) + std::exp(t))) /
@@ -65,7 +65,9 @@ BOOST_FIXTURE_TEST_CASE(ODE_ERROR, SigmoidalSystem)
 {
   const double dt = 0.1;
   auto hist = std::make_shared<Integrator::History<double>>(1, 22, 201);
-  std::unique_ptr<Integrator::RHS<double>> system_rhs = std::make_unique<Integrator::ODE_RHS>(dt, hist);
+  auto rhs_fun = std::function<double(double, double)>(rhs);
+  std::unique_ptr<Integrator::RHS<double>> system_rhs =
+      std::make_unique<Integrator::ODE_RHS>(dt, hist, rhs_fun);
 
   hist->fill(0);
   for(int i = -22; i <= 0; ++i) {
