@@ -61,11 +61,41 @@ struct SigmoidalSystem {
   }
 };
 
+struct ComplexSystem {
+  double rhs(double f, double t) { return 1; }
+  double solution(double t)
+  {
+    return 1;
+  }
+};
+
 BOOST_FIXTURE_TEST_CASE(ODE_ERROR, SigmoidalSystem)
 {
   const double dt = 0.1;
   auto hist = std::make_shared<Integrator::History<double>>(1, 22, 201);
   std::unique_ptr<Integrator::RHS<double>> system_rhs = std::make_unique<Integrator::ODE_RHS>(dt, hist);
+
+  hist->fill(0);
+  for(int i = -22; i <= 0; ++i) {
+    hist->array[0][i][0] = solution(i * dt);
+    hist->array[0][i][1] = rhs(hist->array[0][i][0], i * dt);
+  }
+
+  Integrator::PredictorCorrector<double> solver(dt, 18, 22, 3.15, hist,
+                                                system_rhs);
+  solver.solve();
+
+  BOOST_CHECK_CLOSE(hist->array[0][200][0], solution(20), 1e-12);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_FIXTURE_TEST_CASE(ODE_ERROR, ComplexSystem)
+{
+  const double dt = 0.1;
+  auto hist = std::make_shared<Integrator::History<double>>(1, 22, 201);
+  std::unique_ptr<Integrator::RHS<double>> system_rhs = std::make_unique<
+	  Integrator::CMPLX_ODE_RHS>(dt, hist);
 
   hist->fill(0);
   for(int i = -22; i <= 0; ++i) {
