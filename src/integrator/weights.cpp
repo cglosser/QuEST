@@ -8,7 +8,7 @@ std::complex<double> semidisk(const double t)
   if(1 <= t && t < M_PI + 1) return std::exp(iu * (t + M_PI_2 - 1));
   if(M_PI + 1 <= t && t < M_PI + 2) return iu * (t - (M_PI + 2));
 
-  return 0;
+  return std::complex<double>(0,0);
 }
 
 class WeightsBuilder {
