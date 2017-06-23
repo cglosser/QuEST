@@ -12,7 +12,7 @@ std::vector<Eigen::Matrix3cd> GreenFunction::Dyadic::coefficients(
   for(int i = 0; i <= interp.order(); ++i) {
     for(int term = 0; term < 3; ++term) {
       coefs[i] += mu0_over_4pi_hbar_ * dyads[term].cast<cmplx>() *
-                  interp.weights[term][i];
+                  interp.evaluations[term][i];
     }
   }
 

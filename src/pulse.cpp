@@ -34,10 +34,10 @@ std::istream &operator>>(std::istream &is, Pulse &p)
   return is;
 }
 
-Pulse read_pulse_config(const std::string &fname)
+Pulse read_pulse_config(const std::string &filename)
 {
-  std::ifstream ifs(fname);
-  if(!ifs) throw std::runtime_error("Could not open " + fname);
+  std::ifstream ifs(filename);
+  if(!ifs) throw std::runtime_error("Could not open " + filename);
 
   Pulse p;
   ifs >> p;

@@ -11,12 +11,12 @@ namespace Interpolation {
 
 class Interpolation::UniformLagrangeSet {
  public:
-  InterpolationTable weights;
+  InterpolationTable evaluations;
 
   UniformLagrangeSet(const int);
   UniformLagrangeSet(const double, const int, const double = 1);
 
-  void calculate_weights(const double, const double = 1);
+  void evaluate_derivative_table_at_x(const double, const double = 1);
   int order() const { return order_; }
 
  private:

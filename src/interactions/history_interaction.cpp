@@ -34,7 +34,7 @@ void HistoryInteraction::build_coefficient_table()
         split_double(dr.norm() / (c0 * dt)));
 
     floor_delays[pair_idx] = delay.first;
-    lagrange.calculate_weights(delay.second, dt);
+    lagrange.evaluate_derivative_table_at_x(delay.second, dt);
 
     std::vector<Eigen::Matrix3cd> interp_dyads(
         dyadic->coefficients(dr, lagrange));
