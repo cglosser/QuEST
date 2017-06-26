@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 #include <cmath>
 
-#include "../src/integrator/RHS/ode_rhs.h"
+#include "../src/integrator/RHS/rhs.h"
 #include "../src/integrator/integrator.h"
 
 BOOST_AUTO_TEST_SUITE(integrator)
@@ -65,9 +65,9 @@ BOOST_FIXTURE_TEST_CASE(ODE_ERROR, SigmoidalSystem)
 {
   const double dt = 0.1;
   auto hist = std::make_shared<Integrator::History<double>>(1, 22, 201);
-  auto rhs_fun = std::function<double(double, double)>(rhs);
+  std::vector<std::function<double(double, double)>> rhs_funcs{rhs};
   std::unique_ptr<Integrator::RHS<double>> system_rhs =
-      std::make_unique<Integrator::ODE_RHS>(dt, hist, rhs_fun);
+      std::make_unique<Integrator::RHS<double>>(dt, hist, rhs_funcs);
 
   hist->fill(0);
   for(int i = -22; i <= 0; ++i) {
