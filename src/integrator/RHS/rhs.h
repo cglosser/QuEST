@@ -22,7 +22,7 @@ class Integrator::RHS {
  protected:
   double dt;
   std::shared_ptr<History<soltype>> history;
-  std::vector<std::function<soltype(soltype, double)>> rhs_functions;
+  std::vector<std::function<double(soltype, double)>> rhs_functions;
 };
 
 template <class soltype>
