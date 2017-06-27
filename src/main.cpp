@@ -10,7 +10,7 @@
 #include "integrator/integrator.h"
 #include "interactions/history_interaction.h"
 #include "interactions/pulse_interaction.h"
-#include "interactions/rotating_green_function.h"
+#include "interactions/green_function.h"
 
 using namespace std;
 
