@@ -10,7 +10,6 @@ if(${Boost_FOUND})
       "${CMAKE_CURRENT_LIST_DIR}/integrator_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/lagrange_set_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/propagator_test.cpp"
-      "${CMAKE_CURRENT_LIST_DIR}/propagation_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/pulse_interaction_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/quantum_dot_test.cpp"
   )
