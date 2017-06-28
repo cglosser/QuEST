@@ -11,7 +11,7 @@ namespace Interpolation {
 
 class Interpolation::UniformLagrangeSet {
  public:
-  InterpolationTable weights;
+  InterpolationTable evaluations;
 
   UniformLagrangeSet(const int);
   UniformLagrangeSet(const double, const int, const double = 1);

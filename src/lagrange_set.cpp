@@ -2,7 +2,7 @@
 
 
 Interpolation::UniformLagrangeSet::UniformLagrangeSet(const int order) :
-  weights(boost::extents[Interpolation::NUM_DERIVATIVES][order + 1]),
+  evaluations(boost::extents[Interpolation::NUM_DERIVATIVES][order + 1]),
   order_(order) { }
 
 Interpolation::UniformLagrangeSet::UniformLagrangeSet(const double x,
@@ -26,16 +26,16 @@ void Interpolation::UniformLagrangeSet::calculate_weights(
       d2_sum -= std::pow(x - m, -2);
     }
 
-    weights[0][basis_id] = d0_product;
-    weights[1][basis_id] = (weights[0][basis_id] * d1_sum);
-    weights[2][basis_id] =
-        (weights[0][basis_id] * d2_sum +
-         std::pow(weights[1][basis_id], 2) / weights[0][basis_id]);
+    evaluations[0][basis_id] = d0_product;
+    evaluations[1][basis_id] = (evaluations[0][basis_id] * d1_sum);
+    evaluations[2][basis_id] =
+        (evaluations[0][basis_id] * d2_sum +
+         std::pow(evaluations[1][basis_id], 2) / evaluations[0][basis_id]);
   }
 
   for(int i = 0; i <= order_; ++i) {
-    weights[1][i] *= std::pow(dt, -1);
-    weights[2][i] *= std::pow(dt, -2);
+    evaluations[1][i] *= std::pow(dt, -1);
+    evaluations[2][i] *= std::pow(dt, -2);
   }
 
 }

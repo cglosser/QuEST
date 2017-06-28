@@ -71,9 +71,9 @@ class Propagation::FixedFramePropagator
     const auto dyads(spatial_dyads(dr));
 
     for(int i = 0; i <= interp.order(); ++i) {
-      coefs[i] += mu0_over_4pi_hbar_ * (dyads[0] * interp.weights[0][i] +
-                                        dyads[1] * interp.weights[1][i] +
-                                        dyads[2] * interp.weights[2][i]);
+      coefs[i] += mu0_over_4pi_hbar_ * (dyads[0] * interp.evaluations[0][i] +
+                                        dyads[1] * interp.evaluations[1][i] +
+                                        dyads[2] * interp.evaluations[2][i]);
     }
 
     return coefs;
@@ -98,12 +98,12 @@ class Propagation::RotatingFramePropagator
     for(int i = 0; i <= interp.order(); ++i) {
       coefs[i] =
           -mu0_over_4pi_hbar_ * std::exp(-iu * omega * dr.norm() / c_) *
-          (dyads[0].cast<cmplx>() * interp.weights[0][i] +
+          (dyads[0].cast<cmplx>() * interp.evaluations[0][i] +
            dyads[1].cast<cmplx>() *
-               (interp.weights[1][i] + iu * omega * interp.weights[0][i]) +
+               (interp.evaluations[1][i] + iu * omega * interp.evaluations[0][i]) +
            dyads[2].cast<cmplx>() *
-               (interp.weights[2][i] + 2.0 * iu * omega * interp.weights[1][i] -
-                std::pow(omega, 2) * interp.weights[0][i]));
+               (interp.evaluations[2][i] + 2.0 * iu * omega * interp.evaluations[1][i] -
+                std::pow(omega, 2) * interp.evaluations[0][i]));
     }
 
     return coefs;
