@@ -18,10 +18,13 @@ namespace Integrator {
 template <class soltype>
 class Integrator::History {
  public:
+  static constexpr int DERIV_0 = 0, DERIV_1 = 1;
+
   History(const int, const int, const int);
   soltype_array<soltype> array;
 
   void fill(const soltype &);
+  void initialize_past(const soltype &);
 
  private:
 };
@@ -40,6 +43,16 @@ template <class soltype>
 void Integrator::History<soltype>::fill(const soltype &val)
 {
   std::fill(array.data(), array.data() + array.num_elements(), val);
+}
+
+template <class soltype>
+void Integrator::History<soltype>::initialize_past(const soltype &val)
+{
+  for(int n = 0; n < static_cast<int>(array.shape()[0]); ++n) {
+    for(int t = array.index_bases()[1]; t <= 0; ++t) {
+      array[n][t][DERIV_0] = val;
+    }
+  }
 }
 
 #endif

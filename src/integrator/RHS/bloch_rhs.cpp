@@ -3,12 +3,12 @@
 Integrator::BlochRHS::BlochRHS(
     const double dt,
     const std::shared_ptr<Integrator::History<Eigen::Vector2cd>> &history,
-    std::vector<std::shared_ptr<Interaction>> &interactions,
-    std::vector<BlochFunctionType> &rhs_functions)
+    std::vector<std::shared_ptr<Interaction>> interactions,
+    std::vector<BlochFunctionType> rhs_functions)
     : Integrator::RHS<Eigen::Vector2cd>(dt, history),
       num_solutions(history->array.shape()[0]),
-      interactions(interactions),
-      rhs_functions(rhs_functions)
+      interactions(std::move(interactions)),
+      rhs_functions(std::move(rhs_functions))
 {
 }
 

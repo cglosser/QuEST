@@ -6,11 +6,12 @@
 #include <vector>
 
 #include "configuration.h"
+#include "integrator/RHS/bloch_rhs.h"
 #include "integrator/history.h"
 #include "integrator/integrator.h"
+#include "interactions/green_function.h"
 #include "interactions/history_interaction.h"
 #include "interactions/pulse_interaction.h"
-#include "interactions/green_function.h"
 
 using namespace std;
 
@@ -22,38 +23,43 @@ int main(int argc, char *argv[])
 
     cout << "Initializing..." << endl;
 
-    //auto qds = make_shared<DotVector>(import_dots(config.qd_path));
-    //qds->resize(config.num_particles);
-    //auto rhs_funs = rhs_functions(*qds, config.omega);
+    auto qds = make_shared<DotVector>(import_dots(config.qd_path));
+    qds->resize(config.num_particles);
+    auto rhs_funs = rhs_functions(*qds, config.omega);
 
-    //// Set up History
-    //auto history(History::make_shared_history(config.num_particles, 22,
-                                              //config.num_timesteps));
-    //for(int t = -22; t <= 0; ++t) {
-      //for(int sol_idx = 0; sol_idx < config.num_particles; ++sol_idx) {
-        //(*history)[sol_idx][t][0] = Eigen::Vector2cd(1, 0);  // Ground state
-      //}
-    //}
+    // Set up History
+    auto history = std::make_shared<Integrator::History<Eigen::Vector2cd>>(
+        config.num_particles, 22, config.num_timesteps);
+    history->fill(Eigen::Vector2cd(0, 0));
+    history->initialize_past(Eigen::Vector2cd(1, 0));
 
-    //auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
+    // Set up Interactions
+    auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
+    auto rotating_dyadic = make_shared<Propagation::RotatingFramePropagator>(
+        config.mu0, config.c0, config.hbar, config.omega);
 
-    //auto rotating_dyadic = make_shared<GreenFunction::RotatingDyadic>(
-        //config.mu0, config.c0, config.hbar, config.omega);
+    std::vector<std::shared_ptr<Interaction>> interactions{
+        make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
+        make_shared<HistoryInteraction>(qds, history, rotating_dyadic,
+                                        config.interpolation_order, config.dt,
+                                        config.c0)};
 
-    //std::vector<std::shared_ptr<Interaction>> interactions{
-        //make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
-        //make_shared<HistoryInteraction>(qds, history, rotating_dyadic,
-                                        //config.interpolation_order,
-              //config.dt, config.c0)};
+    // Set up RHS functions
+    auto rhs_funcs = rhs_functions(*qds, config.omega);
 
-    //PredictorCorrector::Integrator integrator(
-        //config.dt, 18, 22, 3.15, history, rhs_funs, std::move(interactions));
+    // Set up Bloch RHS
+    std::unique_ptr<Integrator::RHS<Eigen::Vector2cd>> bloch_rhs =
+        std::make_unique<Integrator::BlochRHS>(
+            config.dt, history, std::move(interactions), std::move(rhs_funcs));
 
-    //cout << "Solving..." << endl;
-    //integrator.solve();
+    Integrator::PredictorCorrector<Eigen::Vector2cd> solver(
+        config.dt, 18, 22, 3.15, history, bloch_rhs);
 
-    //cout << "Writing output..." << endl;
-    //History::write_history(history, "output.dat");
+    // cout << "Solving..." << endl;
+    solver.solve();
+
+    // cout << "Writing output..." << endl;
+    // History::write_history(history, "output.dat");
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
