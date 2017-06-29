@@ -55,11 +55,18 @@ int main(int argc, char *argv[])
     Integrator::PredictorCorrector<Eigen::Vector2cd> solver(
         config.dt, 18, 22, 3.15, history, bloch_rhs);
 
-    // cout << "Solving..." << endl;
+    cout << "Solving..." << endl;
     solver.solve();
 
-    // cout << "Writing output..." << endl;
-    // History::write_history(history, "output.dat");
+    cout << "Writing output..." << endl;
+    ofstream outfile("output.dat");
+    outfile << scientific << setprecision(15);
+    for(int t = 0; t < config.num_timesteps; ++t) {
+      for(int n = 0; n < config.num_particles; ++n) {
+        outfile << history->array[n][t][0].transpose() << " ";
+      }
+      outfile << "\n";
+    }
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently
