@@ -36,7 +36,7 @@ class MagneticParticle {
   friend std::ostream &operator<<(std::ostream &, const MagneticParticle &);
   friend std::istream &operator>>(std::istream &, MagneticParticle &);
 
- //private:
+ private:
   Eigen::Vector3d pos;
   double alpha;
   double gamma0;

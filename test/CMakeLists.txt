@@ -9,20 +9,9 @@ if(${Boost_FOUND})
     PUBLIC
       "${CMAKE_CURRENT_LIST_DIR}/integrator_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/lagrange_set_test.cpp"
-<<<<<<< HEAD
-<<<<<<< HEAD
-      "${CMAKE_CURRENT_LIST_DIR}/quantum_dot_test.cpp"
-      "${CMAKE_CURRENT_LIST_DIR}/history_interaction_test.cpp"
-      "${CMAKE_CURRENT_LIST_DIR}/pulse_interaction_test.cpp"
-      )
-  target_link_libraries(qtest PUBLIC libquest ${Boost_LIBRARIES})
-=======
-=======
       "${CMAKE_CURRENT_LIST_DIR}/propagator_test.cpp"
->>>>>>> a6e33c378a0b45180bf4de2380b4f8233224198e
       "${CMAKE_CURRENT_LIST_DIR}/pulse_interaction_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/quantum_dot_test.cpp"
   )
   target_link_libraries(qtest-bin PUBLIC quest ${Boost_LIBRARIES})
->>>>>>> 9ed9f70a7fc64e18c1d413870ab551425712af26
 endif(${Boost_FOUND})
