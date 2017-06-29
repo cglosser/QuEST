@@ -19,5 +19,4 @@ class Integrator::Weights {
   int n_time;
 };
 
-
 #endif

@@ -1,6 +1,7 @@
 #include "quantum_dot.h"
 
-QuantumDot::QuantumDot(const Eigen::Vector3d &pos, const double freq,
+QuantumDot::QuantumDot(const Eigen::Vector3d &pos,
+                       const double freq,
                        const std::pair<double, double> &damping,
                        const Eigen::Vector3d &dip)
     : pos(pos), freq(freq), damping(damping), dip(dip)
@@ -8,7 +9,8 @@ QuantumDot::QuantumDot(const Eigen::Vector3d &pos, const double freq,
 }
 
 matrix_elements QuantumDot::liouville_rhs(const matrix_elements &rho,
-                                          const cmplx rabi, const double laser_freq) const
+                                          const cmplx rabi,
+                                          const double laser_freq) const
 {
   const cmplx m0 = -iu * (rabi * std::conj(rho[1]) - std::conj(rabi) * rho[1]) -
                    (rho[0] - 1.0) / damping.first;
@@ -46,12 +48,10 @@ DotVector import_dots(const std::string &fname)
   return DotVector(in_iter, eof);
 }
 
-typedef std::vector<
-    std::function<matrix_elements(const matrix_elements &, const cmplx)>>
-    rhs_func_vector;
-rhs_func_vector rhs_functions(const DotVector &dots, const double laser_frequency)
+std::vector<BlochFunctionType> rhs_functions(const DotVector &dots,
+                                             const double laser_frequency)
 {
-  rhs_func_vector funcs(dots.size());
+  std::vector<BlochFunctionType> funcs(dots.size());
 
   using std::placeholders::_1;
   using std::placeholders::_2;

@@ -1,6 +1,5 @@
 #include "../src/lagrange_set.h"
 #include <boost/test/unit_test.hpp>
-#include <vector>
 
 BOOST_AUTO_TEST_SUITE(lagrange_interpolation)
 
@@ -9,8 +8,8 @@ BOOST_AUTO_TEST_CASE(shape_constructor)
   constexpr int order = 5;
   Interpolation::UniformLagrangeSet ULS_easy(order);
 
-  BOOST_CHECK(ULS_easy.weights.shape()[0] == Interpolation::NUM_DERIVATIVES);
-  BOOST_CHECK(ULS_easy.weights.shape()[1] == order + 1);
+  BOOST_CHECK(ULS_easy.evaluations.shape()[0] == Interpolation::NUM_DERIVATIVES);
+  BOOST_CHECK(ULS_easy.evaluations.shape()[1] == order + 1);
 }
 
 BOOST_AUTO_TEST_CASE(value_constructor)
@@ -19,8 +18,8 @@ BOOST_AUTO_TEST_CASE(value_constructor)
   constexpr double eval_point = 0.5;
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK(ULS_full.weights.shape()[0] == Interpolation::NUM_DERIVATIVES);
-  BOOST_CHECK(ULS_full.weights.shape()[1] == order + 1);
+  BOOST_CHECK(ULS_full.evaluations.shape()[0] == Interpolation::NUM_DERIVATIVES);
+  BOOST_CHECK(ULS_full.evaluations.shape()[1] == order + 1);
 }
 
 BOOST_AUTO_TEST_SUITE(mid_point_value_comparison)
@@ -35,12 +34,12 @@ BOOST_AUTO_TEST_CASE(full_constructor_d0)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][0], compare_array.at(0), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][1], compare_array.at(1), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][2], compare_array.at(2), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][3], compare_array.at(3), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][4], compare_array.at(4), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][5], compare_array.at(5), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][0], compare_array.at(0), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][1], compare_array.at(1), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][2], compare_array.at(2), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][3], compare_array.at(3), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][4], compare_array.at(4), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][5], compare_array.at(5), 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(full_constructor_d1)
@@ -53,12 +52,12 @@ BOOST_AUTO_TEST_CASE(full_constructor_d1)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][0], -compare_array.at(0), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][1], -compare_array.at(1), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][2], -compare_array.at(2), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][3], -compare_array.at(3), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][4], -compare_array.at(4), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][5], -compare_array.at(5), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][0], -compare_array.at(0), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][1], -compare_array.at(1), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][2], -compare_array.at(2), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][3], -compare_array.at(3), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][4], -compare_array.at(4), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][5], -compare_array.at(5), 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(full_constructor_d2)
@@ -70,12 +69,12 @@ BOOST_AUTO_TEST_CASE(full_constructor_d2)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][0], compare_array.at(0), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][1], compare_array.at(1), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][2], compare_array.at(2), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][3], compare_array.at(3), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][4], compare_array.at(4), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][5], compare_array.at(5), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][0], compare_array.at(0), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][1], compare_array.at(1), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][2], compare_array.at(2), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][3], compare_array.at(3), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][4], compare_array.at(4), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][5], compare_array.at(5), 0.0001);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -96,12 +95,12 @@ BOOST_AUTO_TEST_CASE(full_constructor_d0)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][0], compare_array.at(0), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][1], compare_array.at(1), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][2], compare_array.at(2), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][3], compare_array.at(3), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][4], compare_array.at(4), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[0][5], compare_array.at(5), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][0], compare_array.at(0), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][1], compare_array.at(1), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][2], compare_array.at(2), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][3], compare_array.at(3), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][4], compare_array.at(4), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[0][5], compare_array.at(5), 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(full_constructor_d1)
@@ -118,12 +117,12 @@ BOOST_AUTO_TEST_CASE(full_constructor_d1)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][0], -compare_array.at(0), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][1], -compare_array.at(1), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][2], -compare_array.at(2), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][3], -compare_array.at(3), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][4], -compare_array.at(4), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[1][5], -compare_array.at(5), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][0], -compare_array.at(0), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][1], -compare_array.at(1), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][2], -compare_array.at(2), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][3], -compare_array.at(3), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][4], -compare_array.at(4), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[1][5], -compare_array.at(5), 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(full_constructor_d2)
@@ -140,12 +139,12 @@ BOOST_AUTO_TEST_CASE(full_constructor_d2)
 
   Interpolation::UniformLagrangeSet ULS_full(eval_point, order);
 
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][0], compare_array.at(0), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][1], compare_array.at(1), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][2], compare_array.at(2), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][3], compare_array.at(3), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][4], compare_array.at(4), 0.0001);
-  BOOST_CHECK_CLOSE(ULS_full.weights[2][5], compare_array.at(5), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][0], compare_array.at(0), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][1], compare_array.at(1), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][2], compare_array.at(2), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][3], compare_array.at(3), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][4], compare_array.at(4), 0.0001);
+  BOOST_CHECK_CLOSE(ULS_full.evaluations[2][5], compare_array.at(5), 0.0001);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

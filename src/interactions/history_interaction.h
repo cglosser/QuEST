@@ -15,14 +15,14 @@ class HistoryInteraction : public Interaction {
   HistoryInteraction(
       const std::shared_ptr<const DotVector> &,
       const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &,
-      const std::shared_ptr<GreenFunction::Dyadic> &, const int, const double,
-      const double);
+      const std::shared_ptr<Propagation::RotatingFramePropagator> &, const int,
+      const double, const double);
 
   virtual const ResultArray &evaluate(const int);
 
  private:
   std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history;
-  std::shared_ptr<GreenFunction::Dyadic> dyadic;
+  std::shared_ptr<Propagation::RotatingFramePropagator> dyadic;
   int interp_order, num_interactions;
   std::vector<int> floor_delays;
   boost::multi_array<cmplx, 2> coefficients;
