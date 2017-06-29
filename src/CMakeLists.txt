@@ -1,3 +1,4 @@
+include("${CMAKE_CURRENT_LIST_DIR}/integrator/CMakeLists.txt")
 include("${CMAKE_CURRENT_LIST_DIR}/interactions/CMakeLists.txt")
 
 target_sources(quest
@@ -5,10 +6,6 @@ target_sources(quest
     "${CMAKE_CURRENT_LIST_DIR}/common.h"
     "${CMAKE_CURRENT_LIST_DIR}/configuration.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/configuration.h"
-    "${CMAKE_CURRENT_LIST_DIR}/history.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/history.h"
-    "${CMAKE_CURRENT_LIST_DIR}/integrator.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/integrator.h"
     "${CMAKE_CURRENT_LIST_DIR}/lagrange_set.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/lagrange_set.h"
     "${CMAKE_CURRENT_LIST_DIR}/math_utils.cpp"

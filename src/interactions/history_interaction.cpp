@@ -4,8 +4,8 @@ using Vec3d = Eigen::Vector3d;
 
 HistoryInteraction::HistoryInteraction(
     const std::shared_ptr<const DotVector> &dots,
-    const std::shared_ptr<const History::HistoryArray> &history,
-    const std::shared_ptr<GreenFunction::Dyadic> &dyadic,
+    const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &history,
+    const std::shared_ptr<Propagation::RotatingFramePropagator> &dyadic,
     const int interp_order, const double dt, const double c0)
     : Interaction(dots),
       history(history),
@@ -30,8 +30,7 @@ void HistoryInteraction::build_coefficient_table()
 
     Vec3d dr(separation((*dots)[src], (*dots)[obs]));
 
-    std::pair<int, double> delay(
-        split_double(dr.norm() / (c0 * dt)));
+    std::pair<int, double> delay(split_double(dr.norm() / (c0 * dt)));
 
     floor_delays[pair_idx] = delay.first;
     lagrange.evaluate_derivative_table_at_x(delay.second, dt);
@@ -56,15 +55,14 @@ const Interaction::ResultArray &HistoryInteraction::evaluate(const int time_idx)
     const int s = time_idx - floor_delays[pair_idx];
 
     for(int i = 0; i <= interp_order; ++i) {
-      if(s - i < (*history).index_bases()[1]) continue;
+      if(s - i < history->array.index_bases()[1]) continue;
+
+      constexpr int RHO_01 = 1;
 
       results[src] +=
-          (*dyadic).polarization_prefactor((*history)[obs][s - i][0]) *
-          coefficients[pair_idx][i];
-
+          (history->array[obs][s - i][0])[RHO_01] * coefficients[pair_idx][i];
       results[obs] +=
-          (*dyadic).polarization_prefactor((*history)[src][s - i][0]) *
-          coefficients[pair_idx][i];
+          (history->array[src][s - i][0])[RHO_01] * coefficients[pair_idx][i];
     }
   }
 

@@ -18,7 +18,9 @@ enable_cxx_compiler_flag_if_supported("-Wextra")
 enable_cxx_compiler_flag_if_supported("-fdiagnostics-color=auto")
 enable_cxx_compiler_flag_if_supported("-pedantic")
 
-set(CPP_FEATURES cxx_auto_type cxx_constexpr cxx_delegating_constructors cxx_lambdas cxx_range_for cxx_strong_enums)
+# Require a C++14 standard
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(quest "")
 target_compile_features(quest PRIVATE ${CPP_FEATURES})

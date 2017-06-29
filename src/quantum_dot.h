@@ -17,14 +17,20 @@ class QuantumDot;
 
 typedef std::vector<QuantumDot> DotVector;
 typedef Eigen::Vector2cd matrix_elements;
+typedef std::function<Eigen::Vector2cd(const Eigen::Vector2cd,
+                                       const std::complex<double>)>
+    BlochFunctionType;
 
 class QuantumDot {
  public:
   QuantumDot() = default;
-  QuantumDot(const Eigen::Vector3d &, const double,
-             const std::pair<double, double> &, const Eigen::Vector3d &);
+  QuantumDot(const Eigen::Vector3d &,
+             const double,
+             const std::pair<double, double> &,
+             const Eigen::Vector3d &);
 
-  matrix_elements liouville_rhs(const matrix_elements &, const cmplx,
+  matrix_elements liouville_rhs(const matrix_elements &,
+                                const cmplx,
                                 const double) const;
 
   const Eigen::Vector3d &position() const { return pos; }
@@ -48,9 +54,6 @@ class QuantumDot {
 };
 
 DotVector import_dots(const std::string &);
-
-std::vector<
-    std::function<matrix_elements(const matrix_elements &, const cmplx)>>
-rhs_functions(const DotVector &, const double);
+std::vector<BlochFunctionType> rhs_functions(const DotVector &, const double);
 
 #endif
