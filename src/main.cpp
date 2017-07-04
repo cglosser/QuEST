@@ -6,11 +6,12 @@
 #include <vector>
 
 #include "configuration.h"
-#include "history.h"
-#include "integrator.h"
+#include "integrator/RHS/llg_rhs.h"
+#include "integrator/history.h"
+#include "integrator/integrator.h"
+#include "interactions/green_function.h"
 #include "interactions/history_interaction.h"
 #include "interactions/pulse_interaction.h"
-#include "interactions/rotating_green_function.h"
 
 using namespace std;
 
@@ -24,35 +25,47 @@ int main(int argc, char *argv[])
 
     auto qds = make_shared<DotVector>(import_dots(config.qd_path));
     qds->resize(config.num_particles);
-    auto rhs_funs = rhs_functions(*qds, config.omega);
 
     // Set up History
-    auto history(History::make_shared_history(config.num_particles, 22,
-                                              config.num_timesteps));
-    for(int t = -22; t <= 0; ++t) {
-      for(int sol_idx = 0; sol_idx < config.num_particles; ++sol_idx) {
-        (*history)[sol_idx][t][0] = Eigen::Vector2cd(1, 0);  // Ground state
-      }
-    }
+    auto history = std::make_shared<Integrator::History<soltype>>(
+        config.num_particles, 22, config.num_timesteps);
+    history->fill(soltype(0, 0, 0));
+    history->initialize_past(soltype(1, 1, 1));
 
+    // Set up Interactions
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
-
-    auto rotating_dyadic = make_shared<GreenFunction::RotatingDyadic>(
-        config.mu0, config.c0, config.hbar, config.omega);
+    auto dyadic = make_shared<Propagation::FixedFramePropagator>(
+        config.mu0, config.c0, config.hbar);
 
     std::vector<std::shared_ptr<Interaction>> interactions{
-        make_shared<PulseInteraction>(qds, pulse1),
-        make_shared<HistoryInteraction>(qds, history, rotating_dyadic,
-                                        config.interpolation_order)};
+        make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
+        make_shared<HistoryInteraction>(qds, history, dyadic,
+                                        config.interpolation_order, config.dt,
+                                        config.c0)};
 
-    PredictorCorrector::Integrator integrator(
-        config.dt, 18, 22, 3.15, history, rhs_funs, std::move(interactions));
+    // Set up RHS functions
+    auto rhs_funcs = rhs_functions(*qds);
+
+    // Set up Bloch RHS
+    std::unique_ptr<Integrator::RHS<soltype>> llg_rhs =
+        std::make_unique<Integrator::LLG_RHS>(
+            config.dt, history, std::move(interactions), std::move(rhs_funcs));
+
+    Integrator::PredictorCorrector<soltype> solver(
+        config.dt, 18, 22, 3.15, history, llg_rhs);
 
     cout << "Solving..." << endl;
-    integrator.solve();
+    solver.solve();
 
     cout << "Writing output..." << endl;
-    History::write_history(history, "output.dat");
+    ofstream outfile("output.dat");
+    outfile << scientific << setprecision(15);
+    for(int t = 0; t < config.num_timesteps; ++t) {
+      for(int n = 0; n < config.num_particles; ++n) {
+        outfile << history->array[n][t][0].transpose() << " ";
+      }
+      outfile << "\n";
+    }
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently

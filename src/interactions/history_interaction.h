@@ -4,28 +4,32 @@
 #include <Eigen/Dense>
 #include <boost/multi_array.hpp>
 
-#include "../configuration.h"
-#include "../history.h"
+#include "../integrator/history.h"
 #include "../lagrange_set.h"
-#include "../quantum_dot.h"
+#include "../magnetic_particle.h"
 #include "green_function.h"
 #include "interaction.h"
 
 class HistoryInteraction : public Interaction {
  public:
-  HistoryInteraction(const std::shared_ptr<const DotVector> &,
-                     const std::shared_ptr<const History::HistoryArray> &,
-                     const std::shared_ptr<GreenFunction::Dyadic> &,
-                     const int);
+  HistoryInteraction(
+      const std::shared_ptr<const DotVector> &,
+      const std::shared_ptr<const Integrator::History<soltype>> &,
+      const std::shared_ptr<Propagation::FixedFramePropagator> &,
+      const int,
+      const double,
+      const double);
 
   virtual const ResultArray &evaluate(const int);
 
  private:
-  std::shared_ptr<const History::HistoryArray> history;
-  std::shared_ptr<GreenFunction::Dyadic> dyadic;
+  std::shared_ptr<const Integrator::History<soltype>> history;
+  std::shared_ptr<Propagation::FixedFramePropagator> dyadic;
   int interp_order, num_interactions;
   std::vector<int> floor_delays;
-  boost::multi_array<cmplx, 2> coefficients;
+  boost::multi_array<Eigen::Matrix3d, 2> coefficients;
+  const double dt;
+  const double c0;
 
   void build_coefficient_table();
 

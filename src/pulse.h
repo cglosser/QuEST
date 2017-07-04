@@ -20,7 +20,7 @@ class Pulse {
 
  private:
   double amplitude, delay, width, freq;
-  Eigen::Vector3d wavevector, polarization;
+  Eigen::Vector3d wavevector, field_orientation;
 };
 
 Pulse read_pulse_config(const std::string &);
