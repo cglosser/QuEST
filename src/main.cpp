@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "configuration.h"
-#include "integrator/RHS/bloch_rhs.h"
+#include "integrator/RHS/llg_rhs.h"
 #include "integrator/history.h"
 #include "integrator/integrator.h"
 #include "interactions/green_function.h"
@@ -25,35 +25,34 @@ int main(int argc, char *argv[])
 
     auto qds = make_shared<DotVector>(import_dots(config.qd_path));
     qds->resize(config.num_particles);
-    auto rhs_funs = rhs_functions(*qds, config.omega);
 
     // Set up History
-    auto history = std::make_shared<Integrator::History<Eigen::Vector2cd>>(
+    auto history = std::make_shared<Integrator::History<soltype>>(
         config.num_particles, 22, config.num_timesteps);
-    history->fill(Eigen::Vector2cd(0, 0));
-    history->initialize_past(Eigen::Vector2cd(1, 0));
+    history->fill(soltype(0, 0, 0));
+    history->initialize_past(soltype(1, 1, 1));
 
     // Set up Interactions
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
-    auto rotating_dyadic = make_shared<Propagation::RotatingFramePropagator>(
-        config.mu0, config.c0, config.hbar, config.omega);
+    auto dyadic = make_shared<Propagation::FixedFramePropagator>(
+        config.mu0, config.c0, config.hbar);
 
     std::vector<std::shared_ptr<Interaction>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
-        make_shared<HistoryInteraction>(qds, history, rotating_dyadic,
+        make_shared<HistoryInteraction>(qds, history, dyadic,
                                         config.interpolation_order, config.dt,
                                         config.c0)};
 
     // Set up RHS functions
-    auto rhs_funcs = rhs_functions(*qds, config.omega);
+    auto rhs_funcs = rhs_functions(*qds);
 
     // Set up Bloch RHS
-    std::unique_ptr<Integrator::RHS<Eigen::Vector2cd>> bloch_rhs =
-        std::make_unique<Integrator::BlochRHS>(
+    std::unique_ptr<Integrator::RHS<soltype>> llg_rhs =
+        std::make_unique<Integrator::LLG_RHS>(
             config.dt, history, std::move(interactions), std::move(rhs_funcs));
 
-    Integrator::PredictorCorrector<Eigen::Vector2cd> solver(
-        config.dt, 18, 22, 3.15, history, bloch_rhs);
+    Integrator::PredictorCorrector<soltype> solver(
+        config.dt, 18, 22, 3.15, history, llg_rhs);
 
     cout << "Solving..." << endl;
     solver.solve();
