@@ -48,7 +48,7 @@ void HistoryInteraction::build_coefficient_table()
 
 const Interaction::ResultArray &HistoryInteraction::evaluate(const int time_idx)
 {
-  for(int i = 0; i < results.size(); ++i) results[i] = Eigen::Vector3d(0, 0, 0);
+  for(unsigned int i = 0; i < results.size(); ++i) results[i] = Eigen::Vector3d(0, 0, 0);
 
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
