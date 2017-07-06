@@ -29,7 +29,6 @@ class MagneticParticle {
 
   const Eigen::Vector3d &position() const { return pos; }
   const soltype &magnetization() const { return mag; }
-  const double saturization() const { return sat_mag; }
   friend const Eigen::Vector3d separation(const MagneticParticle &,
                                           const MagneticParticle &);
 
