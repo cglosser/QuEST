@@ -10,63 +10,54 @@ BOOST_AUTO_TEST_SUITE(history_interaction)
 
 typedef Eigen::Vector3d vec3d;
 
-BOOST_AUTO_TEST_CASE(history_interaction)
+struct Universe {
+  double mu0, c, hbar, dt;
+  std::shared_ptr<Propagation::FixedFramePropagator> propagator;
+
+  Universe()
+      : mu0(1),
+        c(1),
+        hbar(1),
+        dt(0.05),
+        propagator(std::make_shared<Propagation::FixedFramePropagator>(
+            mu0, c, hbar)){};
+
+  Eigen::Vector3d source(double t)
+  {
+    return Eigen::Vector3d(0, 0, exp(-std::pow(t - 5, 2) / 2.0));
+  }
+};
+
+BOOST_FIXTURE_TEST_CASE(history_interaction, Universe)
 {
-  const double mu0 = 1;
-  const double c = 20;
-  const double hbar = 1;
   vec3d pos1(0, 0, 0);
-  vec3d pos2(0, 0, 0.9);
-  double total_t = 10;
-  double dt = 0.5e-1;
-  int steps = total_t / dt;
-  std::vector<Eigen::Vector3d> mag1(steps, vec3d(0, 0, 0)),
-      mag2(steps, vec3d(0, 0, 0));
-  Eigen::VectorXd times = Eigen::VectorXd::LinSpaced(steps, 0, total_t - dt);
+  vec3d pos2(0, 0, 0.5 * c * dt);
+  const double total_t = 10;
+  const int steps = total_t / dt;
+  std::cout << steps << std::endl;
 
-  for(int i = 0; i < steps; ++i) {
-    mag1[i][1] = gaussian(times[i] - 5);
-    mag2[i][1] = gaussian(times[i] - 4);
-  }
-
-  const std::vector<vec3d> mag_control1(mag1);
-  const std::vector<vec3d> mag_control2(mag2);
-
-  auto mp1 = MagneticParticle(pos1, 1, 1, 1, mag1[0]);
-  auto mp2 = MagneticParticle(pos2, 1, 1, 1, mag2[0]);
-
-  DotVector mpvec = {mp1, mp2};
-  auto mpvec_ptr = std::make_shared<DotVector>(mpvec);
-
-  auto dyadic =
-      std::make_shared<Propagation::FixedFramePropagator>(mu0, c, hbar);
-  
+  // Set up history with one source "column"
   auto history = std::make_shared<Integrator::History<vec3d>>(2, -22, steps);
- 
- 
-  for(int step = -22; step < steps; ++step) {
-    if(step < 0) {
-      history->array[0][step][0] = vec3d(0, 0, 0);
-      history->array[1][step][0] = vec3d(0, 0, 0);
-    } else {
-      history->array[0][step][0] = mag1[step];
-      history->array[1][step][0] = mag2[step];
-    }
+  history->fill(Eigen::Vector3d::Zero());
+
+  for(int i = -22; i < steps; ++i) {
+    history->array[0][i][0] = source(i * dt);
   }
 
-  for(int i=-22; i<steps; ++i) std::cout << history->array[0][110][0].transpose() << std::endl;
-  
-  for(int i=0; i<steps; ++i) {
-    BOOST_CHECK(mag1[i] == mag_control1[i]);
-    BOOST_CHECK(mag2[i] == mag_control2[i]);
-  }
+  // Set up particle list -- don't really care about their "initial" condition (the Eigen:: vector)
+  std::shared_ptr<DotVector> dots(std::make_shared<DotVector>(
+      DotVector({MagneticParticle(pos1, 1, 1, 1, Eigen::Vector3d::Zero()),
+                 MagneticParticle(pos2, 1, 1, 1, Eigen::Vector3d::Zero())})));
 
-  //for(int i=0; i<steps; ++i) std::cout << mag_control2[i].transpose() << std::endl;
-  
-  auto hist_inter = HistoryInteraction(mpvec_ptr, history, dyadic, 5, dt, c);
-  
-  //std::cout << hist_inter.coefficients[0][0] << std::endl;
-  
-  //for(int i=0; i<steps; ++i) std::cout << hist_inter.evaluate(i)[0].transpose() << std::endl;
+
+  HistoryInteraction history_interaction(dots, history, propagator, 5, dt, c);  
+
+  //std::cout << std::scientific << std::setprecision(8);
+  //for(int i=0; i<steps; ++i) {
+    //std::cout << i << " ";
+    //std::cout << history_interaction.evaluate(i)[0].transpose() << " | ";
+    //std::cout << history_interaction.evaluate(i)[1].transpose() << std::endl;
+  //}
+
 }
 BOOST_AUTO_TEST_SUITE_END()
