@@ -10,7 +10,8 @@ if(${Boost_FOUND})
       "${CMAKE_CURRENT_LIST_DIR}/integrator_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/lagrange_set_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/propagator_test.cpp"
-      "${CMAKE_CURRENT_LIST_DIR}/pulse_interaction_test.cpp"
+      #"${CMAKE_CURRENT_LIST_DIR}/pulse_interaction_test.cpp"
+      "${CMAKE_CURRENT_LIST_DIR}/hist_inter_test2.cpp"
   )
   target_link_libraries(qtest-bin PUBLIC quest ${Boost_LIBRARIES})
 endif(${Boost_FOUND})
