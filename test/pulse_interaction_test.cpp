@@ -36,27 +36,29 @@ BOOST_AUTO_TEST_CASE(pulse_shape_2)
   BOOST_CHECK_CLOSE(pulse_eval(2), compare_array(2), 1e-6);
 }
 
+// Following code tests the interaction between pulse and a QD
+
 // QD Configuration Information:
-const Eigen::Vector3d pos(1, 1, 1);
-const double dot_freq = 2278.9013;
-const std::pair<double, double> damping(1, 1);
-const Eigen::Vector3d dip(1, 2, 3);
+//const Eigen::Vector3d pos(1, 1, 1);
+//const double dot_freq = 2278.9013;
+//const std::pair<double, double> damping(1, 1);
+//const Eigen::Vector3d dip(1, 2, 3);
 
-BOOST_AUTO_TEST_CASE(dot_pulse_interaction)
-{
-  const double compare_value = 1.0641745059e3;
+//BOOST_AUTO_TEST_CASE(dot_pulse_interaction)
+//{
+  //const double compare_value = 1.0641745059e3;
 
-  DotVector dots_vec = {QuantumDot(pos, dot_freq, damping, dip)};
-  auto dots = std::make_shared<DotVector>(dots_vec);
+  //DotVector dots_vec = {QuantumDot(pos, dot_freq, damping, dip)};
+  //auto dots = std::make_shared<DotVector>(dots_vec);
 
-  std::shared_ptr<Pulse> pulse_ptr = std::make_shared<Pulse>(
-      Pulse(amplitude, delay, width, pulse_freq, wavevector, polarization));
+  //std::shared_ptr<Pulse> pulse_ptr = std::make_shared<Pulse>(
+      //Pulse(amplitude, delay, width, pulse_freq, wavevector, polarization));
 
-  PulseInteraction pulse_interaction =
-      PulseInteraction(dots, pulse_ptr, 1, 0.1);  // hbar=1, dt=1
+  //PulseInteraction pulse_interaction =
+      //PulseInteraction(dots, pulse_ptr, 1, 0.1);  // hbar=1, dt=1
 
-  auto results = pulse_interaction.evaluate(52);
+  //auto results = pulse_interaction.evaluate(52);
 
-  BOOST_CHECK_CLOSE(real(results(0)), compare_value, 1e-6);
-}
+  //BOOST_CHECK_CLOSE(real(results(0)), compare_value, 1e-6);
+//}
 BOOST_AUTO_TEST_SUITE_END()
