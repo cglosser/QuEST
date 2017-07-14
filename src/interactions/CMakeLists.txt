@@ -1,5 +1,7 @@
 target_sources(quest
   PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/aim_interaction.h"
+    "${CMAKE_CURRENT_LIST_DIR}/aim_interaction.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/green_function.h"
     "${CMAKE_CURRENT_LIST_DIR}/history_interaction.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/history_interaction.h"

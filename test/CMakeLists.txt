@@ -7,6 +7,7 @@ if(${Boost_FOUND})
   target_sources(qtest-bin PRIVATE "${CMAKE_CURRENT_LIST_DIR}/main.cpp")
   target_sources(qtest-bin
     PUBLIC
+      "${CMAKE_CURRENT_LIST_DIR}/aim_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/integrator_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/lagrange_set_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/propagator_test.cpp"
