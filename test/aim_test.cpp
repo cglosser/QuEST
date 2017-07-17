@@ -20,10 +20,10 @@ BOOST_AUTO_TEST_CASE(PointMapping)
 
   AIM::Grid grid(grid_spacing, dots);
 
-  for(size_t box_idx = 0; box_idx < grid.point_mapping.size(); ++box_idx) {
+  for(size_t box_idx = 0; box_idx < grid.boxes.size(); ++box_idx) {
     std::cout << box_idx << ": ";
-    for(size_t particle_idx = 0; particle_idx < grid.point_mapping.at(box_idx).size(); ++particle_idx) {
-      std::cout << grid.point_mapping.at(box_idx).at(particle_idx) << " ";
+    for(auto p = grid.boxes[box_idx].first; p != grid.boxes[box_idx].second; ++p) {
+      std::cout << std::distance(dots->begin(), p) << " ";
     }
     std::cout << std::endl;
   }

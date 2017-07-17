@@ -13,10 +13,11 @@ namespace AIM {
 class AIM::Grid {
  public:
   typedef Eigen::Array<int, 3, 2> BoundsArray;
+  typedef std::pair<DotVector::iterator, DotVector::iterator> BoxRange;
 
   Grid(const Eigen::Vector3d &, const std::shared_ptr<DotVector> &);
 
-  std::vector<std::vector<size_t>> point_mapping;
+  std::vector<BoxRange> boxes;
 
  private:
   Eigen::Vector3d spacing;
@@ -25,8 +26,8 @@ class AIM::Grid {
   Eigen::Vector3i num_boxes;
 
   BoundsArray calculate_bounds() const;
-  void map_points_to_boxes();
   void sort_points_on_boxidx() const;
+  void map_points_to_boxes();
   Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &) const;
   size_t coord_to_idx(const Eigen::Vector3i &) const;
   Eigen::Vector3i idx_to_coord(size_t) const;
