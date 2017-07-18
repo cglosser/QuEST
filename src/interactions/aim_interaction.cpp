@@ -1,12 +1,11 @@
 #include "aim_interaction.h"
 
-AIM::Grid::Grid(const Eigen::Vector3d &spacing,
+AIM::Grid::Grid(const Eigen::Array3d &spacing,
                 const std::shared_ptr<DotVector> &dots)
-    : spacing(spacing),
-      dots(dots),
-      bounds(calculate_bounds())
+    : spacing(spacing), dots(dots), bounds(calculate_bounds())
 {
   num_boxes = bounds.col(1) - bounds.col(0) + 1;
+  max_diagonal = (num_boxes.cast<double>() * spacing).matrix().norm();
   boxes.resize(num_boxes.prod());
 
   sort_points_on_boxidx();
@@ -30,7 +29,7 @@ AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
 
 Eigen::Vector3i AIM::Grid::grid_coordinate(const Eigen::Vector3d &coord) const
 {
-  return floor(coord.cwiseQuotient(spacing).array()).cast<int>();
+  return floor(coord.cwiseQuotient(spacing.matrix()).array()).cast<int>();
 }
 
 size_t AIM::Grid::coord_to_idx(const Eigen::Vector3i &coord) const
