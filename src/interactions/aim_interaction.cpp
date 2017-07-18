@@ -73,3 +73,9 @@ void AIM::Grid::map_points_to_boxes()
     boxes.at(box_idx) = std::make_pair(begin, end);
   }
 }
+
+AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
+                                    const Eigen::Vector3d &spacing)
+    : Interaction(dots), grid(spacing, dots)
+{
+}

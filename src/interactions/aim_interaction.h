@@ -5,9 +5,11 @@
 #include <algorithm>
 
 #include "../quantum_dot.h"
+#include "interaction.h"
 
 namespace AIM {
   class Grid;
+  class AimInteraction;
 }
 
 class AIM::Grid {
@@ -31,5 +33,13 @@ class AIM::Grid {
   Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &) const;
   size_t coord_to_idx(const Eigen::Vector3i &) const;
   Eigen::Vector3i idx_to_coord(size_t) const;
+};
+
+class AIM::AimInteraction : public Interaction {
+ public:
+  AimInteraction(const std::shared_ptr<DotVector> &, const Eigen::Vector3d &);
+ private:
+    std::shared_ptr<const DotVector> dots;
+    Grid grid;
 };
 #endif
