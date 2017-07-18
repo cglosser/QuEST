@@ -44,6 +44,7 @@ doc/doxygen_sqlite3.db
 
 # Build
 build/
+debug/
 
 # JetBrains
 .idea/
