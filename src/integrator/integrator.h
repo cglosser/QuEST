@@ -31,10 +31,11 @@ class Integrator::PredictorCorrector {
   void solve_step(const int) const;
   void predictor(const int) const;
   void corrector(const int) const;
+
+  void log_percentage_complete(const int) const;
 };
 
 constexpr int NUM_CORRECTOR_STEPS = 10;
-
 template <class soltype>
 Integrator::PredictorCorrector<soltype>::PredictorCorrector(
     const double dt, const int n_lambda, const int n_time, const double radius,
@@ -55,6 +56,7 @@ void Integrator::PredictorCorrector<soltype>::solve() const
 {
   for(int step = 0; step < time_idx_ubound; ++step) {
     solve_step(step);
+    log_percentage_complete(step);
   }
 }
 
@@ -99,6 +101,16 @@ void Integrator::PredictorCorrector<soltype>::corrector(const int step) const
           history->array[sol_idx][start + h][0] * weights.cs(0, h) +
           history->array[sol_idx][start + h][1] * weights.cs(1, h) * dt;
     }
+  }
+}
+
+template <class soltype>
+void Integrator::PredictorCorrector<soltype>::log_percentage_complete(
+    const int step) const
+{
+  if(step % (time_idx_ubound / 10) == 0) {
+    std::cout << "\t" << static_cast<double>(step) / time_idx_ubound
+              << std::endl;
   }
 }
 
