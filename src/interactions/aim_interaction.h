@@ -17,13 +17,13 @@ class AIM::Grid {
 
   Grid(const Eigen::Vector3d &, const std::shared_ptr<DotVector> &);
 
+  Eigen::Vector3i num_boxes;
   std::vector<BoxRange> boxes;
 
  private:
   Eigen::Vector3d spacing;
   std::shared_ptr<DotVector> dots;
   BoundsArray bounds;
-  Eigen::Vector3i num_boxes;
 
   BoundsArray calculate_bounds() const;
   void sort_points_on_boxidx() const;

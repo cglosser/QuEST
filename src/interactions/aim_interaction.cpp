@@ -2,12 +2,11 @@
 
 AIM::Grid::Grid(const Eigen::Vector3d &spacing,
                 const std::shared_ptr<DotVector> &dots)
-    : spacing(spacing.array()),
+    : spacing(spacing),
       dots(dots),
-      bounds(calculate_bounds()),
-      num_boxes(bounds.col(1) - bounds.col(0) +
-                1)  // This +1 accommodates planar (or similar) geometries
+      bounds(calculate_bounds())
 {
+  num_boxes = bounds.col(1) - bounds.col(0) + 1;
   boxes.resize(num_boxes.prod());
 
   sort_points_on_boxidx();
