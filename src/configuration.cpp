@@ -24,7 +24,7 @@ po::variables_map parse_configs(int argc, char *argv[]) {
   constants_description.add_options()
     ("constants.c0",   po::value<double>(&config.c0)->required(), "speed of light in vacuum")
     ("constants.hbar", po::value<double>(&config.hbar)->required(), "reduced Planck constant")
-    ("constants.mu0",  po::value<double>(&config.mu0)->required(), "vacuum permeability")
+    ("constants.e0",  po::value<double>(&config.e0)->required(), "vacuum permittivity")
     ("constants.laser_frequency",  po::value<double>(&config.omega)->required(), "(angular) frequency of incident pulse")
   ;
 

@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     // Set up Interactions
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
     auto dyadic = make_shared<Propagation::FixedFramePropagator>(
-        config.mu0, config.c0, config.hbar);
+        config.e0, config.c0, config.hbar);
 
     std::vector<std::shared_ptr<Interaction>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),

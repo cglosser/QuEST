@@ -12,7 +12,7 @@
 struct Configuration {
   int num_particles;
   int num_timesteps;
-  double c0, hbar, mu0, omega;
+  double c0, hbar, e0, omega;
   double dt, total_time;
   int interpolation_order;
   std::string qd_path, pulse_path;

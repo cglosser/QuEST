@@ -1,38 +1,62 @@
-#include "../src/interactions/history_interaction.h"
+#include <Eigen/Dense>
 #include <boost/test/unit_test.hpp>
+#include <memory>
+#include <fstream>
+#include "../src/integrator/history.h"
+#include "../src/interactions/green_function.h"
+#include "../src/interactions/history_interaction.h"
+#include "../src/math_utils.h"
 
 BOOST_AUTO_TEST_SUITE(history_interaction)
 
-BOOST_AUTO_TEST_CASE(history_interaction)
-{
-  Eigen::Vector3d pos1(0, 0, 0);
-  Eigen::Vector3d pos2(1, 1, 1);
-  const std::pair<double, double> damping(1, 1);
-  const double freq = 2278.9013;
-  const Eigen::Vector3d dip(1, 2, 3);
+typedef Eigen::Vector3d vec3d;
 
-  QuantumDot qd1(pos1, freq, damping, dip);
-  QuantumDot qd2(pos2, freq, damping, dip);
+struct Universe {
+  double mu0, c, hbar, dt;
+  std::shared_ptr<Propagation::FixedFramePropagator> propagator;
 
-  DotVector dots_vec = {qd1, qd2};
-  auto dots = std::make_shared<DotVector>(dots_vec);
+  Universe()
+      : mu0(1),
+        c(1),
+        hbar(1),
+        dt(0.05),
+        propagator(std::make_shared<Propagation::FixedFramePropagator>(
+            mu0, c, hbar)){};
 
-  auto history(History::make_shared_history(2, 22, 1));
-  for(int dot_idx = 0; dot_idx < 2; ++dot_idx) {
-    for(int time_idx = -22; time_idx <= 0; ++time_idx) {
-      (*history)[dot_idx][time_idx][0] = History::soltype(1, 1);
-    }
+  Eigen::Vector3d source(double t)
+  {
+    return Eigen::Vector3d(0, exp(-std::pow(t - 5, 2) / 2.0), 0);
   }
+};
 
-  auto dyadic(
-      std::make_shared<GreenFunction::Dyadic>(GreenFunction::Dyadic(1, 2, 1)));
-  auto hist_inter = HistoryInteraction(dots, history, dyadic, 1, 1, 1);
+BOOST_FIXTURE_TEST_CASE(history_interaction, Universe)
+{
+  vec3d pos1(0, 0, 0);
+  vec3d pos2(0, 0, 0.5 * c * dt);
+  const double total_t = 10;
+  const int steps = total_t / dt;
 
-  auto result = hist_inter.evaluate(1);
-  const std::vector<double> compare_array = {-2.6953857109, -2.6953857109};
+  // Set up history with one source "column"
+  auto history = std::make_shared<Integrator::History<vec3d>>(2, 22, steps);
+  history->fill(Eigen::Vector3d::Zero());
 
-  BOOST_CHECK_CLOSE(result(0).real(), compare_array.at(0), 1e-6);
-  BOOST_CHECK_CLOSE(result(1).real(), compare_array.at(1), 1e-6);
+  for(int i = -22; i < steps; ++i) {
+    history->array[1][i][0] = source(i * dt);
+  }
+  
+  // Set up particle list -- don't really care about their "initial" condition (the Eigen:: vector)
+  std::shared_ptr<DotVector> dots(std::make_shared<DotVector>(
+      DotVector({MagneticParticle(pos1, 1, 1, 1, Eigen::Vector3d::Zero()),
+                 MagneticParticle(pos2, 1, 1, 1, Eigen::Vector3d::Zero())})));
+
+
+  HistoryInteraction history_interaction(dots, history, propagator, 5, dt, c);  
+
+  std::cout << std::scientific << std::setprecision(8);
+  for(int i=0; i<steps; ++i) {
+    std::cout << i << " ";
+    std::cout << history_interaction.evaluate(i)[0].transpose() << " | ";
+    std::cout << history_interaction.evaluate(i)[0].transpose() << std::endl;
+  }
 }
-
 BOOST_AUTO_TEST_SUITE_END()
