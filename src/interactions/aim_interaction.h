@@ -18,6 +18,9 @@ class AIM::Grid {
   typedef std::pair<DotVector::iterator, DotVector::iterator> BoxRange;
 
   Grid(const Eigen::Vector3d &, const std::shared_ptr<DotVector> &);
+  Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &) const;
+  size_t coord_to_idx(const Eigen::Vector3i &) const;
+  Eigen::Vector3i idx_to_coord(size_t) const;
 
   Eigen::Vector3i num_boxes;
   std::vector<BoxRange> boxes;
@@ -30,16 +33,14 @@ class AIM::Grid {
   BoundsArray calculate_bounds() const;
   void sort_points_on_boxidx() const;
   void map_points_to_boxes();
-  Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &) const;
-  size_t coord_to_idx(const Eigen::Vector3i &) const;
-  Eigen::Vector3i idx_to_coord(size_t) const;
 };
 
 class AIM::AimInteraction : public Interaction {
  public:
   AimInteraction(const std::shared_ptr<DotVector> &, const Eigen::Vector3d &);
+
  private:
-    std::shared_ptr<const DotVector> dots;
-    Grid grid;
+  std::shared_ptr<const DotVector> dots;
+  Grid grid;
 };
 #endif
