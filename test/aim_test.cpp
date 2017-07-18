@@ -5,30 +5,66 @@
 
 BOOST_AUTO_TEST_SUITE(AIM)
 
-BOOST_AUTO_TEST_SUITE(GridSort)
+BOOST_AUTO_TEST_SUITE(GridTest)
 
-BOOST_AUTO_TEST_CASE(PointMapping)
+BOOST_AUTO_TEST_SUITE(TwoDimensions)
+
+struct PointSetup {
+  std::pair<double, double> damping;
+  Eigen::Vector3d dipole;
+  std::shared_ptr<DotVector> dots;
+  Eigen::Array3d grid_spacing;
+  PointSetup()
+      : damping(std::make_pair(0.0, 0.0)),
+        dipole(Eigen::Vector3d::Zero()),
+        dots(std::make_shared<DotVector>(DotVector(
+            {QuantumDot(Eigen::Vector3d(-0.5, -0.5, 0), 1.0, damping, dipole),
+             QuantumDot(Eigen::Vector3d(-0.2, 1.3, 0), 1.0, damping, dipole),
+             QuantumDot(Eigen::Vector3d(0.2, 1.3, 0), 1.0, damping, dipole),
+             QuantumDot(Eigen::Vector3d(0.4, -0.7, 0), 1.0, damping, dipole),
+             QuantumDot(Eigen::Vector3d(0.6, 0.6, 0), 1.0, damping, dipole),
+             QuantumDot(Eigen::Vector3d(0.6, 1.6, 0), 1.0, damping, dipole),
+             QuantumDot(Eigen::Vector3d(0.6, 0.1, 0), 1.0, damping, dipole)}))),
+        grid_spacing(Eigen::Vector3d(1, 1, 1)){};
+};
+
+BOOST_FIXTURE_TEST_CASE(Construction, PointSetup)
 {
-  const Eigen::Vector3d dip(0, 0, 1);
-  const auto damping = std::make_pair(10.0, 20.0);
-  Eigen::Vector3d grid_spacing(1, 1, 1);
-  auto dots = std::make_shared<DotVector>(DotVector(
-      {QuantumDot(Eigen::Vector3d(-0.5, -0.5, 0), 1.0, damping, dip),
-       QuantumDot(Eigen::Vector3d(-0.2, 1.3, 0), 1.0, damping, dip),
-       QuantumDot(Eigen::Vector3d(0.2, 1.3, 0), 1.0, damping, dip),
-       QuantumDot(Eigen::Vector3d(0.4, -0.7, 0), 1.0, damping, dip)}));
-
   AIM::Grid grid(grid_spacing, dots);
 
-  for(size_t box_idx = 0; box_idx < grid.boxes.size(); ++box_idx) {
-    std::cout << box_idx << ": ";
-    for(auto p = grid.boxes[box_idx].first; p != grid.boxes[box_idx].second; ++p) {
-      std::cout << std::distance(dots->begin(), p) << " ";
-    }
-    std::cout << std::endl;
-  }
+  BOOST_CHECK_EQUAL(grid.num_boxes(0), 2);
+  BOOST_CHECK_EQUAL(grid.num_boxes(1), 3);
+  BOOST_CHECK_EQUAL(grid.num_boxes(2), 1);
 
+  BOOST_CHECK_CLOSE(grid.max_diagonal, std::sqrt(14.0), 1e-16);
+
+  BOOST_CHECK_EQUAL(grid.boxes[0].second - grid.boxes[0].first, 1);
+  BOOST_CHECK_EQUAL(grid.boxes[1].second - grid.boxes[1].first, 1);
+  BOOST_CHECK_EQUAL(grid.boxes[2].second - grid.boxes[2].first, 0);
+  BOOST_CHECK_EQUAL(grid.boxes[3].second - grid.boxes[3].first, 2);
+  BOOST_CHECK_EQUAL(grid.boxes[4].second - grid.boxes[4].first, 1);
+  BOOST_CHECK_EQUAL(grid.boxes[5].second - grid.boxes[5].first, 2);
 }
+
+BOOST_FIXTURE_TEST_CASE(PointSort, PointSetup)
+{
+  AIM::Grid grid(grid_spacing, dots);
+
+  auto grid_idx =
+      [&](const Eigen::Vector3d &p) {
+        return grid.coord_to_idx(grid.grid_coordinate(p));
+      };
+
+  BOOST_CHECK_EQUAL(grid_idx(dots->at(0).position()), 0);
+  BOOST_CHECK_EQUAL(grid_idx(dots->at(1).position()), 1);
+  BOOST_CHECK_EQUAL(grid_idx(dots->at(2).position()), 3);
+  BOOST_CHECK_EQUAL(grid_idx(dots->at(3).position()), 3);
+  BOOST_CHECK_EQUAL(grid_idx(dots->at(4).position()), 4);
+  BOOST_CHECK_EQUAL(grid_idx(dots->at(5).position()), 5);
+  BOOST_CHECK_EQUAL(grid_idx(dots->at(6).position()), 5);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 
