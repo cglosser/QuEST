@@ -22,9 +22,10 @@ class AIM::Grid {
   size_t coord_to_idx(const Eigen::Vector3i &) const;
   Eigen::Vector3i idx_to_coord(size_t) const;
 
-  Eigen::Array3i num_boxes;
-  std::vector<BoxRange> boxes;
+  Eigen::Array3i dimensions;
+  size_t num_boxes;
   double max_diagonal;
+  std::vector<BoxRange> boxes;
 
  private:
   Eigen::Array3d spacing;
@@ -38,10 +39,18 @@ class AIM::Grid {
 
 class AIM::AimInteraction : public Interaction {
  public:
-  AimInteraction(const std::shared_ptr<DotVector> &, const Eigen::Vector3d &);
+  AimInteraction(const std::shared_ptr<DotVector> &,
+                 const Eigen::Vector3d &,
+                 const int,
+                 const double,
+                 const double);
 
  private:
   std::shared_ptr<const DotVector> dots;
   Grid grid;
+
+  int interp_order;
+  double c, dt;
+
 };
 #endif

@@ -32,9 +32,9 @@ BOOST_FIXTURE_TEST_CASE(Construction, PointSetup)
 {
   AIM::Grid grid(grid_spacing, dots);
 
-  BOOST_CHECK_EQUAL(grid.num_boxes(0), 2);
-  BOOST_CHECK_EQUAL(grid.num_boxes(1), 3);
-  BOOST_CHECK_EQUAL(grid.num_boxes(2), 1);
+  BOOST_CHECK_EQUAL(grid.dimensions(0), 2);
+  BOOST_CHECK_EQUAL(grid.dimensions(1), 3);
+  BOOST_CHECK_EQUAL(grid.dimensions(2), 1);
 
   BOOST_CHECK_CLOSE(grid.max_diagonal, std::sqrt(14.0), 1e-16);
 

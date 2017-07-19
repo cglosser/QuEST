@@ -4,9 +4,10 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
                 const std::shared_ptr<DotVector> &dots)
     : spacing(spacing), dots(dots), bounds(calculate_bounds())
 {
-  num_boxes = bounds.col(1) - bounds.col(0) + 1;
-  max_diagonal = (num_boxes.cast<double>() * spacing).matrix().norm();
-  boxes.resize(num_boxes.prod());
+  dimensions = bounds.col(1) - bounds.col(0) + 1;
+  num_boxes = dimensions.prod();
+  max_diagonal = (dimensions.cast<double>() * spacing).matrix().norm();
+  boxes.resize(dimensions.prod());
 
   sort_points_on_boxidx();
   map_points_to_boxes();
@@ -36,16 +37,16 @@ size_t AIM::Grid::coord_to_idx(const Eigen::Vector3i &coord) const
 {
   Eigen::Vector3i shifted(coord - bounds.col(0).matrix());
 
-  return shifted(0) + num_boxes(0) * (shifted(1) + num_boxes(1) * shifted(2));
+  return shifted(0) + dimensions(0) * (shifted(1) + dimensions(1) * shifted(2));
 }
 
 Eigen::Vector3i AIM::Grid::idx_to_coord(size_t idx) const
 {
-  const int nxny = num_boxes(0) * num_boxes(1);
+  const int nxny = dimensions(0) * dimensions(1);
   const int z = idx / nxny;
   idx -= z * nxny;
-  const int y = idx / num_boxes(0);
-  const int x = idx % num_boxes(0);
+  const int y = idx / dimensions(0);
+  const int x = idx % dimensions(0);
 
   return Eigen::Vector3i(x, y, z);
 }
@@ -74,7 +75,14 @@ void AIM::Grid::map_points_to_boxes()
 }
 
 AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
-                                    const Eigen::Vector3d &spacing)
-    : Interaction(dots), grid(spacing, dots)
+                                    const Eigen::Vector3d &spacing,
+                                    const int interp_order,
+                                    const double c,
+                                    const double dt)
+    : Interaction(dots),
+      grid(spacing, dots),
+      interp_order(interp_order),
+      c(c),
+      dt(dt)
 {
 }
