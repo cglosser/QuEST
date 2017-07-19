@@ -86,3 +86,10 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
       dt(dt)
 {
 }
+
+std::vector<double> AIM::AimInteraction::g_matrix_row(const size_t n) const
+{
+  std::vector<double> row(grid.num_boxes, 0);
+
+  return row;
+}

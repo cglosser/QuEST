@@ -46,6 +46,8 @@ class AIM::AimInteraction : public Interaction {
                  const double);
 
  private:
+  std::vector<double> g_matrix_row(const size_t) const;
+
   std::shared_ptr<const DotVector> dots;
   Grid grid;
 
