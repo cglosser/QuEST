@@ -37,8 +37,7 @@ void HistoryInteraction::build_coefficient_table()
     floor_delays[pair_idx] = delay.first;
     lagrange.calculate_weights(delay.second, dt);
 
-    std::vector<Eigen::Matrix3d> interp_dyads(
-        dyadic->coefficients(dr, lagrange));
+    std::vector<double> interp_dyads(dyadic->coefficients(dr, lagrange));
 
     for(int i = 0; i <= interp_order; ++i) {
       coefficients[pair_idx][i] = interp_dyads[i];
@@ -48,20 +47,23 @@ void HistoryInteraction::build_coefficient_table()
 
 const Interaction::ResultArray &HistoryInteraction::evaluate(const int time_idx)
 {
-  for(unsigned int i = 0; i < results.size(); ++i) results[i] = Eigen::Vector3d(0, 0, 0);
+  for(unsigned int i = 0; i < results.size(); ++i)
+    results[i] = Eigen::Vector3d(0, 0, 0);
 
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
     std::tie(src, obs) = idx2coord(pair_idx);
     const int s = time_idx - floor_delays[pair_idx];
 
+    Vec3d dr(separation((*dots)[src], (*dots)[obs]));
+
     for(int i = 0; i <= interp_order; ++i) {
       if(s - i < history->array.index_bases()[1]) continue;
 
       results[src] +=
-          coefficients[pair_idx][i] * history->array[obs][s - i][0];
+          dr.cross(coefficients[pair_idx][i] * history->array[obs][s - i][0]);
       results[obs] +=
-          coefficients[pair_idx][i] * history->array[src][s - i][0];
+          dr.cross(coefficients[pair_idx][i] * history->array[src][s - i][0]);
     }
   }
 
