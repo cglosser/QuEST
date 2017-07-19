@@ -21,6 +21,7 @@ class AIM::Grid {
   Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &) const;
   size_t coord_to_idx(const Eigen::Vector3i &) const;
   Eigen::Vector3i idx_to_coord(size_t) const;
+  Eigen::Vector3d spatial_coord_of_box(const size_t) const;
 
   Eigen::Array3i dimensions;
   size_t num_boxes;

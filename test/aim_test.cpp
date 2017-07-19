@@ -44,6 +44,13 @@ BOOST_FIXTURE_TEST_CASE(Construction, PointSetup)
   BOOST_CHECK_EQUAL(grid.boxes[3].second - grid.boxes[3].first, 2);
   BOOST_CHECK_EQUAL(grid.boxes[4].second - grid.boxes[4].first, 1);
   BOOST_CHECK_EQUAL(grid.boxes[5].second - grid.boxes[5].first, 2);
+
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(0), Eigen::Vector3d(-1, -1, 0));
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(1), Eigen::Vector3d(0, -1, 0));
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(2), Eigen::Vector3d(-1, 0, 0));
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(3), Eigen::Vector3d(0, 0, 0));
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(4), Eigen::Vector3d(-1, 1, 0));
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(5), Eigen::Vector3d(0, 1, 0));
 }
 
 BOOST_FIXTURE_TEST_CASE(PointSort, PointSetup)

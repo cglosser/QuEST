@@ -51,6 +51,12 @@ Eigen::Vector3i AIM::Grid::idx_to_coord(size_t idx) const
   return Eigen::Vector3i(x, y, z);
 }
 
+Eigen::Vector3d AIM::Grid::spatial_coord_of_box(const size_t box_id) const
+{
+  const Eigen::Vector3d r = (idx_to_coord(box_id).cast<double>().array() * spacing);
+  return r + bounds.col(0).cast<double>().matrix();
+}
+
 void AIM::Grid::sort_points_on_boxidx() const
 {
   auto grid_comparitor = [&](const QuantumDot &q1, const QuantumDot &q2) {
