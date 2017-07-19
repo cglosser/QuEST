@@ -36,18 +36,14 @@ class Propagation::FixedFramePropagator
  public:
   FixedFramePropagator(const double e0, const double c, const double hbar)
       : Propagator(e0, c, hbar){};
-  std::vector<Eigen::Matrix3d> coefficients(
+  std::vector<double> coefficients(
       const Eigen::Vector3d &dr,
       const Interpolation::UniformLagrangeSet &interp) const
   {
-    std::vector<Eigen::Matrix3d> coefs(interp.order() + 1,
-                                       Eigen::Matrix3d::Zero());
-
-    Eigen::Matrix3d r_matrix;
-    r_matrix << 0, dr[2], -dr[1], -dr[2], 0, dr[0], dr[1], -dr[0], 0;
+    std::vector<double> coefs(interp.order() + 1, 0);
 
     for(int i = 0; i <= interp.order(); ++i) {
-      coefs[i] += e0 / (4 * M_PI) * -r_matrix * 
+      coefs[i] += e0 / (4 * M_PI) *
                   (interp.evaluations[1][i] / std::pow(dr.norm(), 3) -
                    interp.evaluations[2][i] * c / std::pow(dr.norm(), 2));
     }

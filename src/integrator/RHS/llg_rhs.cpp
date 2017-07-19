@@ -24,6 +24,5 @@ void Integrator::LLG_RHS::evaluate(const int step) const
     history->array[sol][step][1] =
         rhs_functions[sol](history->array[sol][step][0],
                       pulse_interactions[sol] + history_interactions[sol]);
-    std::cout << history->array[sol][step][1].transpose() << std::endl;
   }
 }
