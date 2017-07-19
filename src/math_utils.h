@@ -11,7 +11,6 @@ std::vector<double> linspace(const double, const double,
 Eigen::Vector3d unit_normal(const double, const double);
 double gaussian(const double);
 double skew_gaussian(const double, const double);
-
 int grid_sequence(const int);
-
+std::pair<int, double> split_double(const double);
 #endif

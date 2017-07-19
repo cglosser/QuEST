@@ -34,3 +34,14 @@ int grid_sequence(const int n)
 {
   return (1 - std::pow(-1, n) * (1 + 2 * n)) / 4;
 }
+
+std::pair<int, double> split_double(const double delay)
+{
+  std::pair<int, double> result;
+
+  double idelay;
+  result.second = std::modf(delay, &idelay);
+  result.first = static_cast<int>(idelay);
+
+  return result;
+}

@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 #include <boost/multi_array.hpp>
 
+#include "../math_utils.h"
 #include "../integrator/history.h"
 #include "../lagrange_set.h"
 #include "../quantum_dot.h"
@@ -33,7 +34,6 @@ class HistoryInteraction : public Interaction {
 
   static int coord2idx(int, int);
   static std::pair<int, int> idx2coord(const int);
-  static std::pair<int, double> split_double(const double);
 };
 
 #endif

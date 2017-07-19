@@ -51,4 +51,19 @@ BOOST_AUTO_TEST_CASE(GridSequence)
   BOOST_CHECK_EQUAL(grid_sequence(9), 5);
 }
 
+BOOST_AUTO_TEST_CASE(SplitDouble)
+{
+  auto x1 = split_double(10.5);
+  BOOST_CHECK_EQUAL(x1.first, 10);
+  BOOST_CHECK_EQUAL(x1.second, 0.5);
+
+  auto x2 = split_double(3.0);
+  BOOST_CHECK_EQUAL(x2.first, 3);
+  BOOST_CHECK_EQUAL(x2.second, 0.0);
+
+  auto x3 = split_double(-8.4);
+  BOOST_CHECK_EQUAL(x3.first, -8);
+  BOOST_CHECK_CLOSE(x3.second, -0.4, 1e-13);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

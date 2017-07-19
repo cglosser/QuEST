@@ -85,13 +85,3 @@ std::pair<int, int> HistoryInteraction::idx2coord(const int idx)
   return std::pair<int, int>(row, col);
 }
 
-std::pair<int, double> HistoryInteraction::split_double(const double delay)
-{
-  std::pair<int, double> result;
-
-  double idelay;
-  result.second = std::modf(delay, &idelay);
-  result.first = static_cast<int>(idelay);
-
-  return result;
-}
