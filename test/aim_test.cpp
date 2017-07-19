@@ -57,10 +57,9 @@ BOOST_FIXTURE_TEST_CASE(PointSort, PointSetup)
 {
   AIM::Grid grid(grid_spacing, dots);
 
-  auto grid_idx =
-      [&](const Eigen::Vector3d &p) {
-        return grid.coord_to_idx(grid.grid_coordinate(p));
-      };
+  auto grid_idx = [&](const Eigen::Vector3d &p) {
+    return grid.coord_to_idx(grid.grid_coordinate(p));
+  };
 
   BOOST_CHECK_EQUAL(grid_idx(dots->at(0).position()), 0);
   BOOST_CHECK_EQUAL(grid_idx(dots->at(1).position()), 1);

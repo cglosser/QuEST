@@ -4,6 +4,8 @@
 #include <Eigen/Dense>
 #include <algorithm>
 
+#include "../lagrange_set.h"
+#include "../math_utils.h"
 #include "../quantum_dot.h"
 #include "interaction.h"
 
@@ -54,6 +56,5 @@ class AIM::AimInteraction : public Interaction {
 
   int interp_order;
   double c, dt;
-
 };
 #endif
