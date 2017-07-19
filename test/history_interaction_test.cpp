@@ -48,13 +48,13 @@ struct Universe {
 
   Eigen::Vector3d analytic_interaction(Eigen::Vector3d &magd1,
                                        Eigen::Vector3d &magd2,
-                                       Eigen::Matrix3d &r_matrix,
+                                       Eigen::Vector3d &dr,
                                        double c,
                                        double e0,
                                        double dist)
   {
-    return e0 / (4 * M_PI) * r_matrix *
-           (magd1 / std::pow(dist, 3) - magd2 * c / std::pow(dist, 2));
+    return e0 / (4 * M_PI) * -dr.cross(
+           (magd1 / std::pow(dist, 3) - magd2 * c / std::pow(dist, 2)));
   }
 };
 
@@ -83,29 +83,16 @@ BOOST_FIXTURE_TEST_CASE(history_interaction, Universe)
                  MagneticParticle(pos2, 1, 1, 1, Eigen::Vector3d::Zero())})));
 
   HistoryInteraction history_interaction(dots, history, propagator, 7, dt, c);
-
-  // Analytic Calculations
-
-  Eigen::Matrix3d r_matrix;
-  r_matrix << 0, dr[2], -dr[1], -dr[2], 0, dr[0], dr[1], -dr[0], 0;
   
   std::cout << std::scientific << std::setprecision(8);
   for(int i = steps*0.1; i < steps*0.9; ++i) {
 
     Eigen::Vector3d magd1 = mag_d1_source(i * dt, delay);
     Eigen::Vector3d magd2 = mag_d2_source(i * dt, delay);
-
     Eigen::Vector3d interaction =
-        analytic_interaction(magd1, magd2, r_matrix, c, e0, dist);
+        analytic_interaction(magd1, magd2, dr, c, e0, dist);
 
-    //std::cout << i << " " << magd1[1] << " | " << magd2[1] << std::endl;
     BOOST_CHECK_CLOSE(interaction[0],history_interaction.evaluate(i)[0][0], 1e-6);
-    //std::cout << i << " " << history_interaction.evaluate(i)[0][0] << std::endl;
-    //std::cout << i << " " << interaction[0] << " | " << history_interaction.evaluate(i)[0][0]<< std::endl;
-
-    //std::cout << i << " ";
-    //std::cout << history_interaction.evaluate(i)[0].transpose() << " | ";
-    //std::cout << history_interaction.evaluate(i)[0].transpose() << std::endl;
   }
 }
 BOOST_AUTO_TEST_SUITE_END()

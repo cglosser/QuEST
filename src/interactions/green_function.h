@@ -47,7 +47,7 @@ class Propagation::FixedFramePropagator
     r_matrix << 0, dr[2], -dr[1], -dr[2], 0, dr[0], dr[1], -dr[0], 0;
 
     for(int i = 0; i <= interp.order(); ++i) {
-      coefs[i] += e0 / (4 * M_PI) * -1 * r_matrix *
+      coefs[i] += e0 / (4 * M_PI) * -r_matrix * 
                   (interp.evaluations[1][i] / std::pow(dr.norm(), 3) -
                    interp.evaluations[2][i] * c / std::pow(dr.norm(), 2));
     }
