@@ -16,9 +16,9 @@ struct Universe {
   std::shared_ptr<Propagation::FixedFramePropagator> propagator;
 
   Universe()
-      : e0(1),
-        c(1),
-        hbar(1),
+      : e0(3),
+        c(2),
+        hbar(4),
         dt(0.01),
         propagator(
             std::make_shared<Propagation::FixedFramePropagator>(e0, c, hbar)){};
@@ -54,8 +54,8 @@ struct Universe {
                                        double dist)
   {
     return e0 / (4 * M_PI) *
-           -dr.cross(
-               (magd1 / std::pow(dist, 3) - magd2 * c / std::pow(dist, 2)));
+           dr.cross(
+               (magd1 / std::pow(dist, 3) - magd2 / (c * std::pow(dist, 2))));
   }
 };
 
@@ -67,7 +67,7 @@ BOOST_FIXTURE_TEST_CASE(history_interaction, Universe)
   const int steps = total_t / dt;
   const double dist = (pos2 - pos1).norm();
   const double delay = dist / c;
-  Eigen::Vector3d dr(pos2 - pos1);
+  Eigen::Vector3d dr(pos1 - pos2);  // corresponds to separation calculation
 
   // Set up history with one source "column"
   auto history = std::make_shared<Integrator::History<vec3d>>(2, 22, steps);
