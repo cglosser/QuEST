@@ -3,62 +3,74 @@
 
 BOOST_AUTO_TEST_SUITE(pulse_interaction)
 
-// Pulse configuration information:
-const double amplitude = 15589.2260227;
-const double delay = 5;
-const double width = 227.89013;
-const double pulse_freq = 2278.9013;
-const Eigen::Vector3d wavevector(1, 0, 0);
-const Eigen::Vector3d polarization(1, 0, 0);
+struct Universe {
+  double amp, delay, width, freq, dt;
+  Eigen::Vector3d wavevector, magnetization;
+  Pulse pulse;
 
-auto pulse =
-    Pulse(amplitude, delay, width, pulse_freq, wavevector, polarization);
+  Universe()
+      : amp(2),
+        delay(0.5),
+        width(2),
+        freq(10),
+        dt(1),
+        wavevector(1, 1, 1),
+        magnetization(1, 1, 1),
+        pulse(Pulse(amp, delay, width, freq, wavevector, magnetization)){};
 
-BOOST_AUTO_TEST_CASE(pulse_shape_1)
+  Eigen::Vector3d evaluate(double amp,
+                           double delay,
+                           double width,
+                           double freq,
+                           double t,
+                           Eigen::Vector3d wavevec,
+                           Eigen::Vector3d mag,
+                           Eigen::Vector3d pos)
+  {
+    double arg = wavevec.dot(pos) - freq * (t - delay);
+    return (amp * 2 * mag.normalized() *
+            std::exp(-std::pow(arg / width, 2) / 2) * cos(arg));
+  }
+};
+
+BOOST_FIXTURE_TEST_CASE(pulse_shape, Universe)
 {
-  const Eigen::Vector3d compare_array(7.7945379681e3, 0, 0);
+  const double t = 1;
+  const Eigen::Vector3d pos(1, 1, 1);
 
-  auto pulse_eval = pulse(Eigen::Vector3d(1, 1, 1), 5);
+  const Eigen::Vector3d compare_array(
+      evaluate(amp, delay, width, freq, t, wavevector, magnetization, pos));
 
-  BOOST_CHECK_CLOSE(pulse_eval(0), compare_array(0), 1e-6);
-  BOOST_CHECK_CLOSE(pulse_eval(1), compare_array(1), 1e-6);
-  BOOST_CHECK_CLOSE(pulse_eval(2), compare_array(2), 1e-6);
+  auto pulse_eval = pulse(pos, t);
+
+  BOOST_CHECK_CLOSE(pulse_eval(0), compare_array(0), 1e-15);
+  BOOST_CHECK_CLOSE(pulse_eval(1), compare_array(1), 1e-15);
+  BOOST_CHECK_CLOSE(pulse_eval(2), compare_array(2), 1e-15);
 }
 
-BOOST_AUTO_TEST_CASE(pulse_shape_2)
+BOOST_FIXTURE_TEST_CASE(dot_pulse_interaction, Universe)
 {
-  const Eigen::Vector3d compare_array(1.0456587493e3, 0, 0);
+  const Eigen::Vector3d pos(1, 1, 1);
+  const Eigen::Vector3d particle_mag(1, 0, 1);
+  const double alpha = 2;
+  const double gamma0 = 2;
+  const double sat_mag = 2;
+  const double t = 1;
 
-  auto pulse_eval = pulse(Eigen::Vector3d(-1, 0, 1), 5.2);
+  DotVector dots_vec = {
+      MagneticParticle(pos, alpha, gamma0, sat_mag, particle_mag)};
+  auto dots = std::make_shared<DotVector>(dots_vec);
 
-  BOOST_CHECK_CLOSE(pulse_eval(0), compare_array(0), 1e-6);
-  BOOST_CHECK_CLOSE(pulse_eval(1), compare_array(1), 1e-6);
-  BOOST_CHECK_CLOSE(pulse_eval(2), compare_array(2), 1e-6);
+  std::shared_ptr<Pulse> pulse_ptr = std::make_shared<Pulse>(pulse);
+
+  PulseInteraction pulse_interaction = PulseInteraction(dots, pulse_ptr, 1, dt);
+
+  auto results = pulse_interaction.evaluate(1);
+  auto analytic_pulse =
+      evaluate(amp, delay, width, freq, t, wavevector, magnetization, pos);
+
+  BOOST_CHECK(results[0][0] == analytic_pulse[0]);
+  BOOST_CHECK(results[0][1] == analytic_pulse[1]);
+  BOOST_CHECK(results[0][2] == analytic_pulse[2]);
 }
-
-// Following code tests the interaction between pulse and a QD
-
-// QD Configuration Information:
-//const Eigen::Vector3d pos(1, 1, 1);
-//const double dot_freq = 2278.9013;
-//const std::pair<double, double> damping(1, 1);
-//const Eigen::Vector3d dip(1, 2, 3);
-
-//BOOST_AUTO_TEST_CASE(dot_pulse_interaction)
-//{
-  //const double compare_value = 1.0641745059e3;
-
-  //DotVector dots_vec = {QuantumDot(pos, dot_freq, damping, dip)};
-  //auto dots = std::make_shared<DotVector>(dots_vec);
-
-  //std::shared_ptr<Pulse> pulse_ptr = std::make_shared<Pulse>(
-      //Pulse(amplitude, delay, width, pulse_freq, wavevector, polarization));
-
-  //PulseInteraction pulse_interaction =
-      //PulseInteraction(dots, pulse_ptr, 1, 0.1);  // hbar=1, dt=1
-
-  //auto results = pulse_interaction.evaluate(52);
-
-  //BOOST_CHECK_CLOSE(real(results(0)), compare_value, 1e-6);
-//}
 BOOST_AUTO_TEST_SUITE_END()
