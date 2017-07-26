@@ -61,9 +61,9 @@ const Interaction::ResultArray &HistoryInteraction::evaluate(const int time_idx)
       if(s - i < history->array.index_bases()[1]) continue;
 
       results[src] +=
-          dr.cross(coefficients[pair_idx][i] * history->array[obs][s - i][0]);
+          -dr.cross(coefficients[pair_idx][i] * history->array[obs][s - i][0]);
       results[obs] +=
-          dr.cross(coefficients[pair_idx][i] * history->array[src][s - i][0]);
+          -dr.cross(coefficients[pair_idx][i] * history->array[src][s - i][0]);
     }
   }
 

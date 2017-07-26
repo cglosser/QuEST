@@ -43,9 +43,9 @@ class Propagation::FixedFramePropagator
     std::vector<double> coefs(interp.order() + 1, 0);
 
     for(int i = 0; i <= interp.order(); ++i) {
-      coefs[i] += e0 / (4 * M_PI) *
-                  (interp.evaluations[1][i] / std::pow(dr.norm(), 3) -
-                   interp.evaluations[2][i] / (c * std::pow(dr.norm(), 2)));
+      coefs[i] += (interp.evaluations[1][i] / (c * std::pow(dr.norm(), 3)) -
+                   interp.evaluations[2][i] /
+                       (std::pow(c, 2) * std::pow(dr.norm(), 2)));
     }
 
     return coefs;

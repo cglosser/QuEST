@@ -50,12 +50,10 @@ struct Universe {
                                        Eigen::Vector3d &magd2,
                                        Eigen::Vector3d &dr,
                                        double c,
-                                       double e0,
                                        double dist)
   {
-    return e0 / (4 * M_PI) *
-           dr.cross(
-               (magd1 / std::pow(dist, 3) - magd2 / (c * std::pow(dist, 2))));
+    return -dr.cross((magd1 / (c * std::pow(dist, 3)) -
+                      magd2 / (std::pow(c, 2) * std::pow(dist, 2))));
   }
 };
 
@@ -90,7 +88,7 @@ BOOST_FIXTURE_TEST_CASE(history_interaction, Universe)
     Eigen::Vector3d magd1 = mag_d1_source(i * dt, delay);
     Eigen::Vector3d magd2 = mag_d2_source(i * dt, delay);
     Eigen::Vector3d interaction =
-        analytic_interaction(magd1, magd2, dr, c, e0, dist);
+        analytic_interaction(magd1, magd2, dr, c, dist);
 
     BOOST_CHECK_CLOSE(interaction[0], history_interaction.evaluate(i)[0][0],
                       1e-6);
