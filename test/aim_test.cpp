@@ -74,4 +74,42 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
 
+struct Universe {
+  double c, dt;
+  std::shared_ptr<DotVector> dots;
+  Eigen::Array3d grid_spacing;
+  Universe()
+      : c(1),
+        dt(1),
+        dots(std::make_shared<DotVector>()),
+        grid_spacing(1.2, 1.2, 1.2)
+  {
+    for(int x = 0; x < 6; ++x) {
+      for(int y = 0; y < 6; ++y) {
+        dots->push_back(QuantumDot(1.2 * Eigen::Vector3d(x, y, 0), 0,
+                                   std::make_pair(10.0, 20.0),
+                                   Eigen::Vector3d(0, 0, 0)));
+      }
+    }
+
+  };
+};
+
+BOOST_FIXTURE_TEST_CASE(two_d_matrix_elements, Universe)
+{
+
+  AIM::Grid grid(grid_spacing, dots);
+  AIM::AimInteraction aim(dots, grid_spacing, 3, 1, 1);
+
+  auto bf = aim.g_matrix_row(1);
+
+  for(const auto &i : bf) {
+    std::cout << i << " ";
+  }
+  std::cout << std::endl;
+
+
+
+}
+
 BOOST_AUTO_TEST_SUITE_END()

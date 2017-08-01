@@ -40,7 +40,7 @@ class AIM::Grid {
   void map_points_to_boxes();
 };
 
-class AIM::AimInteraction : public Interaction {
+class AIM::AimInteraction final : public Interaction {
  public:
   AimInteraction(const std::shared_ptr<DotVector> &,
                  const Eigen::Vector3d &,
@@ -48,8 +48,10 @@ class AIM::AimInteraction : public Interaction {
                  const double,
                  const double);
 
- private:
+  ResultArray &evaluate(const int);
   std::vector<double> g_matrix_row(const size_t) const;
+
+ private:
 
   std::shared_ptr<const DotVector> dots;
   Grid grid;

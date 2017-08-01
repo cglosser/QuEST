@@ -94,7 +94,13 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
 {
 }
 
-std::vector<double> AIM::AimInteraction::g_matrix_row(const size_t n) const
+Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
+{
+  results = 0;
+  return results;
+}
+
+std::vector<double> AIM::AimInteraction::g_matrix_row(const size_t step) const
 {
   std::vector<double> row(grid.num_boxes, 0);
 
@@ -104,11 +110,15 @@ std::vector<double> AIM::AimInteraction::g_matrix_row(const size_t n) const
         grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
 
     const double arg = dr.norm() / (c * dt);
-    std::pair<int, double> split_arg = split_double(arg);
+    const std::pair<int, double> split_arg = split_double(arg);
+
+    const int polynomial_idx = static_cast<int>(ceil(step - arg));
 
     interp.evaluate_derivative_table_at_x(split_arg.second, dt);
 
-
+    if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
+      row.at(box_idx) = interp.evaluations[0][polynomial_idx];
+    }
   }
 
   return row;
