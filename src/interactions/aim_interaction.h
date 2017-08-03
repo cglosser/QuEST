@@ -3,6 +3,7 @@
 
 #include <Eigen/Dense>
 #include <algorithm>
+#include <boost/multi_array.hpp>
 
 #include "../lagrange_set.h"
 #include "../math_utils.h"
@@ -12,6 +13,8 @@
 namespace AIM {
   class Grid;
   class AimInteraction;
+
+  typedef boost::multi_array<cmplx, 2> cmplx_array;
 }
 
 class AIM::Grid {
@@ -29,6 +32,10 @@ class AIM::Grid {
   size_t num_boxes;
   double max_diagonal;
   std::vector<BoxRange> boxes;
+
+  int max_transit_steps(double c, double dt) {
+    return static_cast<int>(ceil(max_diagonal/(c * dt)));
+  };
 
  private:
   Eigen::Array3d spacing;
@@ -52,11 +59,13 @@ class AIM::AimInteraction final : public Interaction {
   std::vector<double> g_matrix_row(const size_t) const;
 
  private:
-
   std::shared_ptr<const DotVector> dots;
   Grid grid;
 
   int interp_order;
   double c, dt;
+
+  cmplx_array fourier_table;
+  void fill_fourier_table();
 };
 #endif

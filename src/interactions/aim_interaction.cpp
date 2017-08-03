@@ -90,8 +90,11 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
       grid(spacing, dots),
       interp_order(interp_order),
       c(c),
-      dt(dt)
+      dt(dt),
+      fourier_table(boost::extents[cmplx_array::extent_range(
+          1, grid.max_transit_steps(c, dt))][2 * grid.num_boxes])
 {
+  fill_fourier_table();
 }
 
 Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
@@ -122,4 +125,42 @@ std::vector<double> AIM::AimInteraction::g_matrix_row(const size_t step) const
   }
 
   return row;
+}
+
+void AIM::AimInteraction::fill_fourier_table()
+{
+  using dbl_mat = boost::multi_array<double, 4>;
+  dbl_mat gmatrix_table(
+      boost::extents[dbl_mat::extent_range(1, grid.max_transit_steps(c, dt))]
+                    [grid.dimensions(2)][grid.dimensions(1)]
+                    [2 * grid.dimensions(0)]);
+  std::fill(gmatrix_table.data(),
+            gmatrix_table.data() + gmatrix_table.num_elements(), 0);
+
+  Interpolation::UniformLagrangeSet interp(interp_order);
+  for(int nz = 0; nz < grid.dimensions(2); ++nz) {
+    for(int ny = 0; ny < grid.dimensions(1); ++ny) {
+      for(int nx = 0; nx < grid.dimensions(0); ++nx) {
+        const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(nx, ny, nz));
+        if(box_idx == 0) continue;
+
+        const auto dr =
+            grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
+
+        const double arg = dr.norm() / (c * dt);
+        const std::pair<int, double> split_arg = split_double(arg);
+
+        for(int time_idx = 1; time_idx < grid.max_transit_steps(c, dt);
+            ++time_idx) {
+          const int polynomial_idx = static_cast<int>(ceil(time_idx - arg));
+
+          if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
+            interp.evaluate_derivative_table_at_x(split_arg.second, dt);
+            gmatrix_table[time_idx][nz][ny][nx] =
+                interp.evaluations[0][polynomial_idx];
+          }
+        }
+      }
+    }
+  }
 }
