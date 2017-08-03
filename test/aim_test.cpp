@@ -91,25 +91,29 @@ struct Universe {
                                    Eigen::Vector3d(0, 0, 0)));
       }
     }
-
   };
 };
 
 BOOST_FIXTURE_TEST_CASE(two_d_matrix_elements, Universe)
 {
-
   AIM::Grid grid(grid_spacing, dots);
   AIM::AimInteraction aim(dots, grid_spacing, 3, 1, 1);
 
-  auto bf = aim.g_matrix_row(1);
+  auto basis_vals = aim.g_matrix_row(1);
 
-  for(const auto &i : bf) {
-    std::cout << i << " ";
+  const double v1 = 84./125, v2 = 2 * (520 - 361 * sqrt(2.0)) / 125;
+
+  for(size_t i = 0; i < basis_vals.size(); ++i) {
+    switch(i) {
+      case 1: BOOST_CHECK_CLOSE(basis_vals[i], v1, 1e-12); break;
+      case 6: BOOST_CHECK_CLOSE(basis_vals[i], v1, 1e-12); break;
+      case 7: BOOST_CHECK_CLOSE(basis_vals[i], v2, 1e-12); break;
+      case 36: BOOST_CHECK_CLOSE(basis_vals[i], v1, 1e-12); break;
+      case 37: BOOST_CHECK_CLOSE(basis_vals[i], v2, 1e-12); break;
+      case 42: BOOST_CHECK_CLOSE(basis_vals[i], v2, 1e-12); break;
+      default: BOOST_CHECK_EQUAL(basis_vals[i], 0); break;
+    }
   }
-  std::cout << std::endl;
-
-
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()
