@@ -92,7 +92,7 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
       c(c),
       dt(dt),
       fourier_table(boost::extents[cmplx_array::extent_range(
-          1, grid.max_transit_steps(c, dt))][2 * grid.num_boxes])
+          1, grid.max_transit_steps(c, dt))][grid.num_boxes])
 {
   fill_fourier_table();
 }
@@ -134,8 +134,31 @@ void AIM::AimInteraction::fill_fourier_table()
       boost::extents[dbl_mat::extent_range(1, grid.max_transit_steps(c, dt))]
                     [grid.dimensions(2)][grid.dimensions(1)]
                     [2 * grid.dimensions(0)]);
+
+  // Set up FFTW plan; will transform real-valued Toeplitz matrix to the
+  // positive
+  // frequency complex-valued FFT values (known to be conjugate symmetric).
+
+  const int len[] = grid.dimensions(0);
+  const int howmany =
+      grid.dimensions(1) * grid.dimensions(2) * grid.max_transit_steps(c, dt);
+  const int idist = 2 * grid.dimensions(0), odist = grid.dimensions(0);
+  const int istride = 1, ostride = 1;
+  const int *inembed = len, *onembed = len;
+
+  fftw_plan circulant_plan;
+  circulant_plan = fftw_plan_many_dft_r2c(
+      1, len, howmany, gmatrix_table.data(), inembed, istride, idist,
+      reinterpret_cast<fftw_complex *>(fourier_table.data()), onembed, ostride,
+      odist, FFTW_MEASURE);
+
   std::fill(gmatrix_table.data(),
             gmatrix_table.data() + gmatrix_table.num_elements(), 0);
+
+  // Build the circulant equivalent of the G "matrices." Since the G matrices
+  // are Toeplitz (and symmetric), they're uniquely determined by their first
+  // row. The first row gets computed here then mirrored to make a list of
+  // every circulant (and thus FFT-able) vector.
 
   Interpolation::UniformLagrangeSet interp(interp_order);
   for(int nz = 0; nz < grid.dimensions(2); ++nz) {
@@ -158,9 +181,17 @@ void AIM::AimInteraction::fill_fourier_table()
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
             gmatrix_table[time_idx][nz][ny][nx] =
                 interp.evaluations[0][polynomial_idx];
+
+            if(nx != 0) {
+              // make the circulant "mirror"
+              gmatrix_table[time_idx][nz][ny][2 * grid.dimensions(0) - nx] =
+                  gmatrix_table[time_idx][nz][ny][nx];
+            }
           }
         }
       }
     }
   }
+
+  fftw_execute_plan(circulant_plan);
 }
