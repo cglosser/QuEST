@@ -31,6 +31,9 @@ target_include_directories(quest PUBLIC ${EIGEN3_INCLUDE_DIR})
 find_package(Boost 1.55 COMPONENTS program_options REQUIRED)
 target_include_directories(quest PUBLIC ${Boost_INCLUDE_DIR})
 
+target_include_directories(quest PUBLIC /usr/include)
+target_link_libraries(quest fftw3)
+
 include("${PROJECT_SOURCE_DIR}/cmake/set_git_hash.cmake")
 set_git_macros(quest)
 

@@ -139,7 +139,7 @@ void AIM::AimInteraction::fill_fourier_table()
   // positive
   // frequency complex-valued FFT values (known to be conjugate symmetric).
 
-  const int len[] = grid.dimensions(0);
+  const int len[] = {grid.dimensions(0)};
   const int howmany =
       grid.dimensions(1) * grid.dimensions(2) * grid.max_transit_steps(c, dt);
   const int idist = 2 * grid.dimensions(0), odist = grid.dimensions(0);
@@ -193,5 +193,6 @@ void AIM::AimInteraction::fill_fourier_table()
     }
   }
 
-  fftw_execute_plan(circulant_plan);
+  // Buckle up...
+  fftw_execute(circulant_plan);
 }
