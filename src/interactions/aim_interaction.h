@@ -1,6 +1,7 @@
 #ifndef AIM_INTERACTION_H
 #define AIM_INTERACTION_H
 
+#include <fftw3.h>
 #include <Eigen/Dense>
 #include <algorithm>
 #include <boost/multi_array.hpp>
@@ -33,8 +34,9 @@ class AIM::Grid {
   double max_diagonal;
   std::vector<BoxRange> boxes;
 
-  int max_transit_steps(double c, double dt) {
-    return static_cast<int>(ceil(max_diagonal/(c * dt)));
+  int max_transit_steps(double c, double dt)
+  {
+    return static_cast<int>(ceil(max_diagonal / (c * dt)));
   };
 
  private:
@@ -58,7 +60,7 @@ class AIM::AimInteraction final : public Interaction {
   ResultArray &evaluate(const int);
   std::vector<double> g_matrix_row(const size_t) const;
 
- private:
+  // private:
   std::shared_ptr<const DotVector> dots;
   Grid grid;
 

@@ -116,4 +116,12 @@ BOOST_FIXTURE_TEST_CASE(two_d_matrix_elements, Universe)
   }
 }
 
+BOOST_FIXTURE_TEST_CASE(diagonal_representation, Universe)
+{
+  AIM::AimInteraction aim(dots, grid_spacing, 3, 1, 1);
+
+  std::cout << aim.fourier_table.shape()[0] << " "
+            << aim.fourier_table.shape()[1] << std::endl;
+}
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -136,8 +136,8 @@ void AIM::AimInteraction::fill_fourier_table()
                     [2 * grid.dimensions(0)]);
 
   // Set up FFTW plan; will transform real-valued Toeplitz matrix to the
-  // positive
-  // frequency complex-valued FFT values (known to be conjugate symmetric).
+  // positive frequency complex-valued FFT values (known to be conjugate
+  // symmetric to eliminate redundancy).
 
   const int len[] = {grid.dimensions(0)};
   const int howmany =
@@ -155,10 +155,10 @@ void AIM::AimInteraction::fill_fourier_table()
   std::fill(gmatrix_table.data(),
             gmatrix_table.data() + gmatrix_table.num_elements(), 0);
 
-  // Build the circulant equivalent of the G "matrices." Since the G matrices
-  // are Toeplitz (and symmetric), they're uniquely determined by their first
-  // row. The first row gets computed here then mirrored to make a list of
-  // every circulant (and thus FFT-able) vector.
+  // Build the circulant vectors that define the G "matrices." Since the G
+  // matrices are Toeplitz (and symmetric), they're uniquely determined by
+  // their first row. The first row gets computed here then mirrored to make a
+  // list of every circulant (and thus FFT-able) vector.
 
   Interpolation::UniformLagrangeSet interp(interp_order);
   for(int nz = 0; nz < grid.dimensions(2); ++nz) {
@@ -182,8 +182,7 @@ void AIM::AimInteraction::fill_fourier_table()
             gmatrix_table[time_idx][nz][ny][nx] =
                 interp.evaluations[0][polynomial_idx];
 
-            if(nx != 0) {
-              // make the circulant "mirror"
+            if(nx != 0) {  // Make the circulant "mirror"
               gmatrix_table[time_idx][nz][ny][2 * grid.dimensions(0) - nx] =
                   gmatrix_table[time_idx][nz][ny][nx];
             }
@@ -193,6 +192,8 @@ void AIM::AimInteraction::fill_fourier_table()
     }
   }
 
-  // Buckle up...
+  // Transform the circulant vectors into their equivalently-diagonal
+  // representation. Buckle up.
+
   fftw_execute(circulant_plan);
 }
