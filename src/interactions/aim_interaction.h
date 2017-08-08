@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <boost/multi_array.hpp>
 
+#include "../common.h"
 #include "../lagrange_set.h"
 #include "../math_utils.h"
 #include "../quantum_dot.h"
@@ -14,8 +15,6 @@
 namespace AIM {
   class Grid;
   class AimInteraction;
-
-  typedef boost::multi_array<cmplx, 2> cmplx_array;
 }
 
 class AIM::Grid {
@@ -67,7 +66,9 @@ class AIM::AimInteraction final : public Interaction {
   int interp_order;
   double c, dt;
 
-  cmplx_array fourier_table;
+  CmplxArray fourier_table;
+
+  boost::multi_array<double, 2> g_matrix_table();
   void fill_fourier_table();
 };
 #endif

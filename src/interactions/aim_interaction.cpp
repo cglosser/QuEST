@@ -91,7 +91,7 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
       interp_order(interp_order),
       c(c),
       dt(dt),
-      fourier_table(boost::extents[cmplx_array::extent_range(
+      fourier_table(boost::extents[CmplxArray::extent_range(
           1, grid.max_transit_steps(c, dt))][grid.num_boxes])
 {
   fill_fourier_table();
@@ -140,16 +140,16 @@ void AIM::AimInteraction::fill_fourier_table()
   // symmetric to eliminate redundancy).
 
   const int len[] = {grid.dimensions(0)};
-  const int howmany =
-      grid.dimensions(1) * grid.dimensions(2) * grid.max_transit_steps(c, dt);
+  const int howmany = 1;
+      //grid.dimensions(1) * grid.dimensions(2) * grid.max_transit_steps(c, dt);
   const int idist = 2 * grid.dimensions(0), odist = grid.dimensions(0);
   const int istride = 1, ostride = 1;
   const int *inembed = len, *onembed = len;
 
   fftw_plan circulant_plan;
-  circulant_plan = fftw_plan_many_dft_r2c(
-      1, len, howmany, gmatrix_table.data(), inembed, istride, idist,
-      reinterpret_cast<fftw_complex *>(fourier_table.data()), onembed, ostride,
+  circulant_plan = fftw_plan_many_dft_r2c(1, len, howmany,
+      gmatrix_table.data(), inembed, istride, idist,
+      reinterpret_cast<fftw_complex*>(fourier_table.data()), onembed, ostride,
       odist, FFTW_MEASURE);
 
   std::fill(gmatrix_table.data(),
