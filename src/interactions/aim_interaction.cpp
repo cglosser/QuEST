@@ -129,6 +129,12 @@ std::vector<double> AIM::AimInteraction::g_matrix_row(const size_t step) const
 
 void AIM::AimInteraction::fill_fourier_table()
 {
+  // Because of how FFTW torpedoes its input and output arrays, it's FAR easier
+  // to build and destroy the table of circulant vectors here instead of
+  // passing it up and down throughout the function stack. Unfortunately, that
+  // makes it significantly more difficult to test without a debugger, so I 
+  // highly recommend a debugger for this.
+  
   using dbl_mat = boost::multi_array<double, 4>;
   dbl_mat gmatrix_table(
       boost::extents[dbl_mat::extent_range(1, grid.max_transit_steps(c, dt))]
@@ -139,17 +145,17 @@ void AIM::AimInteraction::fill_fourier_table()
   // positive frequency complex-valued FFT values (known to be conjugate
   // symmetric to eliminate redundancy).
 
-  const int len[] = {grid.dimensions(0)};
-  const int howmany = 1;
+  const int len[] = {2 * grid.dimensions(0)};
+  const int howmany = 2;
       //grid.dimensions(1) * grid.dimensions(2) * grid.max_transit_steps(c, dt);
-  const int idist = 2 * grid.dimensions(0), odist = grid.dimensions(0);
+  const int idist = 2 * grid.dimensions(0), odist = grid.dimensions(0) + 1;
   const int istride = 1, ostride = 1;
   const int *inembed = len, *onembed = len;
 
   fftw_plan circulant_plan;
-  circulant_plan = fftw_plan_many_dft_r2c(1, len, howmany,
-      gmatrix_table.data(), inembed, istride, idist,
-      reinterpret_cast<fftw_complex*>(fourier_table.data()), onembed, ostride,
+  circulant_plan = fftw_plan_many_dft_r2c(
+      1, len, howmany, gmatrix_table.data(), inembed, istride, idist,
+      reinterpret_cast<fftw_complex *>(fourier_table.data()), onembed, ostride,
       odist, FFTW_MEASURE);
 
   std::fill(gmatrix_table.data(),
@@ -191,6 +197,13 @@ void AIM::AimInteraction::fill_fourier_table()
       }
     }
   }
+
+  std::cout << std::setprecision(12) << std::scientific;
+  for(int i = 0; i < 2 * (2 * grid.dimensions(0)); ++i) {
+    std::cout << i << ", " << gmatrix_table.data()[i] << std::endl;
+  }
+
+  std::cout << "===========================================" << std::endl;
 
   // Transform the circulant vectors into their equivalently-diagonal
   // representation. Buckle up.

@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <boost/multi_array.hpp>
 
+#include <iomanip>
+
 #include "../common.h"
 #include "../lagrange_set.h"
 #include "../math_utils.h"

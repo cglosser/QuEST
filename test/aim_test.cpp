@@ -122,6 +122,10 @@ BOOST_FIXTURE_TEST_CASE(diagonal_representation, Universe)
 
   std::cout << aim.fourier_table.shape()[0] << " "
             << aim.fourier_table.shape()[1] << std::endl;
+
+  for(int i = 0; i < 24; ++i) {
+    std::cout << aim.fourier_table[1][i] << std::endl;
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
