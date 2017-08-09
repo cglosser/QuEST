@@ -91,10 +91,9 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
       interp_order(interp_order),
       c(c),
       dt(dt),
-      fourier_table(
-          boost::extents[CmplxArray::extent_range(1, grid.max_transit_steps(c, dt))]
-                        [grid.dimensions(2) * grid.dimensions(1) * (grid.dimensions(0) + 1)]
-      )
+      fourier_table(boost::extents[CmplxArray::extent_range(
+          1, grid.max_transit_steps(c, dt))][grid.dimensions(2)]
+                                  [grid.dimensions(1)][grid.dimensions(0) + 1])
 {
   fill_fourier_table();
 }
@@ -139,9 +138,8 @@ void AIM::AimInteraction::fill_fourier_table()
 
   const int max_transit_steps = grid.max_transit_steps(c, dt);
 
-  using SpacetimeMatrix = boost::multi_array<double, 4>;
-  SpacetimeMatrix gmatrix_table(
-      boost::extents[SpacetimeMatrix::extent_range(1, max_transit_steps)]
+  SpacetimeArray<double> gmatrix_table(
+      boost::extents[SpacetimeArray<double>::extent_range(1, max_transit_steps)]
                     [grid.dimensions(2)][grid.dimensions(1)]
                     [2 * grid.dimensions(0)]);
 
@@ -152,8 +150,8 @@ void AIM::AimInteraction::fill_fourier_table()
   const int len[] = {2 * grid.dimensions(0)};
 
   // This (- 1) adjusts the bookkeeping to avoid a G0 matrix
-  const int howmany = grid.dimensions(1) * grid.dimensions(2) *
-    (max_transit_steps - 1);
+  const int howmany =
+      grid.dimensions(1) * grid.dimensions(2) * (max_transit_steps - 1);
   const int idist = 2 * grid.dimensions(0), odist = grid.dimensions(0) + 1;
   const int istride = 1, ostride = 1;
   const int *inembed = len, *onembed = len;
@@ -185,6 +183,7 @@ void AIM::AimInteraction::fill_fourier_table()
         const double arg = dr.norm() / (c * dt);
         const std::pair<int, double> split_arg = split_double(arg);
 
+        // Do the time-axis last; we can share a lot of work
         for(int time_idx = 1; time_idx < grid.max_transit_steps(c, dt);
             ++time_idx) {
           const int polynomial_idx = static_cast<int>(ceil(time_idx - arg));
@@ -203,13 +202,6 @@ void AIM::AimInteraction::fill_fourier_table()
       }
     }
   }
-
-  //std::cout << std::setprecision(12) << std::scientific;
-  //for(int i = 0; i < 2 * (howmany * grid.dimensions(0)); ++i) {
-    //std::cout << i << ", " << gmatrix_table.data()[i] << std::endl;
-  //}
-
-  //std::cout << "===========================================" << std::endl;
 
   // Transform the circulant vectors into their equivalently-diagonal
   // representation. Buckle up.

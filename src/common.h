@@ -9,4 +9,7 @@ constexpr cmplx iu(0, 1);
 typedef boost::multi_array<double, 2> DblArray;
 typedef boost::multi_array<cmplx, 2> CmplxArray;
 
+template <class T>
+using SpacetimeArray = boost::multi_array<T, 4>;
+
 #endif

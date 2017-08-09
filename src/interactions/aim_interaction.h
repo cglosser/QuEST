@@ -68,9 +68,8 @@ class AIM::AimInteraction final : public Interaction {
   int interp_order;
   double c, dt;
 
-  CmplxArray fourier_table;
+  SpacetimeArray<cmplx> fourier_table;
 
-  boost::multi_array<double, 2> g_matrix_table();
   void fill_fourier_table();
 };
 #endif
