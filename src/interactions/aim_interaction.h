@@ -58,8 +58,7 @@ class AIM::AimInteraction final : public Interaction {
                  const double,
                  const double);
 
-  ResultArray &evaluate(const int);
-  std::vector<double> g_matrix_row(const size_t) const;
+  const ResultArray &evaluate(const int);
 
   // private:
   std::shared_ptr<const DotVector> dots;
