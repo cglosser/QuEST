@@ -70,6 +70,20 @@ BOOST_FIXTURE_TEST_CASE(PointSort, PointSetup)
   BOOST_CHECK_EQUAL(grid_idx(dots->at(6).position()), 5);
 }
 
+BOOST_FIXTURE_TEST_CASE(Expansion_Box, PointSetup)
+{
+  AIM::Grid grid(grid_spacing, dots, 4);
+
+  auto expansion_box_ids =
+      grid.expansion_box_indices(Eigen::Vector3d(0.5, 0.5, 0.5), 1);
+
+  for(size_t i = 0; i < expansion_box_ids.size(); ++i) {
+    std::cout << "(" << i << ") "
+              << grid.spatial_coord_of_box(expansion_box_ids.at(i)).transpose()
+              << std::endl;
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -93,13 +107,5 @@ struct Universe {
     }
   };
 };
-
-BOOST_FIXTURE_TEST_CASE(diagonal_representation, Universe)
-{
-  AIM::AimInteraction aim(dots, grid_spacing, 3, 1, 1);
-
-  std::cout << aim.fourier_table.shape()[0] << " "
-            << aim.fourier_table.shape()[1] << std::endl;
-}
 
 BOOST_AUTO_TEST_SUITE_END()

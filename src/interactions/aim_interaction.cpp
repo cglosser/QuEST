@@ -69,6 +69,31 @@ Eigen::Vector3d AIM::Grid::spatial_coord_of_box(const size_t box_id) const
   return r + bounds.col(0).cast<double>().matrix();
 }
 
+std::vector<size_t> AIM::Grid::expansion_box_indices(const Eigen::Vector3d &pos,
+                                                     const int order) const
+{
+  Eigen::Vector3i origin = grid_coordinate(pos);
+  std::vector<size_t> indices(std::pow(order + 1, 3));
+
+  std::cout << "origin (idx): " << origin.transpose() << " ("
+            << coord_to_idx(origin) << ")" << std::endl;
+
+  size_t idx = 0;
+  for(int nz = 0; nz <= order; ++nz) {
+    for(int ny = 0; ny <= order; ++ny) {
+      for(int nx = 0; nx <= order; ++nx) {
+        const Eigen::Vector3i delta(grid_sequence(nx), grid_sequence(ny),
+                                    grid_sequence(nz));
+        const size_t grid_idx = coord_to_idx(origin + delta);
+
+        indices.at(idx++) = grid_idx;
+      }
+    }
+  }
+
+  return indices;
+}
+
 void AIM::Grid::sort_points_on_boxidx() const
 {
   auto grid_comparitor = [&](const QuantumDot &q1, const QuantumDot &q2) {
@@ -100,7 +125,6 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
     : Interaction(dots),
       grid(spacing, dots),
       interp_order(interp_order),
-      box_order(1),
       c(c),
       dt(dt),
       fourier_table(boost::extents[CmplxArray::extent_range(

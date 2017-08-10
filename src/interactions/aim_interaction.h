@@ -30,6 +30,8 @@ class AIM::Grid {
   size_t coord_to_idx(const Eigen::Vector3i &) const;
   Eigen::Vector3i idx_to_coord(size_t) const;
   Eigen::Vector3d spatial_coord_of_box(const size_t) const;
+  std::vector<size_t> expansion_box_indices(const Eigen::Vector3d &,
+                                            const int) const;
 
   Eigen::Array3i dimensions;
   size_t num_boxes;
