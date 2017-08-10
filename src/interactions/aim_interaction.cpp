@@ -1,16 +1,23 @@
 #include "aim_interaction.h"
 
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
-                const std::shared_ptr<DotVector> &dots)
-    : spacing(spacing), dots(dots), bounds(calculate_bounds())
+                const std::shared_ptr<DotVector> &dots,
+                const int pad)
+    : spacing(spacing), dots(dots), padding(pad), bounds(calculate_bounds())
 {
-  dimensions = bounds.col(1) - bounds.col(0) + 1;
+  dimensions = bounds.col(1) - bounds.col(0);
   num_boxes = dimensions.prod();
   max_diagonal = (dimensions.cast<double>() * spacing).matrix().norm();
   boxes.resize(dimensions.prod());
 
   sort_points_on_boxidx();
   map_points_to_boxes();
+}
+
+AIM::Grid::Grid(const Eigen::Array3d &spacing,
+                const std::shared_ptr<DotVector> &dots)
+    : Grid(spacing, dots, 0)
+{
 }
 
 AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
@@ -24,6 +31,10 @@ AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
     b.col(0) = grid_coord.array().min(b.col(0));
     b.col(1) = grid_coord.array().max(b.col(1));
   }
+
+  b.col(0) -= padding;
+  b.col(1) += padding + 1;
+  // The +1 ensures a grid of boxes entirely contains the qdot coordinates
 
   return b;
 }
@@ -89,6 +100,7 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
     : Interaction(dots),
       grid(spacing, dots),
       interp_order(interp_order),
+      box_order(1),
       c(c),
       dt(dt),
       fourier_table(boost::extents[CmplxArray::extent_range(

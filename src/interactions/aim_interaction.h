@@ -24,6 +24,7 @@ class AIM::Grid {
   typedef Eigen::Array<int, 3, 2> BoundsArray;
   typedef std::pair<DotVector::iterator, DotVector::iterator> BoxRange;
 
+  Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector> &, const int);
   Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector> &);
   Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &) const;
   size_t coord_to_idx(const Eigen::Vector3i &) const;
@@ -40,12 +41,14 @@ class AIM::Grid {
     return static_cast<int>(ceil(max_diagonal / (c * dt)));
   };
 
+  BoundsArray calculate_bounds() const;
+
  private:
   Eigen::Array3d spacing;
   std::shared_ptr<DotVector> dots;
+  int padding;
   BoundsArray bounds;
 
-  BoundsArray calculate_bounds() const;
   void sort_points_on_boxidx() const;
   void map_points_to_boxes();
 };
