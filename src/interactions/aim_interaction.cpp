@@ -79,9 +79,9 @@ std::vector<size_t> AIM::Grid::expansion_box_indices(const Eigen::Vector3d &pos,
             << coord_to_idx(origin) << ")" << std::endl;
 
   size_t idx = 0;
-  for(int nz = 0; nz <= order; ++nz) {
+  for(int nx = 0; nx <= order; ++nx) {
     for(int ny = 0; ny <= order; ++ny) {
-      for(int nx = 0; nx <= order; ++nx) {
+      for(int nz = 0; nz <= order; ++nz) {
         const Eigen::Vector3i delta(grid_sequence(nx), grid_sequence(ny),
                                     grid_sequence(nz));
         const size_t grid_idx = coord_to_idx(origin + delta);
@@ -128,8 +128,8 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
       c(c),
       dt(dt),
       fourier_table(boost::extents[CmplxArray::extent_range(
-          1, grid.max_transit_steps(c, dt))][grid.dimensions(2)]
-                                  [grid.dimensions(1)][grid.dimensions(0) + 1])
+          1, grid.max_transit_steps(c, dt))][grid.dimensions(0)]
+                                  [grid.dimensions(1)][grid.dimensions(2) + 1])
 {
   fill_fourier_table();
 }
@@ -152,19 +152,19 @@ void AIM::AimInteraction::fill_fourier_table()
 
   SpacetimeArray<double> gmatrix_table(
       boost::extents[SpacetimeArray<double>::extent_range(1, max_transit_steps)]
-                    [grid.dimensions(2)][grid.dimensions(1)]
-                    [2 * grid.dimensions(0)]);
+                    [grid.dimensions(0)][grid.dimensions(1)]
+                    [2 * grid.dimensions(2)]);
 
   // Set up FFTW plan; will transform real-valued Toeplitz matrix to the
   // positive frequency complex-valued FFT values (known to be conjugate
   // symmetric to eliminate redundancy).
 
-  const int len[] = {2 * grid.dimensions(0)};
+  const int len[] = {2 * grid.dimensions(2)};
 
   // This (- 1) adjusts the bookkeeping to avoid a G0 matrix
   const int howmany =
-      grid.dimensions(1) * grid.dimensions(2) * (max_transit_steps - 1);
-  const int idist = 2 * grid.dimensions(0), odist = grid.dimensions(0) + 1;
+      (max_transit_steps - 1) * grid.dimensions(0) * grid.dimensions(1);
+  const int idist = 2 * grid.dimensions(2), odist = grid.dimensions(2) + 1;
   const int istride = 1, ostride = 1;
   const int *inembed = len, *onembed = len;
 
@@ -183,9 +183,9 @@ void AIM::AimInteraction::fill_fourier_table()
   // list of every circulant (and thus FFT-able) vector.
 
   Interpolation::UniformLagrangeSet interp(interp_order);
-  for(int nz = 0; nz < grid.dimensions(2); ++nz) {
+  for(int nx = 0; nx < grid.dimensions(0); ++nx) {
     for(int ny = 0; ny < grid.dimensions(1); ++ny) {
-      for(int nx = 0; nx < grid.dimensions(0); ++nx) {
+      for(int nz = 0; nz < grid.dimensions(2); ++nz) {
         const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(nx, ny, nz));
         if(box_idx == 0) continue;
 
@@ -202,12 +202,12 @@ void AIM::AimInteraction::fill_fourier_table()
 
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
-            gmatrix_table[time_idx][nz][ny][nx] =
+            gmatrix_table[time_idx][nx][ny][nz] =
                 interp.evaluations[0][polynomial_idx];
 
-            if(nx != 0) {  // Make the circulant "mirror"
-              gmatrix_table[time_idx][nz][ny][2 * grid.dimensions(0) - nx] =
-                  gmatrix_table[time_idx][nz][ny][nx];
+            if(nz != 0) {  // Make the circulant "mirror"
+              gmatrix_table[time_idx][nx][ny][2 * grid.dimensions(2) - nz] =
+                  gmatrix_table[time_idx][nx][ny][nz];
             }
           }
         }
