@@ -75,9 +75,6 @@ std::vector<size_t> AIM::Grid::expansion_box_indices(const Eigen::Vector3d &pos,
   Eigen::Vector3i origin = grid_coordinate(pos);
   std::vector<size_t> indices(std::pow(order + 1, 3));
 
-  std::cout << "origin (idx): " << origin.transpose() << " ("
-            << coord_to_idx(origin) << ")" << std::endl;
-
   size_t idx = 0;
   for(int nx = 0; nx <= order; ++nx) {
     for(int ny = 0; ny <= order; ++ny) {
@@ -142,15 +139,9 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 
 void AIM::AimInteraction::fill_fourier_table()
 {
-  // Because of how FFTW torpedoes its input and output arrays, it's FAR easier
-  // to build and destroy the table of circulant vectors here instead of
-  // passing it up and down throughout the function stack. Unfortunately, that
-  // makes it significantly more difficult to test without a debugger, so I
-  // highly recommend a debugger for this.
-
   const int max_transit_steps = grid.max_transit_steps(c, dt);
 
-  SpacetimeArray<double> gmatrix_table(
+  SpacetimeArray<double> g_mat(
       boost::extents[SpacetimeArray<double>::extent_range(1, max_transit_steps)]
                     [grid.dimensions(0)][grid.dimensions(1)]
                     [2 * grid.dimensions(2)]);
@@ -160,26 +151,37 @@ void AIM::AimInteraction::fill_fourier_table()
   // symmetric to eliminate redundancy).
 
   const int len[] = {2 * grid.dimensions(2)};
-  const int howmany =
-      std::accumulate(gmatrix_table.shape(), gmatrix_table.shape() + 3, 1,
-                      std::multiplies<int>());
+  const int howmany = std::accumulate(g_mat.shape(), g_mat.shape() + 3, 1,
+                                      std::multiplies<int>());
   const int idist = 2 * grid.dimensions(2), odist = grid.dimensions(2) + 1;
   const int istride = 1, ostride = 1;
   const int *inembed = len, *onembed = len;
 
   fftw_plan circulant_plan;
   circulant_plan = fftw_plan_many_dft_r2c(
-      1, len, howmany, gmatrix_table.data(), inembed, istride, idist,
+      1, len, howmany, g_mat.data(), inembed, istride, idist,
       reinterpret_cast<fftw_complex *>(fourier_table.data()), onembed, ostride,
       odist, FFTW_MEASURE);
 
-  std::fill(gmatrix_table.data(),
-            gmatrix_table.data() + gmatrix_table.num_elements(), 0);
+  std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), 0);
 
+  fill_gmatrix_table(g_mat);
+
+  // Transform the circulant vectors into their equivalently-diagonal
+  // representation. Buckle up.
+
+  fftw_execute(circulant_plan);
+}
+
+void AIM::AimInteraction::fill_gmatrix_table(
+    SpacetimeArray<double> &gmatrix_table) const
+{
   // Build the circulant vectors that define the G "matrices." Since the G
   // matrices are Toeplitz (and symmetric), they're uniquely determined by
   // their first row. The first row gets computed here then mirrored to make a
-  // list of every circulant (and thus FFT-able) vector.
+  // list of every circulant (and thus FFT-able) vector. This function needs to
+  // accept a non-const reference to a SpacetimeArray (instead of just
+  // returning such an array) to play nice with FFTW and its workspaces.
 
   Interpolation::UniformLagrangeSet interp(interp_order);
   for(int nx = 0; nx < grid.dimensions(0); ++nx) {
@@ -195,8 +197,8 @@ void AIM::AimInteraction::fill_fourier_table()
         const std::pair<int, double> split_arg = split_double(arg);
 
         // Do the time-axis last; we can share a lot of work
-        for(int time_idx = 1; time_idx < grid.max_transit_steps(c, dt);
-            ++time_idx) {
+        for(int time_idx = 1;
+            time_idx < static_cast<int>(gmatrix_table.shape()[0]); ++time_idx) {
           const int polynomial_idx = static_cast<int>(ceil(time_idx - arg));
 
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
@@ -213,9 +215,4 @@ void AIM::AimInteraction::fill_fourier_table()
       }
     }
   }
-
-  // Transform the circulant vectors into their equivalently-diagonal
-  // representation. Buckle up.
-
-  fftw_execute(circulant_plan);
 }

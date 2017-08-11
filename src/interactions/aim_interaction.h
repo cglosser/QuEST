@@ -8,6 +8,8 @@
 #include <functional>
 #include <numeric>
 
+#include <iomanip>
+
 #include "../common.h"
 #include "../lagrange_set.h"
 #include "../math_utils.h"
@@ -64,6 +66,7 @@ class AIM::AimInteraction final : public Interaction {
                  const double);
 
   const ResultArray &evaluate(const int);
+  void fill_gmatrix_table(SpacetimeArray<double> &) const;
 
   // private:
   std::shared_ptr<const DotVector> dots;
