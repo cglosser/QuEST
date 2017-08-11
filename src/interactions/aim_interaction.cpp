@@ -116,11 +116,13 @@ void AIM::Grid::map_points_to_boxes()
 
 AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
                                     const Eigen::Vector3d &spacing,
+                                    const int box_order,
                                     const int interp_order,
                                     const double c,
                                     const double dt)
     : Interaction(dots),
-      grid(spacing, dots),
+      grid(spacing, dots, box_order),
+      box_order(box_order),
       interp_order(interp_order),
       c(c),
       dt(dt),
@@ -215,4 +217,43 @@ void AIM::AimInteraction::fill_gmatrix_table(
       }
     }
   }
+}
+
+Eigen::VectorXd AIM::AimInteraction::q_vector(const Eigen::Vector3d &pos) const
+{
+  const int len = std::pow(box_order + 1, 3);
+  Eigen::VectorXd q_vec(len);
+
+  int i = 0;
+  for(int nx = 0; nx <= box_order; ++nx) {
+    for(int ny = 0; ny <= box_order; ++ny) {
+      for(int nz = 0; nz <= box_order; ++nz) {
+        q_vec(i++) =
+            std::pow(pos(0), nx) * std::pow(pos(1), ny) * std::pow(pos(2), nz);
+      }
+    }
+  }
+
+  return q_vec;
+}
+
+Eigen::MatrixXd AIM::AimInteraction::w_matrix(const Eigen::Vector3d &pos) const
+{
+  const int len = std::pow(box_order + 1, 3);
+  Eigen::MatrixXd w_mat(len, len);
+
+  auto expansion_indices = grid.expansion_box_indices(pos, box_order);
+
+  for(int i = 0; i < len; ++i) {
+    w_mat.col(i) = q_vector(grid.spatial_coord_of_box(expansion_indices.at(i)));
+  }
+
+  return w_mat;
+}
+
+Eigen::VectorXd AIM::AimInteraction::solve_expansion_system(
+    const Eigen::Vector3d &pos) const
+{
+  Eigen::FullPivLU<Eigen::MatrixXd> lu(w_matrix(pos));
+  return lu.solve(q_vector(pos));
 }

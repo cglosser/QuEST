@@ -62,17 +62,21 @@ class AIM::AimInteraction final : public Interaction {
   AimInteraction(const std::shared_ptr<DotVector> &,
                  const Eigen::Vector3d &,
                  const int,
+                 const int,
                  const double,
                  const double);
 
   const ResultArray &evaluate(const int);
   void fill_gmatrix_table(SpacetimeArray<double> &) const;
+  Eigen::VectorXd q_vector(const Eigen::Vector3d &) const;
+  Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
+  Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
 
   // private:
   std::shared_ptr<const DotVector> dots;
   Grid grid;
 
-  int interp_order;
+  int box_order, interp_order;
   double c, dt;
 
   SpacetimeArray<cmplx> fourier_table;
