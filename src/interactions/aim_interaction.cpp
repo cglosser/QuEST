@@ -160,10 +160,9 @@ void AIM::AimInteraction::fill_fourier_table()
   // symmetric to eliminate redundancy).
 
   const int len[] = {2 * grid.dimensions(2)};
-
-  // This (- 1) adjusts the bookkeeping to avoid a G0 matrix
   const int howmany =
-      (max_transit_steps - 1) * grid.dimensions(0) * grid.dimensions(1);
+      std::accumulate(gmatrix_table.shape(), gmatrix_table.shape() + 3, 1,
+                      std::multiplies<int>());
   const int idist = 2 * grid.dimensions(2), odist = grid.dimensions(2) + 1;
   const int istride = 1, ostride = 1;
   const int *inembed = len, *onembed = len;

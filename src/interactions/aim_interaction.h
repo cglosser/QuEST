@@ -5,8 +5,8 @@
 #include <Eigen/Dense>
 #include <algorithm>
 #include <boost/multi_array.hpp>
-
-#include <iomanip>
+#include <functional>
+#include <numeric>
 
 #include "../common.h"
 #include "../lagrange_set.h"

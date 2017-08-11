@@ -99,13 +99,20 @@ struct Universe {
         grid_spacing(1.2, 1.2, 1.2)
   {
     for(int x = 0; x < 6; ++x) {
-      for(int y = 0; y < 6; ++y) {
-        dots->push_back(QuantumDot(1.2 * Eigen::Vector3d(x, y, 0), 0,
+      for(int z = 0; z < 6; ++z) {
+        dots->push_back(QuantumDot(1.2 * Eigen::Vector3d(x, 0, z), 0,
                                    std::make_pair(10.0, 20.0),
                                    Eigen::Vector3d(0, 0, 0)));
       }
     }
   };
 };
+
+BOOST_FIXTURE_TEST_CASE(FFT, Universe)
+{
+  AIM::AimInteraction aim(dots, grid_spacing, 3, 1, 1);
+
+
+}
 
 BOOST_AUTO_TEST_SUITE_END()
