@@ -71,6 +71,7 @@ class AIM::AimInteraction final : public Interaction {
   Eigen::VectorXd q_vector(const Eigen::Vector3d &) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
   Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
+  std::vector<Eigen::VectorXd> expansion_table() const;
 
   // private:
   std::shared_ptr<const DotVector> dots;
@@ -80,6 +81,7 @@ class AIM::AimInteraction final : public Interaction {
   double c, dt;
 
   SpacetimeArray<cmplx> fourier_table;
+  std::vector<Eigen::VectorXd> expansions;
 
   void fill_fourier_table();
 };

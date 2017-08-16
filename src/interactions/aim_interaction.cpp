@@ -128,8 +128,10 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
       dt(dt),
       fourier_table(boost::extents[CmplxArray::extent_range(
           1, grid.max_transit_steps(c, dt))][grid.dimensions(0)]
-                                  [grid.dimensions(1)][grid.dimensions(2) + 1])
+                                  [grid.dimensions(1)][grid.dimensions(2) + 1]),
+      expansions(expansion_table())
 {
+  std::cout << dots.use_count() << " " << (this->dots).use_count() << std::endl;
   fill_fourier_table();
 }
 
@@ -256,4 +258,18 @@ Eigen::VectorXd AIM::AimInteraction::solve_expansion_system(
 {
   Eigen::FullPivLU<Eigen::MatrixXd> lu(w_matrix(pos));
   return lu.solve(q_vector(pos));
+}
+
+std::vector<Eigen::VectorXd> AIM::AimInteraction::expansion_table() const
+{
+  std::vector<Eigen::VectorXd> table(0);
+
+  // for(const auto &d : *dots) {
+  // std::cout << d.position().transpose() << std::endl;
+  //}
+
+  // for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
+  // table.at(dot_idx) = solve_expansion_system(dots->at(dot_idx).position());
+  //}
+  return table;
 }
