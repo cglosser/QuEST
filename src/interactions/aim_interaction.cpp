@@ -269,14 +269,10 @@ Eigen::VectorXd AIM::AimInteraction::solve_expansion_system(
 
 std::vector<Eigen::VectorXd> AIM::AimInteraction::expansion_table() const
 {
-  std::vector<Eigen::VectorXd> table(0);
+  std::vector<Eigen::VectorXd> table(dots->size());
 
-  // for(const auto &d : *dots) {
-  // std::cout << d.position().transpose() << std::endl;
-  //}
-
-  // for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
-  // table.at(dot_idx) = solve_expansion_system(dots->at(dot_idx).position());
-  //}
+  for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
+    table.at(dot_idx) = solve_expansion_system(dots->at(dot_idx).position());
+  }
   return table;
 }

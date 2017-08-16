@@ -112,4 +112,14 @@ BOOST_FIXTURE_TEST_CASE(Expansion_System, Universe)
   }
 }
 
+BOOST_FIXTURE_TEST_CASE(Every_dot_expansion, Universe)
+{
+  AIM::AimInteraction aim(dots, grid, expansion_order, 3, 1, 1);
+  auto table = aim.expansion_table();
+
+  for(const auto &i : table) {
+    std::cout << i.transpose() << std::endl;
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
