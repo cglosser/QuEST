@@ -76,7 +76,6 @@ class AIM::AimInteraction : public Interaction {
   std::vector<Eigen::VectorXd> expansion_table() const;
 
   // private:
-  std::shared_ptr<const DotVector> dots;
   Grid grid;
 
   int box_order, interp_order;
