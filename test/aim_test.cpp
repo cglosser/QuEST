@@ -32,18 +32,20 @@ BOOST_FIXTURE_TEST_CASE(Construction, PointSetup)
 {
   AIM::Grid grid(grid_spacing, dots);
 
+  auto boxes = grid.box_contents_map(dots);
+
   BOOST_CHECK_EQUAL(grid.dimensions(0), 2);
   BOOST_CHECK_EQUAL(grid.dimensions(1), 3);
   BOOST_CHECK_EQUAL(grid.dimensions(2), 1);
 
   BOOST_CHECK_CLOSE(grid.max_diagonal, std::sqrt(14.0), 1e-16);
 
-  BOOST_CHECK_EQUAL(grid.boxes[0].second - grid.boxes[0].first, 1);
-  BOOST_CHECK_EQUAL(grid.boxes[1].second - grid.boxes[1].first, 1);
-  BOOST_CHECK_EQUAL(grid.boxes[2].second - grid.boxes[2].first, 0);
-  BOOST_CHECK_EQUAL(grid.boxes[3].second - grid.boxes[3].first, 2);
-  BOOST_CHECK_EQUAL(grid.boxes[4].second - grid.boxes[4].first, 1);
-  BOOST_CHECK_EQUAL(grid.boxes[5].second - grid.boxes[5].first, 2);
+  BOOST_CHECK_EQUAL(boxes[0].second - boxes[0].first, 1);
+  BOOST_CHECK_EQUAL(boxes[1].second - boxes[1].first, 1);
+  BOOST_CHECK_EQUAL(boxes[2].second - boxes[2].first, 0);
+  BOOST_CHECK_EQUAL(boxes[3].second - boxes[3].first, 2);
+  BOOST_CHECK_EQUAL(boxes[4].second - boxes[4].first, 1);
+  BOOST_CHECK_EQUAL(boxes[5].second - boxes[5].first, 2);
 
   BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(0), Eigen::Vector3d(-1, -1, 0));
   BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(1), Eigen::Vector3d(0, -1, 0));

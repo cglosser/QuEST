@@ -16,6 +16,8 @@
 class QuantumDot;
 
 typedef std::vector<QuantumDot> DotVector;
+typedef std::pair<DotVector::iterator, DotVector::iterator> DotRange;
+typedef std::pair<DotVector::const_iterator, DotVector::const_iterator> const_DotRange;
 typedef Eigen::Vector2cd matrix_elements;
 typedef std::function<Eigen::Vector2cd(const Eigen::Vector2cd,
                                        const std::complex<double>)>

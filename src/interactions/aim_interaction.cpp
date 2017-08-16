@@ -8,10 +8,8 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
   dimensions = bounds.col(1) - bounds.col(0);
   num_boxes = dimensions.prod();
   max_diagonal = (dimensions.cast<double>() * spacing).matrix().norm();
-  boxes.resize(dimensions.prod());
 
   sort_points_on_boxidx();
-  map_points_to_boxes();
 }
 
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
@@ -37,6 +35,23 @@ AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
   // The +1 ensures a grid of boxes entirely contains the qdot coordinates
 
   return b;
+}
+
+std::vector<DotRange> AIM::Grid::box_contents_map(
+    const std::shared_ptr<DotVector> &dots) const
+{
+  std::vector<DotRange> boxes(num_boxes);
+  for(size_t box_idx = 0; box_idx < boxes.size(); ++box_idx) {
+    auto IsInBox = [=](const QuantumDot &qd) {
+      return coord_to_idx(grid_coordinate(qd.position())) == box_idx;
+    };
+
+    auto begin = std::find_if(dots->begin(), dots->end(), IsInBox);
+    auto end = std::find_if_not(begin, dots->end(), IsInBox);
+    boxes.at(box_idx) = std::make_pair(begin, end);
+  }
+
+  return boxes;
 }
 
 Eigen::Vector3i AIM::Grid::grid_coordinate(const Eigen::Vector3d &coord) const
@@ -99,19 +114,6 @@ void AIM::Grid::sort_points_on_boxidx() const
   };
 
   std::stable_sort(dots->begin(), dots->end(), grid_comparitor);
-}
-
-void AIM::Grid::map_points_to_boxes()
-{
-  for(size_t box_idx = 0; box_idx < boxes.size(); ++box_idx) {
-    auto IsInBox = [=](const QuantumDot &qd) {
-      return coord_to_idx(grid_coordinate(qd.position())) == box_idx;
-    };
-
-    auto begin = std::find_if(dots->begin(), dots->end(), IsInBox);
-    auto end = std::find_if_not(begin, dots->end(), IsInBox);
-    boxes.at(box_idx) = std::make_pair(begin, end);
-  }
 }
 
 AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
