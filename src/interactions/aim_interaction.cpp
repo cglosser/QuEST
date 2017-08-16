@@ -1,5 +1,10 @@
 #include "aim_interaction.h"
 
+AIM::Grid::Grid()
+    : Grid(Eigen::Vector3d(0, 0, 0), std::make_shared<DotVector>(), 0)
+{
+}
+
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
                 const std::shared_ptr<DotVector> &dots,
                 const int pad)
@@ -116,14 +121,15 @@ void AIM::Grid::sort_points_on_boxidx() const
   std::stable_sort(dots->begin(), dots->end(), grid_comparitor);
 }
 
-AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
-                                    const Eigen::Vector3d &spacing,
-                                    const int box_order,
-                                    const int interp_order,
-                                    const double c,
-                                    const double dt)
+AIM::AimInteraction::AimInteraction(
+    const std::shared_ptr<const DotVector> &dots,
+    const Grid &grid,
+    const int box_order,
+    const int interp_order,
+    const double c,
+    const double dt)
     : Interaction(dots),
-      grid(spacing, dots, box_order),
+      grid(grid),
       box_order(box_order),
       interp_order(interp_order),
       c(c),
@@ -133,7 +139,6 @@ AIM::AimInteraction::AimInteraction(const std::shared_ptr<DotVector> &dots,
                                   [grid.dimensions(1)][grid.dimensions(2) + 1]),
       expansions(expansion_table())
 {
-  std::cout << dots.use_count() << " " << (this->dots).use_count() << std::endl;
   fill_fourier_table();
 }
 

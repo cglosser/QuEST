@@ -25,6 +25,7 @@ class AIM::Grid {
  public:
   typedef Eigen::Array<int, 3, 2> BoundsArray;
 
+  Grid();
   Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector> &, const int);
   Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector> &);
   std::vector<DotRange> box_contents_map(
@@ -58,10 +59,10 @@ class AIM::Grid {
   void sort_points_on_boxidx() const;
 };
 
-class AIM::AimInteraction final : public Interaction {
+class AIM::AimInteraction : public Interaction {
  public:
-  AimInteraction(const std::shared_ptr<DotVector> &,
-                 const Eigen::Vector3d &,
+  AimInteraction(const std::shared_ptr<const DotVector> &,
+                 const Grid &,
                  const int,
                  const int,
                  const double,

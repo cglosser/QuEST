@@ -72,15 +72,6 @@ BOOST_FIXTURE_TEST_CASE(PointSort, PointSetup)
   BOOST_CHECK_EQUAL(grid_idx(dots->at(6).position()), 5);
 }
 
-// BOOST_FIXTURE_TEST_CASE(Expansion_Box, PointSetup)
-//{
-// AIM::Grid grid(grid_spacing, dots, 4);
-
-// auto expansion_box_ids =
-// grid.expansion_box_indices(Eigen::Vector3d(0.5, 0.5, 0.5), 1);
-
-//}
-
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -88,9 +79,15 @@ BOOST_AUTO_TEST_SUITE_END()
 struct Universe {
   double c, dt;
   std::shared_ptr<DotVector> dots;
+  int expansion_order;
   Eigen::Array3d grid_spacing;
+  AIM::Grid grid;
   Universe()
-      : c(1), dt(1), dots(std::make_shared<DotVector>()), grid_spacing(1, 1, 1)
+      : c(1),
+        dt(1),
+        dots(std::make_shared<DotVector>()),
+        expansion_order(1),
+        grid_spacing(1, 1, 1)
   {
     for(int x = 0; x < 6; ++x) {
       for(int z = 0; z < 6; ++z) {
@@ -99,14 +96,17 @@ struct Universe {
                                    Eigen::Vector3d(0, 0, 0)));
       }
     }
+
+    grid = AIM::Grid(grid_spacing, dots, expansion_order);
   };
 };
 
 BOOST_FIXTURE_TEST_CASE(Expansion_System, Universe)
 {
-  AIM::AimInteraction aim(dots, grid_spacing, 1, 3, 1, 1);
+  AIM::AimInteraction aim(dots, grid, expansion_order, 3, 1, 1);
 
-  const auto expansion = aim.solve_expansion_system(Eigen::Vector3d(0.5, 0.5, 0.5));
+  const auto expansion =
+      aim.solve_expansion_system(Eigen::Vector3d(0.5, 0.5, 0.5));
   for(int i = 0; i < 8; ++i) {
     BOOST_CHECK_CLOSE(expansion[i], 0.125, 1e-14);
   }
