@@ -10,7 +10,7 @@
 #include "integrator/history.h"
 #include "integrator/integrator.h"
 #include "interactions/green_function.h"
-#include "interactions/history_interaction.h"
+#include "interactions/direct_interaction.h"
 #include "interactions/pulse_interaction.h"
 
 using namespace std;
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
     std::vector<std::shared_ptr<Interaction>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
-        make_shared<HistoryInteraction>(qds, history, rotating_dyadic,
+        make_shared<DirectInteraction>(qds, history, rotating_dyadic,
                                         config.interpolation_order, config.dt,
                                         config.c0)};
 
