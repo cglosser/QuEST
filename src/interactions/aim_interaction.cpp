@@ -133,9 +133,13 @@ AIM::AimInteraction::AimInteraction(
     : HistoryInteraction(dots, history, propagator, interp_order, c0, dt),
       grid(grid),
       box_order(box_order),
-      fourier_table(boost::extents[CmplxArray::extent_range(
-          1, grid.max_transit_steps(c0, dt))][grid.dimensions(0)]
-                                  [grid.dimensions(1)][grid.dimensions(2) + 1]),
+      max_transit_steps(grid.max_transit_steps(c0, dt)),
+      fourier_table(boost::extents[SpacetimeArray<cmplx>::extent_range(
+          1, max_transit_steps)][grid.dimensions(0)][grid.dimensions(1)]
+                                  [grid.dimensions(2) + 1]),
+      source_table(
+          boost::extents[Array<cmplx>::extent_range(1, max_transit_steps)]
+                        [2 * grid.num_boxes]),
       expansions(expansion_table())
 {
   fill_fourier_table();

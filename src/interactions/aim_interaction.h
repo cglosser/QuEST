@@ -54,7 +54,7 @@ class AIM::Grid {
   void sort_points_on_boxidx() const;
 };
 
-class AIM::AimInteraction : public HistoryInteraction {
+class AIM::AimInteraction final : public HistoryInteraction {
  public:
   AimInteraction(
       const std::shared_ptr<const DotVector> &,
@@ -66,19 +66,19 @@ class AIM::AimInteraction : public HistoryInteraction {
       const Grid &,
       const int);
 
-  const ResultArray &evaluate(const int);
+  const ResultArray &evaluate(const int) final;
   void fill_gmatrix_table(SpacetimeArray<double> &) const;
   Eigen::VectorXd q_vector(const Eigen::Vector3d &) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
   Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
   std::vector<Eigen::VectorXd> expansion_table() const;
 
-  // private:
+ private:
   Grid grid;
-
-  int box_order;
+  int box_order, max_transit_steps;
 
   SpacetimeArray<cmplx> fourier_table;
+  Array<cmplx> source_table;
   std::vector<Eigen::VectorXd> expansions;
 
   void fill_fourier_table();
