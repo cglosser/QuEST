@@ -7,10 +7,10 @@ AIM::Grid::Grid()
 
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
                 const std::shared_ptr<DotVector> &dots,
-                const int pad)
-    : spacing(spacing), dots(dots), padding(pad), bounds(calculate_bounds())
+                const int expansion_order)
+    : spacing(spacing), dots(dots), expansion_order(expansion_order), bounds(calculate_bounds())
 {
-  dimensions = bounds.col(1) - bounds.col(0);
+  dimensions = bounds.col(1) - bounds.col(0) + 1;
   num_boxes = dimensions.prod();
   max_diagonal = (dimensions.cast<double>() * spacing).matrix().norm();
 
@@ -36,9 +36,8 @@ AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
     b.col(1) = grid_coord.array().max(b.col(1));
   }
 
-  b.col(0) -= padding;
-  b.col(1) += padding + 1;
-  // The +1 ensures a grid of boxes entirely contains the qdot coordinates
+  b.col(0) -= expansion_order / 2;
+  b.col(1) += (expansion_order + 1) / 2;
 
   return b;
 }

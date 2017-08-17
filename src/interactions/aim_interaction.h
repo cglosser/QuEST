@@ -49,7 +49,7 @@ class AIM::Grid {
  private:
   Eigen::Array3d spacing;
   std::shared_ptr<DotVector> dots;
-  int padding;
+  int expansion_order;
   BoundsArray bounds;
 
   void sort_points_on_boxidx() const;

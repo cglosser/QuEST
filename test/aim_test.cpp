@@ -7,6 +7,108 @@ BOOST_AUTO_TEST_SUITE(AIM)
 
 BOOST_AUTO_TEST_SUITE(GridTest)
 
+BOOST_AUTO_TEST_SUITE(SingleDotExpansions)
+
+struct OffsetDot {
+  std::shared_ptr<DotVector> dot;
+  Eigen::Vector3d unit_spacing;
+  int max_order;
+  OffsetDot()
+      : dot(std::make_shared<DotVector>()),
+        unit_spacing(Eigen::Vector3d(1, 1, 1)),
+        max_order(50)
+  {
+    dot->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), 0, {0.0, 0.0},
+                              Eigen::Vector3d(0, 0, 0)));
+  }
+};
+
+BOOST_FIXTURE_TEST_CASE(NumberOfGridPts, OffsetDot)
+{
+  // Check that the grid contains enough points for the expansion of the qdot
+
+  for(int order = 0; order < max_order; ++order) {
+    Grid grid(unit_spacing, dot, order);
+    BOOST_CHECK_EQUAL(grid.num_boxes, std::pow(order + 1, 3));
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(AssocBoxPoint, OffsetDot)
+{
+  // Check that the QD always corresponds to the gridpoint located at (0,0,0)
+  // in space
+
+  for(int order = 0; order < max_order; ++order) {
+    Grid grid(unit_spacing, dot, order);
+    auto idx = grid.coord_to_idx(grid.grid_coordinate(dot->front().position()));
+    auto spatial = grid.spatial_coord_of_box(idx);
+
+    BOOST_CHECK_EQUAL(spatial(0), 0);
+    BOOST_CHECK_EQUAL(spatial(1), 0);
+    BOOST_CHECK_EQUAL(spatial(2), 0);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(In_middle_box_for_even_expansions, OffsetDot)
+{
+  // Check that the quantum dot always lies in the "middle" box when expanded
+  // to an even order
+
+  for(int order = 0; order < max_order; order += 2) {
+    Grid grid(unit_spacing, dot, order);
+    auto idx = grid.coord_to_idx(grid.grid_coordinate(dot->front().position()));
+    BOOST_CHECK_EQUAL(idx, grid.num_boxes / 2);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(ExpansionIndices, OffsetDot)
+{
+  // Check that a single dot expands "into" [0, num_boxes)
+
+  for(int order = 0; order < max_order; ++order) {
+    Grid grid(unit_spacing, dot, order);
+    auto expansion_indices =
+        grid.expansion_box_indices(dot->front().position(), order);
+
+    BOOST_CHECK_EQUAL(expansion_indices.size(), std::pow(order + 1, 3));
+
+    // This isn't an ideal check as it depends on the convention in
+    // expansion_box_indices(...) (so the indices might have a weird ordering),
+    // but it at least provides some bounds checking and can warn if things go
+    // horribly wrong
+    std::sort(expansion_indices.begin(), expansion_indices.end());
+    for(size_t i = 0; i < expansion_indices.size(); ++i) {
+      BOOST_CHECK_EQUAL(expansion_indices.at(i), i);
+    }
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(TwoDotExpansions)
+
+struct TwoOffsetDots {
+  std::shared_ptr<DotVector> dots;
+  int max_order;
+  TwoOffsetDots() : dots(std::make_shared<DotVector>()), max_order(50)
+  {
+    dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), 0, {0.0, 0.0},
+                               Eigen::Vector3d(0, 0, 0)));
+    dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 1.5), 0, {0.0, 0.0},
+                               Eigen::Vector3d(0, 0, 0)));
+  }
+};
+
+BOOST_FIXTURE_TEST_CASE(NumberOfGridPts, TwoOffsetDots)
+{
+  for(int order = 0; order < max_order; ++order) {
+    Grid grid(Eigen::Vector3d(1, 1, 1), dots, order);
+    BOOST_CHECK_EQUAL(grid.num_boxes, std::pow(order + 1, 2) * (order + 2));
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE(TwoDimensions)
 
 struct PointSetup {
