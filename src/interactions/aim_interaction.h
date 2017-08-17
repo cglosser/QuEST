@@ -57,6 +57,11 @@ class AIM::Grid {
 
 class AIM::AimInteraction final : public HistoryInteraction {
  public:
+  struct Expansion {
+    size_t index;
+    double weight;
+  };
+
   AimInteraction(
       const std::shared_ptr<const DotVector> &,
       const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &,
@@ -72,16 +77,20 @@ class AIM::AimInteraction final : public HistoryInteraction {
   Eigen::VectorXd q_vector(const Eigen::Vector3d &) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
   Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
-  std::vector<Eigen::VectorXd> expansion_table() const;
+
+  Array<Expansion> expansions() const;
+  Array<Expansion> expansion_table;
 
  private:
+
   Grid grid;
   int box_order, max_transit_steps;
 
   SpacetimeArray<cmplx> fourier_table;
   Array<cmplx> source_table;
-  std::vector<Eigen::VectorXd> expansions;
 
   void fill_fourier_table();
+  void fill_source_table(const int);
 };
+
 #endif

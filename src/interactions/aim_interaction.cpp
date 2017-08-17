@@ -139,8 +139,7 @@ AIM::AimInteraction::AimInteraction(
                                   [grid.dimensions(2) + 1]),
       source_table(
           boost::extents[Array<cmplx>::extent_range(1, max_transit_steps)]
-                        [2 * grid.num_boxes]),
-      expansions(expansion_table())
+                        [2 * grid.num_boxes])
 {
   fill_fourier_table();
 }
@@ -149,42 +148,6 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
   results = 0;
   return results;
-}
-
-void AIM::AimInteraction::fill_fourier_table()
-{
-  const int max_transit_steps = grid.max_transit_steps(c0, dt);
-
-  SpacetimeArray<double> g_mat(
-      boost::extents[SpacetimeArray<double>::extent_range(1, max_transit_steps)]
-                    [grid.dimensions(0)][grid.dimensions(1)]
-                    [2 * grid.dimensions(2)]);
-
-  // Set up FFTW plan; will transform real-valued Toeplitz matrix to the
-  // positive frequency complex-valued FFT values (known to be conjugate
-  // symmetric to eliminate redundancy).
-
-  const int len[] = {2 * grid.dimensions(2)};
-  const int howmany = std::accumulate(g_mat.shape(), g_mat.shape() + 3, 1,
-                                      std::multiplies<int>());
-  const int idist = 2 * grid.dimensions(2), odist = grid.dimensions(2) + 1;
-  const int istride = 1, ostride = 1;
-  const int *inembed = len, *onembed = len;
-
-  fftw_plan circulant_plan;
-  circulant_plan = fftw_plan_many_dft_r2c(
-      1, len, howmany, g_mat.data(), inembed, istride, idist,
-      reinterpret_cast<fftw_complex *>(fourier_table.data()), onembed, ostride,
-      odist, FFTW_MEASURE);
-
-  std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), 0);
-
-  fill_gmatrix_table(g_mat);
-
-  // Transform the circulant vectors into their equivalently-diagonal
-  // representation. Buckle up.
-
-  fftw_execute(circulant_plan);
 }
 
 void AIM::AimInteraction::fill_gmatrix_table(
@@ -270,12 +233,65 @@ Eigen::VectorXd AIM::AimInteraction::solve_expansion_system(
   return lu.solve(q_vector(pos));
 }
 
-std::vector<Eigen::VectorXd> AIM::AimInteraction::expansion_table() const
+void AIM::AimInteraction::fill_fourier_table()
 {
-  std::vector<Eigen::VectorXd> table(dots->size());
+  const int max_transit_steps = grid.max_transit_steps(c0, dt);
+
+  SpacetimeArray<double> g_mat(
+      boost::extents[SpacetimeArray<double>::extent_range(1, max_transit_steps)]
+                    [grid.dimensions(0)][grid.dimensions(1)]
+                    [2 * grid.dimensions(2)]);
+
+  // Set up FFTW plan; will transform real-valued Toeplitz matrix to the
+  // positive frequency complex-valued FFT values (known to be conjugate
+  // symmetric to eliminate redundancy).
+
+  const int len[] = {2 * grid.dimensions(2)};
+  const int howmany = std::accumulate(g_mat.shape(), g_mat.shape() + 3, 1,
+                                      std::multiplies<int>());
+  const int idist = 2 * grid.dimensions(2), odist = grid.dimensions(2) + 1;
+  const int istride = 1, ostride = 1;
+  const int *inembed = len, *onembed = len;
+
+  fftw_plan circulant_plan;
+  circulant_plan = fftw_plan_many_dft_r2c(
+      1, len, howmany, g_mat.data(), inembed, istride, idist,
+      reinterpret_cast<fftw_complex *>(fourier_table.data()), onembed, ostride,
+      odist, FFTW_MEASURE);
+
+  std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), 0);
+
+  fill_gmatrix_table(g_mat);
+
+  // Transform the circulant vectors into their equivalently-diagonal
+  // representation. Buckle up.
+
+  fftw_execute(circulant_plan);
+}
+
+Array<AIM::AimInteraction::Expansion> AIM::AimInteraction::expansions() const
+{
+  const size_t num_pts = std::pow(box_order + 1, 3);
+  Array<AIM::AimInteraction::Expansion> table(
+      boost::extents[dots->size()][num_pts]);
 
   for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
-    table.at(dot_idx) = solve_expansion_system(dots->at(dot_idx).position());
+    const auto indices =
+        grid.expansion_box_indices(dots->at(dot_idx).position(), box_order);
+    const auto weights = solve_expansion_system(dots->at(dot_idx).position());
+
+    for(size_t w = 0; w < num_pts; ++w) {
+      table[dot_idx][w] = {indices[w], weights[w]};
+    }
   }
+
   return table;
 }
+
+// void AIM::AimInteraction::fill_source_table(const int step)
+//{
+// for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
+
+//}
+
+//}

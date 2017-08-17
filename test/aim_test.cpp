@@ -63,7 +63,7 @@ BOOST_FIXTURE_TEST_CASE(In_middle_box_for_even_expansions, OffsetDot)
 
 BOOST_FIXTURE_TEST_CASE(ExpansionIndices, OffsetDot)
 {
-  // Check that a single dot expands "into" [0, num_boxes)
+  // Check that a single dot expands "into" [0, num_boxes) available gridpoints
 
   for(int order = 0; order < max_order; ++order) {
     Grid grid(unit_spacing, dot, order);
@@ -177,61 +177,5 @@ BOOST_FIXTURE_TEST_CASE(PointSort, PointSetup)
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()
-
-struct Universe {
-  double c, dt;
-  std::shared_ptr<DotVector> dots;
-  int expansion_order;
-  Eigen::Array3d grid_spacing;
-  AIM::Grid grid;
-  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
-  std::shared_ptr<Propagation::RotatingFramePropagator> propagator;
-
-  Universe()
-      : c(1),
-        dt(1),
-        dots(std::make_shared<DotVector>()),
-        expansion_order(1),
-        grid_spacing(1, 1, 1),
-        history(
-            std::make_shared<Integrator::History<Eigen::Vector2cd>>(0, 0, 0)),
-        propagator(
-            std::make_shared<Propagation::RotatingFramePropagator>(1, 1, 1, 1))
-
-  {
-    for(int x = 0; x < 6; ++x) {
-      for(int z = 0; z < 6; ++z) {
-        dots->push_back(QuantumDot(1.2 * Eigen::Vector3d(x, 0, z), 0,
-                                   std::make_pair(10.0, 20.0),
-                                   Eigen::Vector3d(0, 0, 0)));
-      }
-    }
-
-    grid = AIM::Grid(grid_spacing, dots, expansion_order);
-  };
-};
-
-BOOST_FIXTURE_TEST_CASE(Expansion_System, Universe)
-{
-  AIM::AimInteraction aim(dots, history, propagator, 3, 1, 1, grid,
-                          expansion_order);
-
-  const auto expansion =
-      aim.solve_expansion_system(Eigen::Vector3d(0.5, 0.5, 0.5));
-  for(int i = 0; i < 8; ++i) {
-    BOOST_CHECK_CLOSE(expansion[i], 0.125, 1e-14);
-  }
-}
-
-BOOST_FIXTURE_TEST_CASE(Every_dot_expansion, Universe)
-{
-  AIM::AimInteraction aim(dots, history, propagator, 3, 1, 1, grid,
-                          expansion_order);
-  auto table = aim.expansion_table();
-
-  for(const auto &i : table) {
-    std::cout << i.transpose() << std::endl;
-  }
-}
 
 BOOST_AUTO_TEST_SUITE_END()
