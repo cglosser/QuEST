@@ -2,19 +2,14 @@
 #define AIM_INTERACTION_H
 
 #include <fftw3.h>
-#include <Eigen/Dense>
 #include <algorithm>
-#include <boost/multi_array.hpp>
 #include <functional>
 #include <numeric>
 
 #include <iomanip>
 
 #include "../common.h"
-#include "../lagrange_set.h"
-#include "../math_utils.h"
-#include "../quantum_dot.h"
-#include "interaction.h"
+#include "history_interaction.h"
 
 namespace AIM {
   class Grid;
@@ -59,14 +54,17 @@ class AIM::Grid {
   void sort_points_on_boxidx() const;
 };
 
-class AIM::AimInteraction : public Interaction {
+class AIM::AimInteraction : public HistoryInteraction {
  public:
-  AimInteraction(const std::shared_ptr<const DotVector> &,
-                 const Grid &,
-                 const int,
-                 const int,
-                 const double,
-                 const double);
+  AimInteraction(
+      const std::shared_ptr<const DotVector> &,
+      const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &,
+      const std::shared_ptr<Propagation::RotatingFramePropagator> &,
+      const int,
+      const double,
+      const double,
+      const Grid &,
+      const int);
 
   const ResultArray &evaluate(const int);
   void fill_gmatrix_table(SpacetimeArray<double> &) const;
@@ -78,8 +76,7 @@ class AIM::AimInteraction : public Interaction {
   // private:
   Grid grid;
 
-  int box_order, interp_order;
-  double c, dt;
+  int box_order;
 
   SpacetimeArray<cmplx> fourier_table;
   std::vector<Eigen::VectorXd> expansions;

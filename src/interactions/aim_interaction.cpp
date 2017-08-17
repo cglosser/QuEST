@@ -123,19 +123,18 @@ void AIM::Grid::sort_points_on_boxidx() const
 
 AIM::AimInteraction::AimInteraction(
     const std::shared_ptr<const DotVector> &dots,
-    const Grid &grid,
-    const int box_order,
+    const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &history,
+    const std::shared_ptr<Propagation::RotatingFramePropagator> &propagator,
     const int interp_order,
-    const double c,
-    const double dt)
-    : Interaction(dots, dt),
+    const double c0,
+    const double dt,
+    const Grid &grid,
+    const int box_order)
+    : HistoryInteraction(dots, history, propagator, interp_order, c0, dt),
       grid(grid),
       box_order(box_order),
-      interp_order(interp_order),
-      c(c),
-      dt(dt),
       fourier_table(boost::extents[CmplxArray::extent_range(
-          1, grid.max_transit_steps(c, dt))][grid.dimensions(0)]
+          1, grid.max_transit_steps(c0, dt))][grid.dimensions(0)]
                                   [grid.dimensions(1)][grid.dimensions(2) + 1]),
       expansions(expansion_table())
 {
@@ -150,7 +149,7 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 
 void AIM::AimInteraction::fill_fourier_table()
 {
-  const int max_transit_steps = grid.max_transit_steps(c, dt);
+  const int max_transit_steps = grid.max_transit_steps(c0, dt);
 
   SpacetimeArray<double> g_mat(
       boost::extents[SpacetimeArray<double>::extent_range(1, max_transit_steps)]
@@ -204,7 +203,7 @@ void AIM::AimInteraction::fill_gmatrix_table(
         const auto dr =
             grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
 
-        const double arg = dr.norm() / (c * dt);
+        const double arg = dr.norm() / (c0 * dt);
         const std::pair<int, double> split_arg = split_double(arg);
 
         // Do the time-axis last; we can share a lot of work

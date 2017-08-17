@@ -82,12 +82,20 @@ struct Universe {
   int expansion_order;
   Eigen::Array3d grid_spacing;
   AIM::Grid grid;
+  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
+  std::shared_ptr<Propagation::RotatingFramePropagator> propagator;
+
   Universe()
       : c(1),
         dt(1),
         dots(std::make_shared<DotVector>()),
         expansion_order(1),
-        grid_spacing(1, 1, 1)
+        grid_spacing(1, 1, 1),
+        history(
+            std::make_shared<Integrator::History<Eigen::Vector2cd>>(0, 0, 0)),
+        propagator(
+            std::make_shared<Propagation::RotatingFramePropagator>(1, 1, 1, 1))
+
   {
     for(int x = 0; x < 6; ++x) {
       for(int z = 0; z < 6; ++z) {
@@ -103,7 +111,8 @@ struct Universe {
 
 BOOST_FIXTURE_TEST_CASE(Expansion_System, Universe)
 {
-  AIM::AimInteraction aim(dots, grid, expansion_order, 3, 1, 1);
+  AIM::AimInteraction aim(dots, history, propagator, 3, 1, 1, grid,
+                          expansion_order);
 
   const auto expansion =
       aim.solve_expansion_system(Eigen::Vector3d(0.5, 0.5, 0.5));
@@ -114,7 +123,8 @@ BOOST_FIXTURE_TEST_CASE(Expansion_System, Universe)
 
 BOOST_FIXTURE_TEST_CASE(Every_dot_expansion, Universe)
 {
-  AIM::AimInteraction aim(dots, grid, expansion_order, 3, 1, 1);
+  AIM::AimInteraction aim(dots, history, propagator, 3, 1, 1, grid,
+                          expansion_order);
   auto table = aim.expansion_table();
 
   for(const auto &i : table) {
