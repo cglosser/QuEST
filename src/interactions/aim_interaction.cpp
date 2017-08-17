@@ -128,7 +128,7 @@ AIM::AimInteraction::AimInteraction(
     const int interp_order,
     const double c,
     const double dt)
-    : Interaction(dots),
+    : Interaction(dots, dt),
       grid(grid),
       box_order(box_order),
       interp_order(interp_order),

@@ -13,7 +13,6 @@ class PulseInteraction : public Interaction {
  private:
   std::shared_ptr<const Pulse> pulse;
   const double hbar;
-  const double dt;
 };
 
 #endif

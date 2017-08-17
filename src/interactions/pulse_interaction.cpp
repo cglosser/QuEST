@@ -3,7 +3,7 @@
 PulseInteraction::PulseInteraction(const std::shared_ptr<const DotVector> &dots,
                                    const std::shared_ptr<const Pulse> pulse,
                                    const double hbar, const double dt)
-    : Interaction(dots), pulse(std::move(pulse)), hbar(hbar), dt(dt)
+    : Interaction(dots, dt), pulse(std::move(pulse)), hbar(hbar)
 {
 }
 

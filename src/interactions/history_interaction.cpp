@@ -6,15 +6,14 @@ HistoryInteraction::HistoryInteraction(
     const std::shared_ptr<const DotVector> &dots,
     const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &history,
     const std::shared_ptr<Propagation::RotatingFramePropagator> &dyadic,
-    const int interp_order, const double dt, const double c0)
-    : Interaction(dots),
+    const int interp_order, const double c0, const double dt)
+    : Interaction(dots, dt),
       history(history),
       dyadic(dyadic),
       interp_order(interp_order),
       num_interactions(dots->size() * (dots->size() - 1) / 2),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1]),
-      dt(dt),
       c0(c0)
 {
   build_coefficient_table();

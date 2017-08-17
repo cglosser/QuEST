@@ -10,14 +10,15 @@ class Interaction {
  public:
   typedef Eigen::Array<cmplx, Eigen::Dynamic, 1> ResultArray;
 
-  Interaction(const std::shared_ptr<const DotVector> &dots)
-      : dots(dots), results(dots->size()){};
+  Interaction(const std::shared_ptr<const DotVector> &dots, const double dt)
+      : dots(dots), results(dots->size()), dt(dt){};
   const cmplx &operator[](const int i) const { return results[i]; }
   virtual const ResultArray &evaluate(const int) = 0;
 
  protected:
   std::shared_ptr<const DotVector> dots;
   ResultArray results;
+  double dt;
 };
 
 #endif
