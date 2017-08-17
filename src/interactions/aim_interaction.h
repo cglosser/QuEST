@@ -4,6 +4,7 @@
 #include <fftw3.h>
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <numeric>
 
 #include <iomanip>

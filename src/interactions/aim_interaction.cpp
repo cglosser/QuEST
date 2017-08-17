@@ -26,7 +26,8 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
 AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
 {
   BoundsArray b;
-  b.setZero();
+  b.col(0) = std::numeric_limits<int>::max();
+  b.col(1) = std::numeric_limits<int>::min();
 
   for(const auto &qdot : *dots) {
     Eigen::Vector3i grid_coord = grid_coordinate(qdot.position());
