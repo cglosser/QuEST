@@ -8,7 +8,10 @@ AIM::Grid::Grid()
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
                 const std::shared_ptr<DotVector> &dots,
                 const int expansion_order)
-    : spacing(spacing), dots(dots), expansion_order(expansion_order), bounds(calculate_bounds())
+    : spacing(spacing),
+      dots(dots),
+      expansion_order(expansion_order),
+      bounds(calculate_bounds())
 {
   dimensions = bounds.col(1) - bounds.col(0) + 1;
   num_boxes = dimensions.prod();
@@ -293,5 +296,4 @@ Array<AIM::AimInteraction::Expansion> AIM::AimInteraction::expansions() const
 // for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
 
 //}
-
 //}

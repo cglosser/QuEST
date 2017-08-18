@@ -82,7 +82,6 @@ class AIM::AimInteraction final : public HistoryInteraction {
   Array<Expansion> expansion_table;
 
  private:
-
   Grid grid;
   int box_order, max_transit_steps;
 

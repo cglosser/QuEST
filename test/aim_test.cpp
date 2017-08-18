@@ -174,8 +174,64 @@ BOOST_FIXTURE_TEST_CASE(PointSort, PointSetup)
   BOOST_CHECK_EQUAL(grid_idx(dots->at(6).position()), 5);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()  // TwoDimensions
 
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()  // GridTest
 
-BOOST_AUTO_TEST_SUITE_END()
+struct DummyPropagation {
+  std::shared_ptr<DotVector> dots;
+  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
+  std::shared_ptr<Propagation::RotatingFramePropagator> propagator;
+  int interp_order, expansion_order;
+  double c0, dt;
+  Eigen::Vector3d unit_spacing;
+  DummyPropagation()
+      : dots(std::make_shared<DotVector>()),
+        history(nullptr),
+        propagator(nullptr),
+        interp_order(3),
+        expansion_order(1),
+        c0(1),
+        dt(1),
+        unit_spacing(1, 1, 1){};
+};
+
+BOOST_FIXTURE_TEST_SUITE(AimInteractionTest, DummyPropagation)
+
+BOOST_AUTO_TEST_CASE(OnePointExpansion)
+{
+  dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), 0, {0.0, 0.0},
+                             Eigen::Vector3d(0, 0, 0)));
+  Grid grid(unit_spacing, dots, expansion_order);
+  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
+                          expansion_order);
+
+  auto expansions = aim.expansions();
+
+  for(int i = 0; i < 8; ++i) {
+    BOOST_CHECK_EQUAL(expansions[0][i].weight, 1.0 / 8);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(TwoPointExpansions)
+{
+  dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), 0, {0.0, 0.0},
+                             Eigen::Vector3d(0, 0, 0)));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 10.5), 0, {0.0, 0.0},
+                             Eigen::Vector3d(0, 0, 0)));
+  Grid grid(unit_spacing, dots, expansion_order);
+  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
+                          expansion_order);
+
+  auto expansions = aim.expansions();
+
+  for(int dot = 0; dot < 2; ++dot) {
+    for(int pt = 0; pt < 8; ++pt) {
+      BOOST_CHECK_EQUAL(expansions[dot][pt].weight, 1.0 / 8);
+    }
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // AimInteractionTest
+
+BOOST_AUTO_TEST_SUITE_END()  // AIM
