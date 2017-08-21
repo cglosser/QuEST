@@ -147,11 +147,11 @@ AIM::AimInteraction::AimInteraction(
       fourier_table(boost::extents[SpacetimeArray<cmplx>::extent_range(
           1, max_transit_steps)][grid.dimensions(0)][grid.dimensions(1)]
                                   [grid.dimensions(2) + 1]),
-      source_table(
-          boost::extents[Array<cmplx>::extent_range(1, max_transit_steps)]
-                        [2 * grid.num_boxes])
+      expansion_table(expansions()),
+      source_table(boost::extents[max_transit_steps][2 * grid.num_boxes])
 {
   fill_fourier_table();
+  initialize_fftw_plans();
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
@@ -279,6 +279,34 @@ void AIM::AimInteraction::fill_fourier_table()
   fftw_execute(circulant_plan);
 }
 
+void AIM::AimInteraction::initialize_fftw_plans()
+{
+  // Set up FFTW plans to transform projected source distributions. Due to the
+  // requirements of the circulant extension, these plans perform transforms of
+  // length 2 n_z to accommodate the requisite zero padding. While they're
+  // constructed to work on the head of `source_table` (that is, what would be
+  // the I_0 source), the advanced FFTW interface allows them to stride forward
+  // to equivalently transform the source currents at every timestep.
+
+  const int len[] = {2 * grid.dimensions(2)};
+  const int howmany = grid.dimensions(0) * grid.dimensions(1);
+  const int idist = 2 * grid.dimensions(2), odist = 2 * grid.dimensions(2);
+  const int istride = 1, ostride = 1;
+  const int *inembed = len, *onembed = len;
+
+  vector_forward_plan = fftw_plan_many_dft(
+      1, len, howmany, reinterpret_cast<fftw_complex *>(source_table.data()),
+      inembed, istride, idist,
+      reinterpret_cast<fftw_complex *>(source_table.data()), onembed, ostride,
+      odist, FFTW_FORWARD, FFTW_MEASURE);
+
+  vector_backward_plan = fftw_plan_many_dft(
+      1, len, howmany, reinterpret_cast<fftw_complex *>(source_table.data()),
+      inembed, istride, idist,
+      reinterpret_cast<fftw_complex *>(source_table.data()), onembed, ostride,
+      odist, FFTW_BACKWARD, FFTW_MEASURE);
+}
+
 Array<AIM::AimInteraction::Expansion> AIM::AimInteraction::expansions() const
 {
   const size_t num_pts = std::pow(box_order + 1, 3);
@@ -298,9 +326,8 @@ Array<AIM::AimInteraction::Expansion> AIM::AimInteraction::expansions() const
   return table;
 }
 
-// void AIM::AimInteraction::fill_source_table(const int step)
-//{
-// for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
-
-//}
-//}
+void AIM::AimInteraction::fill_source_table(const int step)
+{
+  for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
+  }
+}

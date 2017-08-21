@@ -80,16 +80,18 @@ class AIM::AimInteraction final : public HistoryInteraction {
   Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
 
   Array<Expansion> expansions() const;
-  Array<Expansion> expansion_table;
 
- private:
+ //private:
   Grid grid;
   int box_order, max_transit_steps;
 
   SpacetimeArray<cmplx> fourier_table;
-  Array<cmplx> source_table;
+  Array<Expansion> expansion_table;
+  boost::multi_array<cmplx, 2> source_table;
+  fftw_plan vector_forward_plan, vector_backward_plan;
 
   void fill_fourier_table();
+  void initialize_fftw_plans();
   void fill_source_table(const int);
 };
 

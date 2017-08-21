@@ -238,6 +238,30 @@ BOOST_AUTO_TEST_CASE(TwoPointExpansions)
   }
 }
 
+BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
+{
+  Eigen::Vector3i num_boxes(20, 20, 20);
+  Grid grid(unit_spacing, num_boxes);
+  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
+                          expansion_order);
+
+  std::vector<cmplx> nums(20 * 20 * 40);
+  for(size_t i = 0; i < nums.size(); ++i) {
+    nums[i] = i;
+  }
+
+  fftw_execute_dft(aim.vector_forward_plan,
+                   reinterpret_cast<fftw_complex *>(nums.data()),
+                   reinterpret_cast<fftw_complex *>(nums.data()));
+  fftw_execute_dft(aim.vector_backward_plan,
+                   reinterpret_cast<fftw_complex *>(nums.data()),
+                   reinterpret_cast<fftw_complex *>(nums.data()));
+
+  for(size_t i = 0; i < nums.size(); ++i) {
+    std::cout << i << " " << nums[i] << std::endl;
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()  // AimInteractionTest
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM
