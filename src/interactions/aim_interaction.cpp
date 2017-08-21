@@ -329,5 +329,9 @@ Array<AIM::AimInteraction::Expansion> AIM::AimInteraction::expansions() const
 void AIM::AimInteraction::fill_source_table(const int step)
 {
   for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
+    for(int idx = 0; idx < std::pow(box_order + 1, 3); ++idx) {
+      Expansion &e = expansion_table[dot_idx][idx];
+      source_table[step][e.index] = e.weight * history->array[dot_idx][step][0][1];
+    }
   }
 }
