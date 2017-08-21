@@ -7,6 +7,12 @@ BOOST_AUTO_TEST_SUITE(AIM)
 
 BOOST_AUTO_TEST_SUITE(GridTest)
 
+BOOST_AUTO_TEST_CASE(DummyConstructor)
+{
+  Grid grid(Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(30, 30, 30));
+  BOOST_CHECK_EQUAL(grid.num_boxes, std::pow(30, 3));
+}
+
 BOOST_AUTO_TEST_SUITE(SingleDotExpansions)
 
 struct OffsetDot {
@@ -132,7 +138,7 @@ struct PointSetup {
 
 BOOST_FIXTURE_TEST_CASE(Construction, PointSetup)
 {
-  AIM::Grid grid(grid_spacing, dots);
+  AIM::Grid grid(grid_spacing, dots, 0);
 
   auto boxes = grid.box_contents_map(dots);
 
@@ -159,7 +165,7 @@ BOOST_FIXTURE_TEST_CASE(Construction, PointSetup)
 
 BOOST_FIXTURE_TEST_CASE(PointSort, PointSetup)
 {
-  AIM::Grid grid(grid_spacing, dots);
+  AIM::Grid grid(grid_spacing, dots, 0);
 
   auto grid_idx = [&](const Eigen::Vector3d &p) {
     return grid.coord_to_idx(grid.grid_coordinate(p));

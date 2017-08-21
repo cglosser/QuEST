@@ -23,7 +23,8 @@ class AIM::Grid {
 
   Grid();
   Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector> &, const int);
-  Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector> &);
+  Grid(const Eigen::Array3d &, const Eigen::Array3i &);
+
   std::vector<DotRange> box_contents_map(
       const std::shared_ptr<DotVector> &) const;
 

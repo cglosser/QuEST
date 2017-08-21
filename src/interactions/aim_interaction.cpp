@@ -20,10 +20,17 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
   sort_points_on_boxidx();
 }
 
-AIM::Grid::Grid(const Eigen::Array3d &spacing,
-                const std::shared_ptr<DotVector> &dots)
-    : Grid(spacing, dots, 0)
+AIM::Grid::Grid(const Eigen::Array3d &spacing, const Eigen::Array3i &dimensions)
+    : dimensions(dimensions),
+      spacing(spacing),
+      dots(nullptr),
+      expansion_order(0)
 {
+  bounds.col(0) = 0;
+  bounds.col(1) = dimensions;
+
+  num_boxes = dimensions.prod();
+  max_diagonal = (dimensions.cast<double>() * spacing).matrix().norm();
 }
 
 AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
