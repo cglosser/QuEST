@@ -91,7 +91,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   fftw_plan vector_forward_plan, vector_backward_plan;
 
   void fill_fourier_table();
-  void initialize_fftw_plans();
+  std::pair<fftw_plan, fftw_plan> vector_fft_plans();
   void fill_source_table(const int);
 };
 

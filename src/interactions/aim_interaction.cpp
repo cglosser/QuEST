@@ -151,7 +151,7 @@ AIM::AimInteraction::AimInteraction(
       source_table(boost::extents[max_transit_steps][2 * grid.num_boxes])
 {
   fill_fourier_table();
-  initialize_fftw_plans();
+  std::tie(vector_forward_plan, vector_backward_plan) = vector_fft_plans();
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
@@ -279,7 +279,7 @@ void AIM::AimInteraction::fill_fourier_table()
   fftw_execute(circulant_plan);
 }
 
-void AIM::AimInteraction::initialize_fftw_plans()
+std::pair<fftw_plan, fftw_plan> AIM::AimInteraction::vector_fft_plans()
 {
   // Set up FFTW plans to transform projected source distributions. Due to the
   // requirements of the circulant extension, these plans perform transforms of
@@ -294,17 +294,21 @@ void AIM::AimInteraction::initialize_fftw_plans()
   const int istride = 1, ostride = 1;
   const int *inembed = len, *onembed = len;
 
-  vector_forward_plan = fftw_plan_many_dft(
+  fftw_plan fwd, bkwd;
+
+  fwd = fftw_plan_many_dft(
       1, len, howmany, reinterpret_cast<fftw_complex *>(source_table.data()),
       inembed, istride, idist,
       reinterpret_cast<fftw_complex *>(source_table.data()), onembed, ostride,
       odist, FFTW_FORWARD, FFTW_MEASURE);
 
-  vector_backward_plan = fftw_plan_many_dft(
+  bkwd = fftw_plan_many_dft(
       1, len, howmany, reinterpret_cast<fftw_complex *>(source_table.data()),
       inembed, istride, idist,
       reinterpret_cast<fftw_complex *>(source_table.data()), onembed, ostride,
       odist, FFTW_BACKWARD, FFTW_MEASURE);
+
+  return std::make_pair(fwd, bkwd);
 }
 
 Array<AIM::AimInteraction::Expansion> AIM::AimInteraction::expansions() const
@@ -331,7 +335,8 @@ void AIM::AimInteraction::fill_source_table(const int step)
   for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
     for(int idx = 0; idx < std::pow(box_order + 1, 3); ++idx) {
       Expansion &e = expansion_table[dot_idx][idx];
-      source_table[step][e.index] = e.weight * history->array[dot_idx][step][0][1];
+      source_table[step][e.index] =
+          e.weight * history->array[dot_idx][step][0][1];
     }
   }
 }
