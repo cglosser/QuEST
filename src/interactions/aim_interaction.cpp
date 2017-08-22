@@ -155,6 +155,12 @@ AIM::AimInteraction::AimInteraction(
   std::tie(vector_forward_plan, vector_backward_plan) = vector_fft_plans();
 }
 
+AIM::AimInteraction::~AimInteraction()
+{
+  fftw_destroy_plan(vector_forward_plan);
+  fftw_destroy_plan(vector_backward_plan);
+}
+
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
   results = 0;
