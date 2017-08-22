@@ -144,11 +144,12 @@ AIM::AimInteraction::AimInteraction(
       grid(grid),
       box_order(box_order),
       max_transit_steps(grid.max_transit_steps(c0, dt)),
+      expansion_table(expansions()),
       fourier_table(boost::extents[SpacetimeVector<cmplx>::extent_range(
           1, max_transit_steps)][grid.dimensions(0)][grid.dimensions(1)]
                                   [grid.dimensions(2) + 1]),
-      expansion_table(expansions()),
-      source_table(boost::extents[max_transit_steps][2 * grid.num_boxes])
+      source_table(boost::extents[max_transit_steps][grid.dimensions(0)]
+                                 [grid.dimensions(1)][2 * grid.dimensions(2)])
 {
   fill_fourier_table();
   std::tie(vector_forward_plan, vector_backward_plan) = vector_fft_plans();
@@ -248,8 +249,8 @@ void AIM::AimInteraction::fill_fourier_table()
   const int max_transit_steps = grid.max_transit_steps(c0, dt);
 
   SpacetimeVector<double> g_mat(
-      boost::extents[SpacetimeVector<double>::extent_range(1, max_transit_steps)]
-                    [grid.dimensions(0)][grid.dimensions(1)]
+      boost::extents[SpacetimeVector<double>::extent_range(
+          1, max_transit_steps)][grid.dimensions(0)][grid.dimensions(1)]
                     [2 * grid.dimensions(2)]);
 
   // Set up FFTW plan; will transform real-valued Toeplitz matrix to the
@@ -333,8 +334,10 @@ void AIM::AimInteraction::fill_source_table(const int step)
 {
   for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
     for(int idx = 0; idx < std::pow(box_order + 1, 3); ++idx) {
-      Expansion &e = expansion_table[dot_idx][idx];
-      source_table[step][e.index] =
+      const Expansion &e = expansion_table[dot_idx][idx];
+      Eigen::Vector3i coord = grid.idx_to_coord(e.index);
+
+      source_table[step][coord(0)][coord(1)][coord(2)] =
           e.weight * history->array[dot_idx][step][0][1];
     }
   }

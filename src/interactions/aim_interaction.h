@@ -85,9 +85,8 @@ class AIM::AimInteraction final : public HistoryInteraction {
   Grid grid;
   int box_order, max_transit_steps;
 
-  SpacetimeVector<cmplx> fourier_table;
   Array<Expansion> expansion_table;
-  boost::multi_array<cmplx, 2> source_table;
+  SpacetimeVector<cmplx> fourier_table, source_table;
   fftw_plan vector_forward_plan, vector_backward_plan;
 
   void fill_fourier_table();
