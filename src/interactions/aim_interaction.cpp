@@ -294,19 +294,18 @@ std::pair<fftw_plan, fftw_plan> AIM::AimInteraction::vector_fft_plans()
   const int istride = 1, ostride = 1;
   const int *inembed = len, *onembed = len;
 
+  auto make_plan = [=](const int sign) {
+    return fftw_plan_many_dft(
+        1, len, howmany, reinterpret_cast<fftw_complex *>(source_table.data()),
+        inembed, istride, idist,
+        reinterpret_cast<fftw_complex *>(source_table.data()), onembed, ostride,
+        odist, sign, FFTW_MEASURE);
+  };
+
   fftw_plan fwd, bkwd;
 
-  fwd = fftw_plan_many_dft(
-      1, len, howmany, reinterpret_cast<fftw_complex *>(source_table.data()),
-      inembed, istride, idist,
-      reinterpret_cast<fftw_complex *>(source_table.data()), onembed, ostride,
-      odist, FFTW_FORWARD, FFTW_MEASURE);
-
-  bkwd = fftw_plan_many_dft(
-      1, len, howmany, reinterpret_cast<fftw_complex *>(source_table.data()),
-      inembed, istride, idist,
-      reinterpret_cast<fftw_complex *>(source_table.data()), onembed, ostride,
-      odist, FFTW_BACKWARD, FFTW_MEASURE);
+  fwd = make_plan(FFTW_FORWARD);
+  bkwd = make_plan(FFTW_BACKWARD);
 
   return std::make_pair(fwd, bkwd);
 }
