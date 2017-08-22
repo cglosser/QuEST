@@ -144,7 +144,7 @@ AIM::AimInteraction::AimInteraction(
       grid(grid),
       box_order(box_order),
       max_transit_steps(grid.max_transit_steps(c0, dt)),
-      fourier_table(boost::extents[SpacetimeArray<cmplx>::extent_range(
+      fourier_table(boost::extents[SpacetimeVector<cmplx>::extent_range(
           1, max_transit_steps)][grid.dimensions(0)][grid.dimensions(1)]
                                   [grid.dimensions(2) + 1]),
       expansion_table(expansions()),
@@ -161,13 +161,13 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 }
 
 void AIM::AimInteraction::fill_gmatrix_table(
-    SpacetimeArray<double> &gmatrix_table) const
+    SpacetimeVector<double> &gmatrix_table) const
 {
   // Build the circulant vectors that define the G "matrices." Since the G
   // matrices are Toeplitz (and symmetric), they're uniquely determined by
   // their first row. The first row gets computed here then mirrored to make a
   // list of every circulant (and thus FFT-able) vector. This function needs to
-  // accept a non-const reference to a SpacetimeArray (instead of just
+  // accept a non-const reference to a SpacetimeVector (instead of just
   // returning such an array) to play nice with FFTW and its workspaces.
 
   Interpolation::UniformLagrangeSet interp(interp_order);
@@ -247,8 +247,8 @@ void AIM::AimInteraction::fill_fourier_table()
 {
   const int max_transit_steps = grid.max_transit_steps(c0, dt);
 
-  SpacetimeArray<double> g_mat(
-      boost::extents[SpacetimeArray<double>::extent_range(1, max_transit_steps)]
+  SpacetimeVector<double> g_mat(
+      boost::extents[SpacetimeVector<double>::extent_range(1, max_transit_steps)]
                     [grid.dimensions(0)][grid.dimensions(1)]
                     [2 * grid.dimensions(2)]);
 

@@ -74,7 +74,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
       const int);
 
   const ResultArray &evaluate(const int) final;
-  void fill_gmatrix_table(SpacetimeArray<double> &) const;
+  void fill_gmatrix_table(SpacetimeVector<double> &) const;
   Eigen::VectorXd q_vector(const Eigen::Vector3d &) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
   Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
@@ -85,7 +85,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   Grid grid;
   int box_order, max_transit_steps;
 
-  SpacetimeArray<cmplx> fourier_table;
+  SpacetimeVector<cmplx> fourier_table;
   Array<Expansion> expansion_table;
   boost::multi_array<cmplx, 2> source_table;
   fftw_plan vector_forward_plan, vector_backward_plan;

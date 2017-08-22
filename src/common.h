@@ -11,6 +11,6 @@ template <class T>
 using Array = boost::multi_array<T, 2>;
 
 template <class T>
-using SpacetimeArray = boost::multi_array<T, 4>;
+using SpacetimeVector = boost::multi_array<T, 4>;
 
 #endif
