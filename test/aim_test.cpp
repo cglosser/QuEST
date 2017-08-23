@@ -202,7 +202,11 @@ struct DummyPropagation {
         unit_spacing(1, 1, 1){};
 };
 
-BOOST_FIXTURE_TEST_SUITE(AimInteractionTest, DummyPropagation)
+BOOST_FIXTURE_TEST_SUITE(AIM_Fourier_transforms, DummyPropagation)
+
+// Checks a couple properties of the arrays used to hold Fourier transform
+// data. Does not account for *anything* relating to propagation, therefore
+// those data members have been initialized to their appropriate null value.
 
 BOOST_AUTO_TEST_CASE(OnePointExpansion)
 {
@@ -258,10 +262,89 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
                    reinterpret_cast<fftw_complex *>(nums.data()));
 
   for(size_t i = 0; i < nums.size(); ++i) {
-    std::cout << i << " " << nums[i] << std::endl;
+    BOOST_CHECK_CLOSE(nums[i].real(), 40.0 * i, 1e-10);
+    BOOST_CHECK_SMALL(nums[i].imag(), 1e-10);
   }
 }
 
-BOOST_AUTO_TEST_SUITE_END()  // AimInteractionTest
+BOOST_AUTO_TEST_SUITE_END()  // AIM_Fourier_transforms
+
+struct TwoStaticDots {
+  double c0, dt;
+  int interp_order, expansion_order;
+  std::shared_ptr<DotVector> dots;
+  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
+  std::shared_ptr<Propagation::RotatingFramePropagator> propagator;
+  Eigen::Vector3d unit_spacing;
+  Grid grid;
+  TwoStaticDots()
+      : c0(1),
+        dt(1),
+        interp_order(3),
+        expansion_order(1),
+        dots(std::make_shared<DotVector>()),
+        history(std::make_shared<Integrator::History<Eigen::Vector2cd>>(
+            2, 22, 100)),
+        propagator(std::make_shared<Propagation::RotatingFramePropagator>(
+            1, c0, 1, 1)),
+        unit_spacing(Eigen::Vector3d(1, 1, 1))
+  {
+    dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), 0, {0.0, 0.0},
+                               Eigen::Vector3d(0, 0, 0)));
+    dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 9.5), 0, {0.0, 0.0},
+                               Eigen::Vector3d(0, 0, 0)));
+    grid = Grid(unit_spacing, dots, expansion_order);
+  };
+};
+
+BOOST_FIXTURE_TEST_SUITE(StaticPropagation, TwoStaticDots)
+
+BOOST_AUTO_TEST_CASE(Constant_propagation)
+{
+  history->fill(Eigen::Vector2cd(1, 1));
+  AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
+                     expansion_order);
+  aim.fill_source_table(0);
+
+  std::cout << grid.calculate_bounds().transpose() << std::endl;
+
+  std::cout << "+====================================+" << std::endl;
+
+  std::cout << grid.dimensions.transpose() << std::endl;
+
+  std::cout << "+====================================+" << std::endl;
+
+  std::cout << aim.source_table.shape()[0] << " " << aim.source_table.shape()[1]
+            << " " << aim.source_table.shape()[2] << " "
+            << aim.source_table.shape()[3] << std::endl;
+
+  int i = 0;
+  for(int nx = 0; nx < grid.dimensions(0); ++nx) {
+    for(int ny = 0; ny < grid.dimensions(1); ++ny) {
+      for(int nz = 0; nz < 2 * grid.dimensions(2); ++nz) {
+        std::cout << i++ << " (" << nx << ", " << ny << ", " << nz << ")    ";
+        std::cout << aim.source_table[0][nx][ny][nz] << std::endl;
+      }
+    }
+  }
+
+  fftw_execute_dft(
+      aim.vector_forward_plan,
+      reinterpret_cast<fftw_complex *>(&aim.source_table[0][0][0][0]),
+      reinterpret_cast<fftw_complex *>(&aim.source_table[0][0][0][0]));
+  std::cout << "+====================================+" << std::endl;
+
+  i = 0;
+  for(int nx = 0; nx < grid.dimensions(0); ++nx) {
+    for(int ny = 0; ny < grid.dimensions(1); ++ny) {
+      for(int nz = 0; nz < 2 * grid.dimensions(2); ++nz) {
+        std::cout << i++ << " (" << nx << ", " << ny << ", " << nz << ")    ";
+        std::cout << aim.source_table[0][nx][ny][nz] << std::endl;
+      }
+    }
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // StaticPropagation
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM
