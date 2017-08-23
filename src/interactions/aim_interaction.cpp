@@ -284,6 +284,7 @@ void AIM::AimInteraction::fill_fourier_table()
   // representation. Buckle up.
 
   fftw_execute(circulant_plan);
+  fftw_destroy_plan(circulant_plan);
 }
 
 std::pair<fftw_plan, fftw_plan> AIM::AimInteraction::vector_fft_plans()
