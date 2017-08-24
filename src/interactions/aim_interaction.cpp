@@ -149,10 +149,14 @@ AIM::AimInteraction::AimInteraction(
           1, max_transit_steps)][grid.dimensions(0)][grid.dimensions(1)]
                                   [grid.dimensions(2) + 1]),
       source_table(boost::extents[max_transit_steps][grid.dimensions(0)]
-                                 [grid.dimensions(1)][2 * grid.dimensions(2)])
+                                 [grid.dimensions(1)][2 * grid.dimensions(2)]),
+      obs_table(boost::extents[max_transit_steps][grid.dimensions(0)]
+                              [grid.dimensions(1)][2 * grid.dimensions(2)])
 {
   fill_fourier_table();
   std::tie(vector_forward_plan, vector_backward_plan) = vector_fft_plans();
+  std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
+            cmplx(0, 0));
 }
 
 AIM::AimInteraction::~AimInteraction()
@@ -169,8 +173,7 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 
 void AIM::AimInteraction::fill_gmatrix_table(
     SpacetimeVector<double> &gmatrix_table) const
-{
-  // Build the circulant vectors that define the G "matrices." Since the G
+{  // Build the circulant vectors that define the G "matrices." Since the G
   // matrices are Toeplitz (and symmetric), they're uniquely determined by
   // their first row. The first row gets computed here then mirrored to make a
   // list of every circulant (and thus FFT-able) vector. This function needs to
