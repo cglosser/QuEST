@@ -19,7 +19,8 @@ namespace AIM {
 
 class AIM::Grid {
  public:
-  typedef Eigen::Array<int, 3, 2> BoundsArray;
+  using BoundsArray = Eigen::Array<int, 3, 2>;
+  using ipair_t = std::pair<int, int>;
 
   Grid();
   Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector> &, const int);
@@ -46,7 +47,9 @@ class AIM::Grid {
   };
 
   BoundsArray calculate_bounds() const;
-
+  std::pair<ipair_t, ipair_t> fourier_idx_pairs(const int, const int) const;
+  int fourier_idx(const int, const int) const;
+  int toeplitz_matrix_size() const { return dimensions(0) * dimensions(1); };
  private:
   Eigen::Array3d spacing;
   std::shared_ptr<DotVector> dots;

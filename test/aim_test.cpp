@@ -13,6 +13,36 @@ BOOST_AUTO_TEST_CASE(DummyConstructor)
   BOOST_CHECK_EQUAL(grid.num_boxes, std::pow(30, 3));
 }
 
+BOOST_AUTO_TEST_CASE(FourierIndices)
+{
+  Grid grid(Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(3, 4, 5));
+
+  BOOST_CHECK_EQUAL(grid.toeplitz_matrix_size(), 12);
+
+  for(int i = 0; i < 12; ++i) {
+    BOOST_CHECK_EQUAL(grid.fourier_idx(0, i), i);
+  }
+
+  for(int i = 0; i < 12; ++i) {
+    for(int j = 0; j < 12; ++j) {
+      BOOST_CHECK_EQUAL(grid.fourier_idx(i, j), grid.fourier_idx(j, i));
+    }
+  }
+
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 0), 1);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 1), 0);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 2), 1);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 3), 2);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 4), 5);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 5), 4);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 6), 5);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 7), 6);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 8), 9);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 9), 8);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 10), 9);
+  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 11), 10);
+}
+
 BOOST_AUTO_TEST_SUITE(SingleDotExpansions)
 
 struct OffsetDot {
