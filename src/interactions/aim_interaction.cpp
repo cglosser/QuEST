@@ -55,18 +55,18 @@ AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
 std::pair<AIM::Grid::ipair_t, AIM::Grid::ipair_t> AIM::Grid::fourier_idx_pairs(
     const int row, const int col) const
 {
-  auto xs = std::make_pair(row / dimensions(1), col / dimensions(1));
-  auto ys = std::make_pair(row % dimensions(1), col % dimensions(1));
+  auto src = std::make_pair(col / dimensions(1), col % dimensions(1));
+  auto obs = std::make_pair(row / dimensions(1), row % dimensions(1));
 
-  return std::make_pair(xs, ys);
+  return std::make_pair(src, obs);
 }
 
 int AIM::Grid::fourier_idx(const int row, const int col) const
 {
-  ipair_t xs, ys;
-  std::tie(xs, ys) = fourier_idx_pairs(row, col);
-  return dimensions(1) * std::abs(xs.first - xs.second) +
-         std::abs(ys.first - ys.second);
+  ipair_t src, obs;
+  std::tie(src, obs) = fourier_idx_pairs(row, col);
+  return dimensions(1) * std::abs(obs.first - src.first) +
+         std::abs(obs.second - src.second);
 }
 
 std::vector<DotRange> AIM::Grid::box_contents_map(
