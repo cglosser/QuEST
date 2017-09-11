@@ -320,7 +320,7 @@ std::pair<fftw_plan, fftw_plan> AIM::AimInteraction::vector_fft_plans()
   const int howmany = grid.dimensions(0) * grid.dimensions(1);
   const int idist = 2 * grid.dimensions(2), odist = 2 * grid.dimensions(2);
   const int istride = 1, ostride = 1;
-  const int *inembed = len, *onembed = len;
+  const int *inembed = NULL, *onembed = NULL;
 
   auto make_plan = [=](const int sign) {
     return fftw_plan_many_dft(
@@ -377,13 +377,27 @@ void AIM::AimInteraction::fill_source_table(const int step)
 Eigen::VectorXcd AIM::AimInteraction::fast_multiply(const int g_id,
                                                     const int p_id) const
 {
-  const int &zlen = grid.dimensions(2);
-  Eigen::Map<Eigen::VectorXcd> propagation(nullptr, zlen), src(nullptr, zlen),
-      obs(nullptr, zlen);
-
+  const int &zlen = 2 * grid.dimensions(2);
   const int num_blocks = grid.dimensions(0) * grid.dimensions(1);
-  for(int sum_id = 0; sum_id < num_blocks; ++sum_id) {
 
+  Eigen::VectorXcd sum = Eigen::VectorXcd::Zero(2 * grid.num_boxes);
 
+  // Here begins the awful pointer arcana...
+  const cmplx *g_start = &fourier_table[g_id][0][0][0];
+  const cmplx *p_start = &source_table[p_id][0][0][0];
+
+  for(int row = 0; row < num_blocks; ++row) {
+    Eigen::Map<Eigen::VectorXcd> partial_sum(sum.data() + (row * zlen), zlen);
+    for(int col = 0; col < num_blocks; ++col) {
+      const int fourier_idx = grid.fourier_idx(row, col);
+
+      Eigen::Map<const Eigen::VectorXcd> g_slice(g_start + (fourier_idx * zlen),
+                                                 zlen),
+          p_slice(p_start + (col * zlen), zlen);
+
+      partial_sum += g_slice * p_slice;
+    }
   }
+
+  return sum;
 }
