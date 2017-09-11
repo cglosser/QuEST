@@ -17,6 +17,7 @@ two-level quantum dots. Designed and built at Michigan State University.
   * [MultiArray](http://www.boost.org/doc/libs/1_55_0/libs/multi_array/doc/index.html)
   * [Test](http://www.boost.org/doc/libs/1_64_0/libs/test/doc/html/index.html)
 * [SILO](https://wci.llnl.gov/simulation/computer-codes/silo) (optional)
+* [FFTW](http://www.fftw.org/)
 
 ## Building
 
