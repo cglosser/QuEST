@@ -382,7 +382,11 @@ Eigen::VectorXcd AIM::AimInteraction::fast_multiply(const int g_id,
 
   Eigen::VectorXcd sum = Eigen::VectorXcd::Zero(2 * grid.num_boxes);
 
-  // Here begins the awful pointer arcana...
+  // Here begins the awful pointer arcana. All of this is a dodge around how
+  // the Spacetime vectors are stored. For every other purpose, it's easier to
+  // build/access them through the (t,x,y,z) multi-index but the actual matrix
+  // product is a little easier through the pointers (offsets from some
+  // begining) as the elements are contiguous.
   const cmplx *g_start = &fourier_table[g_id][0][0][0];
   const cmplx *p_start = &source_table[p_id][0][0][0];
 
