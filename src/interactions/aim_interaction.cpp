@@ -364,8 +364,26 @@ void AIM::AimInteraction::fill_source_table(const int step)
       const Expansion &e = expansion_table[dot_idx][idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
 
+      // This is the seam between what's stored in the History (density matrix
+      // elements) and the electromagnetic source quantities. Ideally the AIM
+      // code should not have knowledge of this to better encapsulate
+      // "propagation," but this is good enough for now.
       source_table[step][coord(0)][coord(1)][coord(2)] =
           e.weight * history->array[dot_idx][step][0][1];
     }
+  }
+}
+
+Eigen::VectorXcd AIM::AimInteraction::fast_multiply(const int g_id,
+                                                    const int p_id) const
+{
+  const int &zlen = grid.dimensions(2);
+  Eigen::Map<Eigen::VectorXcd> propagation(nullptr, zlen), src(nullptr, zlen),
+      obs(nullptr, zlen);
+
+  const int num_blocks = grid.dimensions(0) * grid.dimensions(1);
+  for(int sum_id = 0; sum_id < num_blocks; ++sum_id) {
+
+
   }
 }

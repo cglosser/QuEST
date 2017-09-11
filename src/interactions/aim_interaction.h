@@ -97,6 +97,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   void fill_fourier_table();
   std::pair<fftw_plan, fftw_plan> vector_fft_plans();
   void fill_source_table(const int);
+  Eigen::VectorXcd fast_multiply(const int, const int) const;
 };
 
 #endif
