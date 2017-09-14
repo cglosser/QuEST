@@ -37,7 +37,7 @@ void HistoryInteraction::build_coefficient_table()
     floor_delays[pair_idx] = delay.first;
     lagrange.calculate_weights(delay.second, dt);
 
-    std::vector<double> interp_dyads(dyadic->coefficients(dr, lagrange));
+    std::vector<Eigen::Matrix3d> interp_dyads(dyadic->coefficients(dr, lagrange));
 
     for(int i = 0; i <= interp_order; ++i) {
       coefficients[pair_idx][i] = interp_dyads[i];
@@ -61,9 +61,9 @@ const Interaction::ResultArray &HistoryInteraction::evaluate(const int time_idx)
       if(s - i < history->array.index_bases()[1]) continue;
 
       results[src] +=
-          -dr.cross(coefficients[pair_idx][i] * history->array[obs][s - i][0]);
+          coefficients[pair_idx][i] * history->array[obs][s - i][0];
       results[obs] +=
-          -dr.cross(coefficients[pair_idx][i] * history->array[src][s - i][0]);
+          coefficients[pair_idx][i] * history->array[src][s - i][0];
     }
   }
 

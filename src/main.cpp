@@ -34,8 +34,7 @@ int main(int argc, char *argv[])
 
     // Set up Interactions
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
-    auto dyadic = make_shared<Propagation::FixedFramePropagator>(
-        config.e0, config.c0, config.hbar);
+    auto dyadic = make_shared<Propagation::FixedFramePropagator>(config.c0);
 
     std::vector<std::shared_ptr<Interaction>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
@@ -51,8 +50,8 @@ int main(int argc, char *argv[])
         std::make_unique<Integrator::LLG_RHS>(
             config.dt, history, std::move(interactions), std::move(rhs_funcs));
 
-    Integrator::PredictorCorrector<soltype> solver(
-        config.dt, 18, 22, 3.15, history, llg_rhs);
+    Integrator::PredictorCorrector<soltype> solver(config.dt, 18, 22, 3.15,
+                                                   history, llg_rhs);
 
     cout << "Solving..." << endl;
     solver.solve();

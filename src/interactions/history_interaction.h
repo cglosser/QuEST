@@ -27,7 +27,7 @@ class HistoryInteraction : public Interaction {
   std::shared_ptr<Propagation::FixedFramePropagator> dyadic;
   int interp_order, num_interactions;
   std::vector<int> floor_delays;
-  boost::multi_array<double, 2> coefficients;
+  boost::multi_array<Eigen::Matrix3d, 2> coefficients;
   const double dt;
   const double c0;
 
