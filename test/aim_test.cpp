@@ -331,73 +331,75 @@ BOOST_FIXTURE_TEST_SUITE(StaticPropagation, TwoStaticDots)
 
 BOOST_AUTO_TEST_CASE(Fast_multiply)
 {
-  AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid, expansion_order);
+  AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
+                     expansion_order);
+  SpacetimeVector<cmplx> gmat(
+      boost::extents[SpacetimeVector<cmplx>::extent_range(
+          1, grid.max_transit_steps(c0, dt))][grid.dimensions(0)]
+                    [grid.dimensions(1)][2 * grid.dimensions(2)]);
 
-  for(int i = 0; i < 2 * aim.grid.num_boxes; ++i) {
-    *(aim.source_table.data() + i) = i;
+  aim.fill_gmatrix_table(gmat);
+
+
+  std::cout << std::scientific << std::setw(12);
+  for(int nx = 0; nx < grid.dimensions(0); ++nx) {
+    for(int ny = 0; ny < grid.dimensions(1); ++ny) {
+      for(int nz = 0; nz < 2* grid.dimensions(2); ++nz) {
+
+        //std::cout << gmat[1][nx][ny][nz] << std::endl;
+        std::cout << aim.fourier_table[1][nx][ny][nz] << std::endl;
+      }
+      std::cout << "======" << std::endl;
+    }
   }
-
-  {
-    auto head = reinterpret_cast<fftw_complex *>(aim.source_table.data());
-    fftw_execute_dft(aim.vector_forward_plan, head, head);
-  }
-
-  auto x = aim.fast_multiply(1, 0);
-
-  {
-    auto head = reinterpret_cast<fftw_complex *>(x.data());
-    fftw_execute_dft(aim.vector_backward_plan, head, head);
-  }
-
-  std::cout << x << std::endl;
-
 
 }
 
-//BOOST_AUTO_TEST_CASE(Constant_propagation)
+// BOOST_AUTO_TEST_CASE(Constant_propagation)
 //{
-  //history->fill(Eigen::Vector2cd(1, 1));
-  //AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-                     //expansion_order);
-  //aim.fill_source_table(0);
+// history->fill(Eigen::Vector2cd(1, 1));
+// AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
+// expansion_order);
+// aim.fill_source_table(0);
 
-  //std::cout << grid.calculate_bounds().transpose() << std::endl;
+// std::cout << grid.calculate_bounds().transpose() << std::endl;
 
-  //std::cout << "+====================================+" << std::endl;
+// std::cout << "+====================================+" << std::endl;
 
-  //std::cout << grid.dimensions.transpose() << std::endl;
+// std::cout << grid.dimensions.transpose() << std::endl;
 
-  //std::cout << "+====================================+" << std::endl;
+// std::cout << "+====================================+" << std::endl;
 
-  //std::cout << aim.source_table.shape()[0] << " " << aim.source_table.shape()[1]
-            //<< " " << aim.source_table.shape()[2] << " "
-            //<< aim.source_table.shape()[3] << std::endl;
+// std::cout << aim.source_table.shape()[0] << " " <<
+// aim.source_table.shape()[1]
+//<< " " << aim.source_table.shape()[2] << " "
+//<< aim.source_table.shape()[3] << std::endl;
 
-  //int i = 0;
-  //for(int nx = 0; nx < grid.dimensions(0); ++nx) {
-    //for(int ny = 0; ny < grid.dimensions(1); ++ny) {
-      //for(int nz = 0; nz < 2 * grid.dimensions(2); ++nz) {
-        //std::cout << i++ << " (" << nx << ", " << ny << ", " << nz << ")    ";
-        //std::cout << aim.source_table[0][nx][ny][nz] << std::endl;
-      //}
-    //}
-  //}
+// int i = 0;
+// for(int nx = 0; nx < grid.dimensions(0); ++nx) {
+// for(int ny = 0; ny < grid.dimensions(1); ++ny) {
+// for(int nz = 0; nz < 2 * grid.dimensions(2); ++nz) {
+// std::cout << i++ << " (" << nx << ", " << ny << ", " << nz << ")    ";
+// std::cout << aim.source_table[0][nx][ny][nz] << std::endl;
+//}
+//}
+//}
 
-  //fftw_execute_dft(
-      //aim.vector_forward_plan,
-      //reinterpret_cast<fftw_complex *>(&aim.source_table[0][0][0][0]),
-      //reinterpret_cast<fftw_complex *>(&aim.source_table[0][0][0][0]));
-  //std::cout << "+====================================+" << std::endl;
+// fftw_execute_dft(
+// aim.vector_forward_plan,
+// reinterpret_cast<fftw_complex *>(&aim.source_table[0][0][0][0]),
+// reinterpret_cast<fftw_complex *>(&aim.source_table[0][0][0][0]));
+// std::cout << "+====================================+" << std::endl;
 
-  //i = 0;
-  //for(int nx = 0; nx < grid.dimensions(0); ++nx) {
-    //for(int ny = 0; ny < grid.dimensions(1); ++ny) {
-      //for(int nz = 0; nz < 2 * grid.dimensions(2); ++nz) {
-        //std::cout << i++ << " (" << nx << ", " << ny << ", " << nz << ")    ";
-        //std::cout << aim.source_table[0][nx][ny][nz] << std::endl;
-      //}
-    //}
-  //}
+// i = 0;
+// for(int nx = 0; nx < grid.dimensions(0); ++nx) {
+// for(int ny = 0; ny < grid.dimensions(1); ++ny) {
+// for(int nz = 0; nz < 2 * grid.dimensions(2); ++nz) {
+// std::cout << i++ << " (" << nx << ", " << ny << ", " << nz << ")    ";
+// std::cout << aim.source_table[0][nx][ny][nz] << std::endl;
+//}
+//}
+//}
 //}
 
 BOOST_AUTO_TEST_SUITE_END()  // StaticPropagation

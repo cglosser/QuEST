@@ -79,7 +79,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   ~AimInteraction();
 
   const ResultArray &evaluate(const int) final;
-  void fill_gmatrix_table(SpacetimeVector<double> &) const;
+  void fill_gmatrix_table(SpacetimeVector<cmplx> &) const;
   Eigen::VectorXd q_vector(const Eigen::Vector3d &) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
   Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;

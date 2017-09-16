@@ -164,7 +164,7 @@ AIM::AimInteraction::AimInteraction(
       expansion_table(expansions()),
       fourier_table(boost::extents[SpacetimeVector<cmplx>::extent_range(
           1, max_transit_steps)][grid.dimensions(0)][grid.dimensions(1)]
-                                  [grid.dimensions(2) + 1]),
+                                  [2 * grid.dimensions(2)]),
       source_table(boost::extents[max_transit_steps][grid.dimensions(0)]
                                  [grid.dimensions(1)][2 * grid.dimensions(2)]),
       obs_table(boost::extents[max_transit_steps][grid.dimensions(0)]
@@ -189,13 +189,18 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 }
 
 void AIM::AimInteraction::fill_gmatrix_table(
-    SpacetimeVector<double> &gmatrix_table) const
+    SpacetimeVector<cmplx> &gmatrix_table) const
 {  // Build the circulant vectors that define the G "matrices." Since the G
   // matrices are Toeplitz (and symmetric), they're uniquely determined by
   // their first row. The first row gets computed here then mirrored to make a
   // list of every circulant (and thus FFT-able) vector. This function needs to
   // accept a non-const reference to a SpacetimeVector (instead of just
   // returning such an array) to play nice with FFTW and its workspaces.
+
+  assert(gmatrix_table.shape()[0] == max_transit_steps - 1 &&
+         gmatrix_table.shape()[1] == grid.dimensions(0) &&
+         gmatrix_table.shape()[2] == grid.dimensions(1) &&
+         gmatrix_table.shape()[3] == grid.dimensions(2));
 
   Interpolation::UniformLagrangeSet interp(interp_order);
   for(int nx = 0; nx < grid.dimensions(0); ++nx) {
@@ -274,9 +279,9 @@ void AIM::AimInteraction::fill_fourier_table()
 {
   const int max_transit_steps = grid.max_transit_steps(c0, dt);
 
-  SpacetimeVector<double> g_mat(
-      boost::extents[SpacetimeVector<double>::extent_range(
-          1, max_transit_steps)][grid.dimensions(0)][grid.dimensions(1)]
+  SpacetimeVector<cmplx> g_mat(
+      boost::extents[SpacetimeVector<cmplx>::extent_range(1, max_transit_steps)]
+                    [grid.dimensions(0)][grid.dimensions(1)]
                     [2 * grid.dimensions(2)]);
 
   // Set up FFTW plan; will transform real-valued Toeplitz matrix to the
@@ -286,15 +291,15 @@ void AIM::AimInteraction::fill_fourier_table()
   const int len[] = {2 * grid.dimensions(2)};
   const int howmany = std::accumulate(g_mat.shape(), g_mat.shape() + 3, 1,
                                       std::multiplies<int>());
-  const int idist = 2 * grid.dimensions(2), odist = grid.dimensions(2) + 1;
+  const int idist = 2 * grid.dimensions(2), odist = 2 * grid.dimensions(2);
   const int istride = 1, ostride = 1;
   const int *inembed = len, *onembed = len;
 
   fftw_plan circulant_plan;
-  circulant_plan = fftw_plan_many_dft_r2c(
-      1, len, howmany, g_mat.data(), inembed, istride, idist,
-      reinterpret_cast<fftw_complex *>(fourier_table.data()), onembed, ostride,
-      odist, FFTW_MEASURE);
+  circulant_plan = fftw_plan_many_dft(
+      1, len, howmany, reinterpret_cast<fftw_complex *>(g_mat.data()), inembed,
+      istride, idist, reinterpret_cast<fftw_complex *>(fourier_table.data()),
+      onembed, ostride, odist, FFTW_FORWARD, FFTW_MEASURE);
 
   std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), 0);
 
