@@ -9,8 +9,8 @@
 
 #include <iomanip>
 
-#include "../common.h"
-#include "history_interaction.h"
+#include "../../common.h"
+#include "../history_interaction.h"
 
 namespace AIM {
   class Grid;
