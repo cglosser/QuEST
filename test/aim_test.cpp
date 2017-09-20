@@ -340,19 +340,15 @@ BOOST_AUTO_TEST_CASE(Fast_multiply)
 
   aim.fill_gmatrix_table(gmat);
 
+  const int zlen = 2 * grid.dimensions(2);
 
-  std::cout << std::scientific << std::setw(12);
-  for(int nx = 0; nx < grid.dimensions(0); ++nx) {
-    for(int ny = 0; ny < grid.dimensions(1); ++ny) {
-      for(int nz = 0; nz < 2* grid.dimensions(2); ++nz) {
+  std::cout << std::scientific << std::setw(12) << std::endl;
+  for(int row = 0; row < grid.dimensions(0) * grid.dimensions(1); ++row) {
+    Eigen::Map<Eigen::VectorXcd> vec(gmat.data() + (row * zlen), zlen);
 
-        //std::cout << gmat[1][nx][ny][nz] << std::endl;
-        std::cout << aim.fourier_table[1][nx][ny][nz] << std::endl;
-      }
-      std::cout << "======" << std::endl;
-    }
+    std::cout << vec << std::endl;
+    std::cout << "=========================" << std::endl;
   }
-
 }
 
 // BOOST_AUTO_TEST_CASE(Constant_propagation)
