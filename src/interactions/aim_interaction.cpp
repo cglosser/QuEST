@@ -384,7 +384,7 @@ void AIM::AimInteraction::fill_source_table(const int step)
 Eigen::VectorXcd AIM::AimInteraction::fast_multiply(const int g_id,
                                                     const int p_id) const
 {
-  const int &zlen = 2 * grid.dimensions(2);
+  const int zlen = 2 * grid.dimensions(2);
   const int num_blocks = grid.dimensions(0) * grid.dimensions(1);
 
   Eigen::VectorXcd sum = Eigen::VectorXcd::Zero(2 * grid.num_boxes);
@@ -398,11 +398,11 @@ Eigen::VectorXcd AIM::AimInteraction::fast_multiply(const int g_id,
   const cmplx *p_start = &source_table[p_id][0][0][0];
 
   for(int row = 0; row < num_blocks; ++row) {
-    Eigen::Map<Eigen::VectorXcd> partial_sum(sum.data() + (row * zlen), zlen);
+    Eigen::Map<Eigen::ArrayXcd> partial_sum(sum.data() + (row * zlen), zlen);
     for(int col = 0; col < num_blocks; ++col) {
       const int fourier_idx = grid.fourier_idx(row, col);
 
-      Eigen::Map<const Eigen::VectorXcd> g_slice(g_start + (fourier_idx * zlen),
+      Eigen::Map<const Eigen::ArrayXcd> g_slice(g_start + (fourier_idx * zlen),
                                                  zlen),
           p_slice(p_start + (col * zlen), zlen);
 
@@ -410,5 +410,9 @@ Eigen::VectorXcd AIM::AimInteraction::fast_multiply(const int g_id,
     }
   }
 
-  return sum;
+  fftw_execute_dft(vector_backward_plan,
+                   reinterpret_cast<fftw_complex *>(sum.data()),
+                   reinterpret_cast<fftw_complex *>(sum.data()));
+
+  return sum / zlen;
 }

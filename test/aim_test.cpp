@@ -331,72 +331,33 @@ BOOST_FIXTURE_TEST_SUITE(StaticPropagation, TwoStaticDots)
 
 BOOST_AUTO_TEST_CASE(Fast_multiply)
 {
+  std::cout.precision(17);
+  std::cout << std::scientific << std::endl;
+
   AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
                      expansion_order);
-  SpacetimeVector<cmplx> gmat(
-      boost::extents[SpacetimeVector<cmplx>::extent_range(
-          1, grid.max_transit_steps(c0, dt))][grid.dimensions(0)]
-                    [grid.dimensions(1)][2 * grid.dimensions(2)]);
-
-  aim.fill_gmatrix_table(gmat);
 
   const int zlen = 2 * grid.dimensions(2);
 
-  std::cout << std::scientific << std::setw(12) << std::endl;
-  for(int row = 0; row < grid.dimensions(0) * grid.dimensions(1); ++row) {
-    Eigen::Map<Eigen::VectorXcd> vec(gmat.data() + (row * zlen), zlen);
-
-    std::cout << vec << std::endl;
-    std::cout << "=========================" << std::endl;
+  int i = 0;
+  for(int x = 0; x < grid.dimensions(0); ++x) {
+    for(int y = 0; y < grid.dimensions(1); ++y) {
+      for(int z = 0; z < zlen; ++z) {
+        aim.source_table[0][x][y][z] = (z < grid.dimensions(2)) ? i++ : 0;
+      }
+    }
   }
+
+  cmplx *const src = &aim.source_table[0][0][0][0];
+  fftw_execute_dft(aim.vector_forward_plan,
+                   reinterpret_cast<fftw_complex *const>(src),
+                   reinterpret_cast<fftw_complex *const>(src));
+
+  std::cout << "Hello!" << std::endl;
+  auto matmul = aim.fast_multiply(1, 0);
+
+  std::cout << matmul << std::endl;
 }
-
-// BOOST_AUTO_TEST_CASE(Constant_propagation)
-//{
-// history->fill(Eigen::Vector2cd(1, 1));
-// AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-// expansion_order);
-// aim.fill_source_table(0);
-
-// std::cout << grid.calculate_bounds().transpose() << std::endl;
-
-// std::cout << "+====================================+" << std::endl;
-
-// std::cout << grid.dimensions.transpose() << std::endl;
-
-// std::cout << "+====================================+" << std::endl;
-
-// std::cout << aim.source_table.shape()[0] << " " <<
-// aim.source_table.shape()[1]
-//<< " " << aim.source_table.shape()[2] << " "
-//<< aim.source_table.shape()[3] << std::endl;
-
-// int i = 0;
-// for(int nx = 0; nx < grid.dimensions(0); ++nx) {
-// for(int ny = 0; ny < grid.dimensions(1); ++ny) {
-// for(int nz = 0; nz < 2 * grid.dimensions(2); ++nz) {
-// std::cout << i++ << " (" << nx << ", " << ny << ", " << nz << ")    ";
-// std::cout << aim.source_table[0][nx][ny][nz] << std::endl;
-//}
-//}
-//}
-
-// fftw_execute_dft(
-// aim.vector_forward_plan,
-// reinterpret_cast<fftw_complex *>(&aim.source_table[0][0][0][0]),
-// reinterpret_cast<fftw_complex *>(&aim.source_table[0][0][0][0]));
-// std::cout << "+====================================+" << std::endl;
-
-// i = 0;
-// for(int nx = 0; nx < grid.dimensions(0); ++nx) {
-// for(int ny = 0; ny < grid.dimensions(1); ++ny) {
-// for(int nz = 0; nz < 2 * grid.dimensions(2); ++nz) {
-// std::cout << i++ << " (" << nx << ", " << ny << ", " << nz << ")    ";
-// std::cout << aim.source_table[0][nx][ny][nz] << std::endl;
-//}
-//}
-//}
-//}
 
 BOOST_AUTO_TEST_SUITE_END()  // StaticPropagation
 
