@@ -197,10 +197,12 @@ void AIM::AimInteraction::fill_gmatrix_table(
   // accept a non-const reference to a SpacetimeVector (instead of just
   // returning such an array) to play nice with FFTW and its workspaces.
 
-  assert(gmatrix_table.shape()[0] == max_transit_steps - 1 &&
-         gmatrix_table.shape()[1] == grid.dimensions(0) &&
-         gmatrix_table.shape()[2] == grid.dimensions(1) &&
-         gmatrix_table.shape()[3] == grid.dimensions(2));
+  // Can't resize the array here to guarantee bounds (because of FFTW...),
+  // so the asserts ensure gmatrix_table can hold everything
+  assert(static_cast<int>(gmatrix_table.shape()[0]) == max_transit_steps - 1);
+  assert(static_cast<int>(gmatrix_table.shape()[1]) == grid.dimensions(0));
+  assert(static_cast<int>(gmatrix_table.shape()[2]) == grid.dimensions(1));
+  assert(static_cast<int>(gmatrix_table.shape()[3]) == 2 * grid.dimensions(2));
 
   Interpolation::UniformLagrangeSet interp(interp_order);
   for(int nx = 0; nx < grid.dimensions(0); ++nx) {
