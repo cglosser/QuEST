@@ -353,10 +353,11 @@ BOOST_AUTO_TEST_CASE(Fast_multiply)
                    reinterpret_cast<fftw_complex *const>(src),
                    reinterpret_cast<fftw_complex *const>(src));
 
-  std::cout << "Hello!" << std::endl;
   auto matmul = aim.fast_multiply(1, 0);
 
-  std::cout << matmul << std::endl;
+  for(size_t i = 0; i < 2 * grid.num_boxes; ++i) {
+    BOOST_CHECK(matmul(i).imag() < 1e-13);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // StaticPropagation
