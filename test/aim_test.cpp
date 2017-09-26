@@ -13,36 +13,6 @@ BOOST_AUTO_TEST_CASE(DummyConstructor)
   BOOST_CHECK_EQUAL(grid.num_boxes, std::pow(30, 3));
 }
 
-BOOST_AUTO_TEST_CASE(FourierIndices)
-{
-  Grid grid(Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(3, 4, 5));
-
-  BOOST_CHECK_EQUAL(grid.toeplitz_matrix_size(), 12);
-
-  for(int i = 0; i < 12; ++i) {
-    BOOST_CHECK_EQUAL(grid.fourier_idx(0, i), i);
-  }
-
-  for(int i = 0; i < 12; ++i) {
-    for(int j = 0; j < 12; ++j) {
-      BOOST_CHECK_EQUAL(grid.fourier_idx(i, j), grid.fourier_idx(j, i));
-    }
-  }
-
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 0), 1);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 1), 0);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 2), 1);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 3), 2);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 4), 5);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 5), 4);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 6), 5);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 7), 6);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 8), 9);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 9), 8);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 10), 9);
-  BOOST_CHECK_EQUAL(grid.fourier_idx(1, 11), 10);
-}
-
 BOOST_AUTO_TEST_SUITE(SingleDotExpansions)
 
 struct OffsetDot {
@@ -328,37 +298,6 @@ struct TwoStaticDots {
 };
 
 BOOST_FIXTURE_TEST_SUITE(StaticPropagation, TwoStaticDots)
-
-BOOST_AUTO_TEST_CASE(Fast_multiply)
-{
-  std::cout.precision(17);
-  std::cout << std::scientific << std::endl;
-
-  AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-                     expansion_order);
-
-  const int zlen = 2 * grid.dimensions(2);
-
-  int i = 0;
-  for(int x = 0; x < grid.dimensions(0); ++x) {
-    for(int y = 0; y < grid.dimensions(1); ++y) {
-      for(int z = 0; z < zlen; ++z) {
-        aim.source_table[0][x][y][z] = (z < grid.dimensions(2)) ? i++ : 0;
-      }
-    }
-  }
-
-  cmplx *const src = &aim.source_table[0][0][0][0];
-  fftw_execute_dft(aim.vector_forward_plan,
-                   reinterpret_cast<fftw_complex *const>(src),
-                   reinterpret_cast<fftw_complex *const>(src));
-
-  auto matmul = aim.fast_multiply(1, 0);
-
-  for(size_t i = 0; i < 2 * grid.num_boxes; ++i) {
-    BOOST_CHECK(matmul(i).imag() < 1e-13);
-  }
-}
 
 BOOST_AUTO_TEST_SUITE_END()  // StaticPropagation
 

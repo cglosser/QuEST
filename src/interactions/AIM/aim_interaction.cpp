@@ -315,35 +315,6 @@ void AIM::AimInteraction::fill_source_table(const int step)
 Eigen::VectorXcd AIM::AimInteraction::fast_multiply(const int g_id,
                                                     const int p_id) const
 {
-  const int zlen = 2 * grid.dimensions(2);
-  const int num_blocks = grid.dimensions(0) * grid.dimensions(1);
-
-  Eigen::VectorXcd sum = Eigen::VectorXcd::Zero(2 * grid.num_boxes);
-
-  // Here begins the awful pointer arcana. All of this is a dodge around how
-  // the Spacetime vectors are stored. For every other purpose, it's easier to
-  // build/access them through the (t,x,y,z) multi-index but the actual matrix
-  // product is a little easier through the pointers (offsets from some
-  // begining) as the elements are contiguous.
-  const cmplx *g_start = &fourier_table[g_id][0][0][0];
-  const cmplx *p_start = &source_table[p_id][0][0][0];
-
-  for(int row = 0; row < num_blocks; ++row) {
-    Eigen::Map<Eigen::ArrayXcd> partial_sum(sum.data() + (row * zlen), zlen);
-    for(int col = 0; col < num_blocks; ++col) {
-      const int fourier_idx = grid.fourier_idx(row, col);
-
-      Eigen::Map<const Eigen::ArrayXcd> g_slice(g_start + (fourier_idx * zlen),
-                                                 zlen),
-          p_slice(p_start + (col * zlen), zlen);
-
-      partial_sum += g_slice * p_slice;
-    }
-  }
-
-  fftw_execute_dft(vector_backward_plan,
-                   reinterpret_cast<fftw_complex *>(sum.data()),
-                   reinterpret_cast<fftw_complex *>(sum.data()));
-
-  return sum / zlen;
+  Eigen::VectorXcd total = Eigen::VectorXcd::Zero(grid.num_boxes);
+  return total;
 }

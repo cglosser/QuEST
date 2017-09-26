@@ -51,20 +51,3 @@ AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
 
   return b;
 }
-
-std::pair<AIM::Grid::ipair_t, AIM::Grid::ipair_t> AIM::Grid::fourier_idx_pairs(
-    const int row, const int col) const
-{
-  auto src = std::make_pair(col / dimensions(1), col % dimensions(1));
-  auto obs = std::make_pair(row / dimensions(1), row % dimensions(1));
-
-  return std::make_pair(src, obs);
-}
-
-int AIM::Grid::fourier_idx(const int row, const int col) const
-{
-  ipair_t src, obs;
-  std::tie(src, obs) = fourier_idx_pairs(row, col);
-  return dimensions(1) * std::abs(obs.first - src.first) +
-         std::abs(obs.second - src.second);
-}
