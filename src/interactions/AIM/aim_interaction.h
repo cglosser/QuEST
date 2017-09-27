@@ -26,7 +26,8 @@ class AIM::AimInteraction final : public HistoryInteraction {
 
   struct TransformPair {
     fftw_plan forward, backward;
-    ~TransformPair() {
+    ~TransformPair()
+    {
       fftw_destroy_plan(forward);
       fftw_destroy_plan(backward);
     }
@@ -53,6 +54,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   // private:
   Grid grid;
   int box_order, max_transit_steps;
+  Eigen::Array3i circulant_dimensions;
 
   Array<Expansion> expansion_table;
   SpacetimeVector<cmplx> fourier_table, source_table, obs_table;

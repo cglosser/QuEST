@@ -92,6 +92,7 @@ AIM::AimInteraction::AimInteraction(
       grid(grid),
       box_order(box_order),
       max_transit_steps(grid.max_transit_steps(c0, dt)),
+      circulant_dimensions(2 * grid.dimensions),
       expansion_table(expansions()),
       fourier_table(boost::extents[SpacetimeVector<cmplx>::extent_range(
           1, max_transit_steps)][grid.dimensions(0)][grid.dimensions(1)]
