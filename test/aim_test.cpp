@@ -254,10 +254,10 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
     nums[i] = i;
   }
 
-  fftw_execute_dft(aim.vector_forward_plan,
+  fftw_execute_dft(aim.spatial_transforms.forward,
                    reinterpret_cast<fftw_complex *>(nums.data()),
                    reinterpret_cast<fftw_complex *>(nums.data()));
-  fftw_execute_dft(aim.vector_backward_plan,
+  fftw_execute_dft(aim.spatial_transforms.backward,
                    reinterpret_cast<fftw_complex *>(nums.data()),
                    reinterpret_cast<fftw_complex *>(nums.data()));
 

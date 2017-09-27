@@ -99,18 +99,12 @@ AIM::AimInteraction::AimInteraction(
       source_table(boost::extents[max_transit_steps][grid.dimensions(0)]
                                  [grid.dimensions(1)][2 * grid.dimensions(2)]),
       obs_table(boost::extents[max_transit_steps][grid.dimensions(0)]
-                              [grid.dimensions(1)][2 * grid.dimensions(2)])
+                              [grid.dimensions(1)][2 * grid.dimensions(2)]),
+      spatial_transforms(spatial_fft_plans())
 {
   fill_fourier_table();
-  std::tie(vector_forward_plan, vector_backward_plan) = vector_fft_plans();
   std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
             cmplx(0, 0));
-}
-
-AIM::AimInteraction::~AimInteraction()
-{
-  fftw_destroy_plan(vector_forward_plan);
-  fftw_destroy_plan(vector_backward_plan);
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
@@ -245,7 +239,7 @@ void AIM::AimInteraction::fill_fourier_table()
   fftw_destroy_plan(circulant_plan);
 }
 
-std::pair<fftw_plan, fftw_plan> AIM::AimInteraction::vector_fft_plans()
+AIM::AimInteraction::TransformPair AIM::AimInteraction::spatial_fft_plans()
 {
   // Set up FFTW plans to transform projected source distributions. Due to the
   // requirements of the circulant extension, these plans perform transforms of
@@ -273,7 +267,7 @@ std::pair<fftw_plan, fftw_plan> AIM::AimInteraction::vector_fft_plans()
   fwd = make_plan(FFTW_FORWARD);
   bkwd = make_plan(FFTW_BACKWARD);
 
-  return std::make_pair(fwd, bkwd);
+  return {fwd, bkwd};
 }
 
 Array<AIM::AimInteraction::Expansion> AIM::AimInteraction::expansions() const
