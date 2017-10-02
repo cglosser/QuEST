@@ -1,6 +1,6 @@
 #include "llg_rhs.h"
-#include <ostream>
 #include <fstream>
+#include <ostream>
 #include <string>
 
 Integrator::LLG_RHS::LLG_RHS(
@@ -19,10 +19,16 @@ void Integrator::LLG_RHS::evaluate(const int step) const
 {
   auto pulse_interactions = interactions[0]->evaluate(step);
   auto history_interactions = interactions[1]->evaluate(step);
+  auto self_interactions = interactions[2]->evaluate(step);
 
   for(int sol = 0; sol < num_solutions; ++sol) {
     history->array[sol][step][1] =
         rhs_functions[sol](history->array[sol][step][0],
-                      pulse_interactions[sol] + history_interactions[sol]);
+                           pulse_interactions[sol] + history_interactions[sol] +
+                               self_interactions[sol]);
+  }
+  if(step == 0) {
+    std::cout << "step: " << step << "  "
+              << "dM: " << history->array[0][step][1].transpose() << std::endl;
   }
 }

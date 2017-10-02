@@ -6,4 +6,6 @@ target_sources(quest
     "${CMAKE_CURRENT_LIST_DIR}/interaction.h"
     "${CMAKE_CURRENT_LIST_DIR}/pulse_interaction.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/pulse_interaction.h"
+    "${CMAKE_CURRENT_LIST_DIR}/self_interaction.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/self_interaction.h"
 )

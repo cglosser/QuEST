@@ -38,7 +38,8 @@ class Propagation::FixedFramePropagator
       const Eigen::Vector3d &dr,
       const Interpolation::UniformLagrangeSet &interp) const
   {
-    std::vector<Eigen::Matrix3d> coefs(interp.order() + 1, Eigen::Matrix3d::Zero());
+    std::vector<Eigen::Matrix3d> coefs(interp.order() + 1,
+                                       Eigen::Matrix3d::Zero());
 
     std::array<Eigen::Matrix3d, 3> dyads(spatial_dyads(dr));
 

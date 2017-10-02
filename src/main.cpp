@@ -12,6 +12,7 @@
 #include "interactions/green_function.h"
 #include "interactions/history_interaction.h"
 #include "interactions/pulse_interaction.h"
+#include "interactions/self_interaction.h"
 
 using namespace std;
 
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
     auto history = std::make_shared<Integrator::History<soltype>>(
         config.num_particles, 22, config.num_timesteps);
     history->fill(soltype(0, 0, 0));
-    history->initialize_past(soltype(1, 1, 1));
+    history->initialize_past(soltype(100, 100, 100));
 
     // Set up Interactions
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
@@ -40,7 +41,8 @@ int main(int argc, char *argv[])
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
         make_shared<HistoryInteraction>(qds, history, dyadic,
                                         config.interpolation_order, config.dt,
-                                        config.c0)};
+                                        config.c0),
+        make_shared<SelfInteraction>(qds, history)};
 
     // Set up RHS functions
     auto rhs_funcs = rhs_functions(*qds);

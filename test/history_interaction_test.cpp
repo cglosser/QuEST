@@ -12,16 +12,13 @@ BOOST_AUTO_TEST_SUITE(history_interaction)
 typedef Eigen::Vector3d vec3d;
 
 struct Universe {
-  double e0, c, hbar, dt;
+  double c, dt;
   std::shared_ptr<Propagation::FixedFramePropagator> propagator;
 
   Universe()
-      : e0(3),
-        c(2),
-        hbar(4),
+      : c(2),
         dt(0.01),
-        propagator(
-            std::make_shared<Propagation::FixedFramePropagator>(e0, c, hbar)){};
+        propagator(std::make_shared<Propagation::FixedFramePropagator>(c)){};
 
   Eigen::Vector3d source(double t)
   {
@@ -46,14 +43,20 @@ struct Universe {
                            0);
   }
 
-  Eigen::Vector3d analytic_interaction(Eigen::Vector3d &magd1,
+  Eigen::Vector3d analytic_interaction(Eigen::Vector3d &mag,
+                                       Eigen::Vector3d &magd1,
                                        Eigen::Vector3d &magd2,
                                        Eigen::Vector3d &dr,
                                        double c,
                                        double dist)
   {
-    return -dr.cross((magd1 / (c * std::pow(dist, 3)) -
-                      magd2 / (std::pow(c, 2) * std::pow(dist, 2))));
+    Eigen::Matrix3d rr = dr * dr.transpose() / dr.squaredNorm();
+    Eigen::Matrix3d irr = Eigen::Matrix3d::Identity() - rr;
+    Eigen::Matrix3d i3rr = Eigen::Matrix3d::Identity() - 3 * rr;
+
+    return mag / 3 - (i3rr * mag / std::pow(dist, 3) +
+                      i3rr * magd1 / (c * std::pow(dist, 2)) +
+                      irr * magd2 / (std::pow(c, 2) * dist));
   }
 };
 
@@ -84,14 +87,21 @@ BOOST_FIXTURE_TEST_CASE(history_interaction, Universe)
   HistoryInteraction history_interaction(dots, history, propagator, 7, dt, c);
 
   std::cout << std::scientific << std::setprecision(8);
-  for(int i = steps * 0.1; i < steps * 0.9; ++i) {
+  for(int i = 1; i < steps; ++i) {
+    Eigen::Vector3d magd0 = mag_d0_source(i * dt, delay);
     Eigen::Vector3d magd1 = mag_d1_source(i * dt, delay);
     Eigen::Vector3d magd2 = mag_d2_source(i * dt, delay);
     Eigen::Vector3d interaction =
-        analytic_interaction(magd1, magd2, dr, c, dist);
+        analytic_interaction(magd0, magd1, magd2, dr, c, dist);
+    //std::cout << magd0.transpose() << std::endl; 
+    std::cout << interaction.transpose() << " | " << history_interaction.evaluate(i)[0].transpose() << std::endl;
 
     BOOST_CHECK_CLOSE(interaction[0], history_interaction.evaluate(i)[0][0],
-                      1e-6);
+                      1e-8);
+    BOOST_CHECK_CLOSE(interaction[1], history_interaction.evaluate(i)[0][1],
+                      1e-8);
+    BOOST_CHECK_CLOSE(interaction[2], history_interaction.evaluate(i)[0][2],
+                      1e-8);
   }
 }
 BOOST_AUTO_TEST_SUITE_END()
