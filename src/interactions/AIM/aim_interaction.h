@@ -54,7 +54,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   // private:
   Grid grid;
   int box_order, max_transit_steps;
-  Eigen::Array3i circulant_dimensions;
+  std::array<int, 4> circulant_dimensions;
 
   Array<Expansion> expansion_table;
   SpacetimeVector<cmplx> fourier_table, source_table, obs_table;

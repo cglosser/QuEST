@@ -92,11 +92,11 @@ AIM::AimInteraction::AimInteraction(
       grid(grid),
       box_order(box_order),
       max_transit_steps(grid.max_transit_steps(c0, dt)),
-      circulant_dimensions(2 * grid.dimensions),
+      circulant_dimensions(grid.circulant_shape(c0, dt)),
       expansion_table(expansions()),
-      fourier_table(grid.circulant_shape(c0, dt)),
-      source_table(grid.circulant_shape(c0, dt)),
-      obs_table(grid.circulant_shape(c0, dt)),
+      fourier_table(circulant_dimensions),
+      source_table(circulant_dimensions),
+      obs_table(circulant_dimensions),
       spatial_transforms(spatial_fft_plans())
 {
   fill_fourier_table();
@@ -119,44 +119,48 @@ void AIM::AimInteraction::fill_gmatrix_table(
   // accept a non-const reference to a SpacetimeVector (instead of just
   // returning such an array) to play nice with FFTW and its workspaces.
 
-  // Can't resize the array here to guarantee bounds (because of FFTW...),
-  // so the asserts ensure gmatrix_table can hold everything
-  assert(static_cast<int>(gmatrix_table.shape()[0]) == max_transit_steps - 1);
-  assert(static_cast<int>(gmatrix_table.shape()[1]) == grid.dimensions(0));
-  assert(static_cast<int>(gmatrix_table.shape()[2]) == grid.dimensions(1));
-  assert(static_cast<int>(gmatrix_table.shape()[3]) == 2 * grid.dimensions(2));
+  const int &nx = grid.dimensions(0);
+  const int &ny = grid.dimensions(1);
+  const int &nz = grid.dimensions(2);
 
   Interpolation::UniformLagrangeSet interp(interp_order);
-  for(int nx = 0; nx < grid.dimensions(0); ++nx) {
-    for(int ny = 0; ny < grid.dimensions(1); ++ny) {
-      for(int nz = 0; nz < grid.dimensions(2); ++nz) {
-        const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(nx, ny, nz));
-        if(box_idx == 0) continue;
+  for(int t = 1; t < circulant_dimensions[0]; ++t) {
+    for(int x = 0; x < nx; ++x) {
+      for(int y = 0; y < ny; ++y) {
+        for(int z = 0; z < nz; ++z) {
+          const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(x, y, z));
+          if(box_idx == 0) continue;
 
-        const auto dr =
-            grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
+          const auto dr =
+              grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
 
-        const double arg = dr.norm() / (c0 * dt);
-        const std::pair<int, double> split_arg = split_double(arg);
+          const double arg = dr.norm() / (c0 * dt);
+          const std::pair<int, double> split_arg = split_double(arg);
 
-        // Do the time-axis last; we can share a lot of work
-        for(int time_idx = 1;
-            time_idx < static_cast<int>(gmatrix_table.shape()[0]); ++time_idx) {
-          const int polynomial_idx = static_cast<int>(ceil(time_idx - arg));
+          const int polynomial_idx = static_cast<int>(ceil(t - arg));
 
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
-            gmatrix_table[time_idx][nx][ny][nz] =
-                interp.evaluations[0][polynomial_idx];
-
-            if(nz != 0) {  // Make the circulant "mirror"
-              gmatrix_table[time_idx][nx][ny][2 * grid.dimensions(2) - nz] =
-                  gmatrix_table[time_idx][nx][ny][nz];
-            }
+            gmatrix_table[t][x][y][z] = interp.evaluations[0][polynomial_idx];
           }
         }
+
+        Eigen::Map<Eigen::ArrayXXcd> zflip(&gmatrix_table[t][x][y][1], 1, nz - 1);
+        Eigen::Map<Eigen::ArrayXXcd> zhole(&gmatrix_table[t][x][y][nz + 1], 1, nz - 1);
+        zhole = zflip.rowwise().reverse();
+
       }
+
+      Eigen::Map<Eigen::ArrayXXcd> yflip(&gmatrix_table[t][x][1][0], 2 * nz, ny - 1);
+      Eigen::Map<Eigen::ArrayXXcd> yhole(&gmatrix_table[t][x][ny + 1][0], 2 * nz,  ny - 1);
+      yhole = yflip.rowwise().reverse();
+
     }
+
+    Eigen::Map<Eigen::ArrayXXcd> xflip(&gmatrix_table[t][1][0][0], (2 * ny) * (2 * nz), nx - 1);
+    Eigen::Map<Eigen::ArrayXXcd> xhole(&gmatrix_table[t][nx + 1][0][0], (2 * ny) * (2 * nz), nx - 1);
+    xhole = xflip.rowwise().reverse();
+
   }
 }
 
