@@ -51,3 +51,14 @@ AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
 
   return b;
 }
+
+std::array<int, 4> AIM::Grid::circulant_shape(const double c,
+                                              const double dt) const
+{
+  std::array<int, 4> shape;
+
+  shape[0] = max_transit_steps(c, dt);
+  for(int i = 1; i < 4; ++i) shape[i] = 2 * dimensions(i - 1);
+
+  return shape;
+}

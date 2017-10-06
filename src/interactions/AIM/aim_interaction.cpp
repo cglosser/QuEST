@@ -94,13 +94,9 @@ AIM::AimInteraction::AimInteraction(
       max_transit_steps(grid.max_transit_steps(c0, dt)),
       circulant_dimensions(2 * grid.dimensions),
       expansion_table(expansions()),
-      fourier_table(boost::extents[SpacetimeVector<cmplx>::extent_range(
-          1, max_transit_steps)][grid.dimensions(0)][grid.dimensions(1)]
-                                  [2 * grid.dimensions(2)]),
-      source_table(boost::extents[max_transit_steps][grid.dimensions(0)]
-                                 [grid.dimensions(1)][2 * grid.dimensions(2)]),
-      obs_table(boost::extents[max_transit_steps][grid.dimensions(0)]
-                              [grid.dimensions(1)][2 * grid.dimensions(2)]),
+      fourier_table(grid.circulant_shape(c0, dt)),
+      source_table(grid.circulant_shape(c0, dt)),
+      obs_table(grid.circulant_shape(c0, dt)),
       spatial_transforms(spatial_fft_plans())
 {
   fill_fourier_table();
@@ -207,10 +203,7 @@ void AIM::AimInteraction::fill_fourier_table()
 {
   const int max_transit_steps = grid.max_transit_steps(c0, dt);
 
-  SpacetimeVector<cmplx> g_mat(
-      boost::extents[SpacetimeVector<cmplx>::extent_range(1, max_transit_steps)]
-                    [grid.dimensions(0)][grid.dimensions(1)]
-                    [2 * grid.dimensions(2)]);
+  SpacetimeVector<cmplx> g_mat(circulant_dimensions);
 
   // Set up FFTW plan; will transform real-valued Toeplitz matrix to the
   // positive frequency complex-valued FFT values (known to be conjugate

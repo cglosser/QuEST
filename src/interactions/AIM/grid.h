@@ -35,6 +35,7 @@ class AIM::Grid {
   };
 
   BoundsArray calculate_bounds() const;
+  std::array<int, 4> circulant_shape(const double, const double) const;
 
  private:
   Eigen::Array3d spacing;

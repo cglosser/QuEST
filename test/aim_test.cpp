@@ -105,6 +105,17 @@ struct TwoOffsetDots {
   }
 };
 
+BOOST_FIXTURE_TEST_CASE(Circulant_Matrix_Shape, TwoOffsetDots)
+{
+  Grid grid(Eigen::Vector3d(1, 1, 1), dots, 1);
+
+  auto dims = grid.circulant_shape(1, 1);
+  BOOST_CHECK_EQUAL(dims[0], 5);
+  BOOST_CHECK_EQUAL(dims[1], 4);
+  BOOST_CHECK_EQUAL(dims[2], 4);
+  BOOST_CHECK_EQUAL(dims[3], 6);
+}
+
 BOOST_FIXTURE_TEST_CASE(NumberOfGridPts, TwoOffsetDots)
 {
   for(int order = 0; order < max_order; ++order) {
