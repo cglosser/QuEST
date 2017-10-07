@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 #include <cmath>
 
-#include "../src/interactions/AIM/aim_interaction.h"
+#include "interactions/AIM/aim_interaction.h"
 
 BOOST_AUTO_TEST_SUITE(AIM)
 
