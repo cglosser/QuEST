@@ -144,24 +144,11 @@ void AIM::AimInteraction::fill_gmatrix_table(
             gmatrix_table[t][x][y][z] = interp.evaluations[0][polynomial_idx];
           }
         }
-
-        Eigen::Map<Eigen::ArrayXXcd> zflip(&gmatrix_table[t][x][y][1], 1, nz - 1);
-        Eigen::Map<Eigen::ArrayXXcd> zhole(&gmatrix_table[t][x][y][nz + 1], 1, nz - 1);
-        zhole = zflip.rowwise().reverse();
-
       }
-
-      Eigen::Map<Eigen::ArrayXXcd> yflip(&gmatrix_table[t][x][1][0], 2 * nz, ny - 1);
-      Eigen::Map<Eigen::ArrayXXcd> yhole(&gmatrix_table[t][x][ny + 1][0], 2 * nz,  ny - 1);
-      yhole = yflip.rowwise().reverse();
-
     }
-
-    Eigen::Map<Eigen::ArrayXXcd> xflip(&gmatrix_table[t][1][0][0], (2 * ny) * (2 * nz), nx - 1);
-    Eigen::Map<Eigen::ArrayXXcd> xhole(&gmatrix_table[t][nx + 1][0][0], (2 * ny) * (2 * nz), nx - 1);
-    xhole = xflip.rowwise().reverse();
-
   }
+
+  fill_circulant_mirror(gmatrix_table);
 }
 
 Eigen::VectorXd AIM::AimInteraction::q_vector(const Eigen::Vector3d &pos) const
