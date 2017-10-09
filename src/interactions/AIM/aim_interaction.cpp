@@ -119,26 +119,21 @@ void AIM::AimInteraction::fill_gmatrix_table(
   // accept a non-const reference to a SpacetimeVector (instead of just
   // returning such an array) to play nice with FFTW and its workspaces.
 
-  const int &nx = grid.dimensions(0);
-  const int &ny = grid.dimensions(1);
-  const int &nz = grid.dimensions(2);
-
   Interpolation::UniformLagrangeSet interp(interp_order);
-  for(int t = 1; t < circulant_dimensions[0]; ++t) {
-    for(int x = 0; x < nx; ++x) {
-      for(int y = 0; y < ny; ++y) {
-        for(int z = 0; z < nz; ++z) {
-          const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(x, y, z));
-          if(box_idx == 0) continue;
+  for(int x = 0; x < grid.dimensions(0); ++x) {
+    for(int y = 0; y < grid.dimensions(1); ++y) {
+      for(int z = 0; z < grid.dimensions(2); ++z) {
+        const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(x, y, z));
+        if(box_idx == 0) continue;
 
-          const auto dr =
-              grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
+        const auto dr =
+            grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
 
-          const double arg = dr.norm() / (c0 * dt);
-          const std::pair<int, double> split_arg = split_double(arg);
+        const double arg = dr.norm() / (c0 * dt);
+        const std::pair<int, double> split_arg = split_double(arg);
 
+        for(int t = 1; t < circulant_dimensions[0]; ++t) {
           const int polynomial_idx = static_cast<int>(ceil(t - arg));
-
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
             gmatrix_table[t][x][y][z] = interp.evaluations[0][polynomial_idx];
@@ -192,28 +187,17 @@ Eigen::VectorXd AIM::AimInteraction::solve_expansion_system(
 
 void AIM::AimInteraction::fill_fourier_table()
 {
-  const int max_transit_steps = grid.max_transit_steps(c0, dt);
-
   SpacetimeVector<cmplx> g_mat(circulant_dimensions);
 
-  // Set up FFTW plan; will transform real-valued Toeplitz matrix to the
-  // positive frequency complex-valued FFT values (known to be conjugate
-  // symmetric to eliminate redundancy).
+  const int num_elements = circulant_dimensions[1] * circulant_dimensions[2] *
+                           circulant_dimensions[3];
+  fftw_plan circulant_plan = fftw_plan_many_dft(
+      3, &circulant_dimensions[1], circulant_dimensions[0],
+      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_elements,
+      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_elements,
+      FFTW_FORWARD, FFTW_MEASURE);
 
-  const int len[] = {2 * grid.dimensions(2)};
-  const int howmany = std::accumulate(g_mat.shape(), g_mat.shape() + 3, 1,
-                                      std::multiplies<int>());
-  const int idist = 2 * grid.dimensions(2), odist = 2 * grid.dimensions(2);
-  const int istride = 1, ostride = 1;
-  const int *inembed = len, *onembed = len;
-
-  fftw_plan circulant_plan;
-  circulant_plan = fftw_plan_many_dft(
-      1, len, howmany, reinterpret_cast<fftw_complex *>(g_mat.data()), inembed,
-      istride, idist, reinterpret_cast<fftw_complex *>(fourier_table.data()),
-      onembed, ostride, odist, FFTW_FORWARD, FFTW_MEASURE);
-
-  std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), 0);
+  std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), cmplx(0, 0));
 
   fill_gmatrix_table(g_mat);
 
@@ -221,6 +205,13 @@ void AIM::AimInteraction::fill_fourier_table()
   // representation. Buckle up.
 
   fftw_execute(circulant_plan);
+
+  // This accounts for FFTW's *un*normalized transform -- it takes the least
+  // amount of computational effort to put all of the normalizations here.
+
+  Eigen::Map<Eigen::ArrayXcd> gs(g_mat.data(), g_mat.num_elements());
+  gs /= 8 * num_elements;
+
   fftw_destroy_plan(circulant_plan);
 }
 
@@ -228,23 +219,18 @@ AIM::AimInteraction::TransformPair AIM::AimInteraction::spatial_fft_plans()
 {
   // Set up FFTW plans to transform projected source distributions. Due to the
   // requirements of the circulant extension, these plans perform transforms of
-  // length 2 n_z to accommodate the requisite zero padding. While they're
+  // length 2 n_{x,y,z} to accommodate the requisite zero padding. While they're
   // constructed to work on the head of `source_table` (that is, what would be
   // the I_0 source), the advanced FFTW interface allows them to stride forward
   // to equivalently transform the source currents at every timestep.
 
-  const int len[] = {2 * grid.dimensions(2)};
-  const int howmany = grid.dimensions(0) * grid.dimensions(1);
-  const int idist = 2 * grid.dimensions(2), odist = 2 * grid.dimensions(2);
-  const int istride = 1, ostride = 1;
-  const int *inembed = NULL, *onembed = NULL;
-
   auto make_plan = [=](const int sign) {
-    return fftw_plan_many_dft(
-        1, len, howmany, reinterpret_cast<fftw_complex *>(source_table.data()),
-        inembed, istride, idist,
-        reinterpret_cast<fftw_complex *>(source_table.data()), onembed, ostride,
-        odist, sign, FFTW_MEASURE);
+    return fftw_plan_dft_3d(
+        circulant_dimensions[1], circulant_dimensions[2],
+        circulant_dimensions[3],
+        reinterpret_cast<fftw_complex *>(source_table.data()),
+        reinterpret_cast<fftw_complex *>(source_table.data()), sign,
+        FFTW_MEASURE);
   };
 
   fftw_plan fwd, bkwd;

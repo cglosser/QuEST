@@ -65,26 +65,47 @@ BOOST_AUTO_TEST_CASE(TwoPointExpansions)
 
 BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
 {
-  Eigen::Vector3i num_boxes(20, 20, 20);
+  Eigen::Vector3i num_boxes(4, 4, 4);
   Grid grid(unit_spacing, num_boxes);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
                           expansion_order);
+  auto circulant_shape = grid.circulant_shape(c0, dt);
 
-  std::vector<cmplx> nums(20 * 20 * 40);
-  for(size_t i = 0; i < nums.size(); ++i) {
-    nums[i] = i;
+  std::fill(aim.source_table.data(),
+            aim.source_table.data() + aim.source_table.num_elements(),
+            cmplx(0, 0));
+
+  for(int t = 0; t < circulant_shape[0]; ++t) {
+    int i = 1;
+    for(int x = 0; x < circulant_shape[1] / 2; ++x) {
+      for(int y = 0; y < circulant_shape[2] / 2; ++y) {
+        for(int z = 0; z < circulant_shape[3] / 2; ++z) {
+          aim.source_table[t][x][y][z] = i++;
+        }
+      }
+    }
   }
 
-  fftw_execute_dft(aim.spatial_transforms.forward,
-                   reinterpret_cast<fftw_complex *>(nums.data()),
-                   reinterpret_cast<fftw_complex *>(nums.data()));
-  fftw_execute_dft(aim.spatial_transforms.backward,
-                   reinterpret_cast<fftw_complex *>(nums.data()),
-                   reinterpret_cast<fftw_complex *>(nums.data()));
+  fftw_complex *ptr = reinterpret_cast<fftw_complex *>(aim.source_table.data());
+  fftw_execute_dft(aim.spatial_transforms.forward, ptr, ptr);
 
-  for(size_t i = 0; i < nums.size(); ++i) {
-    BOOST_CHECK_CLOSE(nums[i].real(), 40.0 * i, 1e-10);
-    BOOST_CHECK_SMALL(nums[i].imag(), 1e-10);
+  std::vector<cmplx> test_fft = {
+#include "range_16_fft.dat"
+  };  // This is cheeky. Don't do it often.
+
+  std::vector<cmplx> test_int = {
+#include "range_16_int.dat"
+  };
+
+  // The spatial transform should transform the first "time block"...
+  for(auto j = 0u; j < test_fft.size(); ++j) {
+    BOOST_CHECK_SMALL(std::abs(test_fft.at(j) - aim.source_table.data()[j]),
+                      1e-12);
+  }
+
+  // ...and leave the second one alone.
+  for(auto j = 0u; j < test_int.size(); ++j) {
+    BOOST_CHECK_EQUAL(test_int.at(j), (&aim.source_table[1][0][0][0])[j]);
   }
 }
 
