@@ -11,6 +11,17 @@ BOOST_AUTO_TEST_CASE(DummyConstructor)
   BOOST_CHECK_EQUAL(grid.num_boxes, std::pow(30, 3));
 }
 
+BOOST_AUTO_TEST_CASE(CIRCULANT_MATRIX_SHAPE)
+{
+  AIM::Grid grid(Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(20, 20, 20));
+
+  auto dims = grid.circulant_shape(1, 1);
+  BOOST_CHECK_EQUAL(dims[0], 35);
+  BOOST_CHECK_EQUAL(dims[1], 40);
+  BOOST_CHECK_EQUAL(dims[2], 40);
+  BOOST_CHECK_EQUAL(dims[3], 40);
+}
+
 BOOST_AUTO_TEST_SUITE(SingleDotExpansions)
 
 struct OffsetDot {
@@ -27,7 +38,7 @@ struct OffsetDot {
   }
 };
 
-BOOST_FIXTURE_TEST_CASE(NumberOfGridPts, OffsetDot)
+BOOST_FIXTURE_TEST_CASE(GRID_SUFFICIENT_FOR_EXPANSIONS, OffsetDot)
 {
   // Check that the grid contains enough points for the expansion of the qdot
 
@@ -103,16 +114,6 @@ struct TwoOffsetDots {
   }
 };
 
-BOOST_FIXTURE_TEST_CASE(Circulant_Matrix_Shape, TwoOffsetDots)
-{
-  AIM::Grid grid(Eigen::Vector3d(1, 1, 1), dots, 1);
-
-  auto dims = grid.circulant_shape(1, 1);
-  BOOST_CHECK_EQUAL(dims[0], 5);
-  BOOST_CHECK_EQUAL(dims[1], 4);
-  BOOST_CHECK_EQUAL(dims[2], 4);
-  BOOST_CHECK_EQUAL(dims[3], 6);
-}
 
 BOOST_FIXTURE_TEST_CASE(NumberOfGridPts, TwoOffsetDots)
 {
