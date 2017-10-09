@@ -108,8 +108,7 @@ BOOST_FIXTURE_TEST_CASE(matrix_multiply, Shapes)
   Eigen::Map<Eigen::ArrayXcd> fft_mat(mat.data(), num_spatial_elements);
   Eigen::Map<Eigen::ArrayXcd> fft_vec(vec.data(), num_spatial_elements);
   Eigen::Map<Eigen::ArrayXcd> fft_result(result.data(), num_spatial_elements);
-  fft_mat /= std::sqrt(num_spatial_elements);
-  fft_vec /= std::sqrt(num_spatial_elements);
+  fft_mat /= num_spatial_elements;
   fft_result = fft_mat * fft_vec;
 
   fftw_execute_dft(bkwd, reinterpret_cast<fftw_complex *>(result.data()),
