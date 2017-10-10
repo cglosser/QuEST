@@ -110,6 +110,31 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   }
 }
 
+BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
+{
+  Eigen::Vector3i num_boxes(4, 4, 4);
+  Grid grid(unit_spacing, num_boxes);
+  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
+                          expansion_order);
+  auto circulant_shape = grid.circulant_shape(c0, dt);
+
+  // Set the source radiator -- presumed to sit on a grid point
+  double mean = circulant_shape[0] / 2, sd = circulant_shape[0] / 8.0;
+  for(int t = 0; t < circulant_shape[0]; ++t) {
+    aim.source_table[t][0][0][0] = std::exp(std::pow((t - mean) / sd, 2) / 2.0);
+    fftw_execute_dft(
+        aim.spatial_transforms.forward,
+        reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]),
+        reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]));
+  }
+
+  //for(int t = 0; t < circulant_shape[0]; ++t) {
+    //std::cout << aim.evaluate(t) << std::endl;
+  //}
+
+  std::cout << aim.evaluate(circulant_shape[0] - 1) << std::endl;
+}
+
 BOOST_AUTO_TEST_SUITE_END()  // AIM_Fourier_transforms
 
 struct TwoStaticDots {
