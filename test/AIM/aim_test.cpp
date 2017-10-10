@@ -93,6 +93,7 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
 #include "range_16_fft.dat"
   };  // This is cheeky. Don't do it often.
 
+  // Computed with 30-digit precision in Mathematica
   std::vector<cmplx> test_int = {
 #include "range_16_int.dat"
   };
