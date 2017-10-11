@@ -94,16 +94,15 @@ AIM::AimInteraction::AimInteraction(
       max_transit_steps(grid.max_transit_steps(c0, dt)),
       circulant_dimensions(grid.circulant_shape(c0, dt)),
       expansion_table(expansions()),
-      fourier_table(circulant_dimensions),
+      fourier_table(circulant_fourier_table()),
       source_table(circulant_dimensions),
       obs_table(circulant_dimensions),
       spatial_transforms(spatial_fft_plans())
 {
-  fill_fourier_table();
-  //std::fill(source_table.data(),
-            //source_table.data() + source_table.num_elements(), cmplx(0, 0));
-  //std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
-            //cmplx(0, 0));
+  // std::fill(source_table.data(),
+  // source_table.data() + source_table.num_elements(), cmplx(0, 0));
+  // std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
+  // cmplx(0, 0));
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
@@ -123,20 +122,69 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
                    reinterpret_cast<fftw_complex *>(&obs_table[step][0][0][0]),
                    reinterpret_cast<fftw_complex *>(&obs_table[step][0][0][0]));
 
-  //std::cout << obs_vec << std::endl;
+  // std::cout << obs_vec << std::endl;
 
-  //results = ResultArray(grid.num_boxes);
+  // results = ResultArray(grid.num_boxes);
 
-  //int i = 0;
-  //for(auto x = 0l; x < grid.dimensions(0); ++x) {
-    //for(auto y = 0l; y < grid.dimensions(1); ++y) {
-      //for(auto z = 0l; z < grid.dimensions(2); ++z) {
-        //results(i++) = obs_table[step][x][y][z];
-      //}
-    //}
+  // int i = 0;
+  // for(auto x = 0l; x < grid.dimensions(0); ++x) {
+  // for(auto y = 0l; y < grid.dimensions(1); ++y) {
+  // for(auto z = 0l; z < grid.dimensions(2); ++z) {
+  // results(i++) = obs_table[step][x][y][z];
+  //}
+  //}
   //}
 
   return results;
+}
+
+void AIM::AimInteraction::fill_source_table(const int step)
+{
+  for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
+    for(int idx = 0; idx < std::pow(box_order + 1, 3); ++idx) {
+      const Expansion &e = expansion_table[dot_idx][idx];
+      Eigen::Vector3i coord = grid.idx_to_coord(e.index);
+
+      // This is the seam between what's stored in the History (density matrix
+      // elements) and the electromagnetic source quantities. Ideally the AIM
+      // code should not have knowledge of this to better encapsulate
+      // "propagation," but this is good enough for now.
+      source_table[step][coord(0)][coord(1)][coord(2)] =
+          e.weight * history->array[dot_idx][step][0][1];
+    }
+  }
+}
+
+SpacetimeVector<cmplx> AIM::AimInteraction::circulant_fourier_table()
+{
+  SpacetimeVector<cmplx> g_mat(circulant_dimensions);
+
+  const int num_elements = circulant_dimensions[1] * circulant_dimensions[2] *
+                           circulant_dimensions[3];
+  fftw_plan circulant_plan = fftw_plan_many_dft(
+      3, &circulant_dimensions[1], circulant_dimensions[0],
+      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_elements,
+      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_elements,
+      FFTW_FORWARD, FFTW_MEASURE);
+
+  std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), cmplx(0, 0));
+
+  fill_gmatrix_table(g_mat);
+
+  // Transform the circulant vectors into their equivalently-diagonal
+  // representation. Buckle up.
+
+  fftw_execute(circulant_plan);
+
+  // This accounts for FFTW's *un*normalized transform -- it takes the least
+  // amount of computational effort to put all of the normalizations here.
+
+  Eigen::Map<Eigen::ArrayXcd> gs(g_mat.data(), g_mat.num_elements());
+  gs /= 8 * num_elements;
+
+  fftw_destroy_plan(circulant_plan);
+
+  return g_mat;
 }
 
 void AIM::AimInteraction::fill_gmatrix_table(
@@ -173,75 +221,6 @@ void AIM::AimInteraction::fill_gmatrix_table(
   }
 
   fill_circulant_mirror(gmatrix_table);
-}
-
-Eigen::VectorXd AIM::AimInteraction::q_vector(const Eigen::Vector3d &pos) const
-{
-  const int len = std::pow(box_order + 1, 3);
-  Eigen::VectorXd q_vec(len);
-
-  int i = 0;
-  for(int nx = 0; nx <= box_order; ++nx) {
-    for(int ny = 0; ny <= box_order; ++ny) {
-      for(int nz = 0; nz <= box_order; ++nz) {
-        q_vec(i++) =
-            std::pow(pos(0), nx) * std::pow(pos(1), ny) * std::pow(pos(2), nz);
-      }
-    }
-  }
-
-  return q_vec;
-}
-
-Eigen::MatrixXd AIM::AimInteraction::w_matrix(const Eigen::Vector3d &pos) const
-{
-  const int len = std::pow(box_order + 1, 3);
-  Eigen::MatrixXd w_mat(len, len);
-
-  auto expansion_indices = grid.expansion_box_indices(pos, box_order);
-
-  for(int i = 0; i < len; ++i) {
-    w_mat.col(i) = q_vector(grid.spatial_coord_of_box(expansion_indices.at(i)));
-  }
-
-  return w_mat;
-}
-
-Eigen::VectorXd AIM::AimInteraction::solve_expansion_system(
-    const Eigen::Vector3d &pos) const
-{
-  Eigen::FullPivLU<Eigen::MatrixXd> lu(w_matrix(pos));
-  return lu.solve(q_vector(pos));
-}
-
-void AIM::AimInteraction::fill_fourier_table()
-{
-  SpacetimeVector<cmplx> g_mat(circulant_dimensions);
-
-  const int num_elements = circulant_dimensions[1] * circulant_dimensions[2] *
-                           circulant_dimensions[3];
-  fftw_plan circulant_plan = fftw_plan_many_dft(
-      3, &circulant_dimensions[1], circulant_dimensions[0],
-      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_elements,
-      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_elements,
-      FFTW_FORWARD, FFTW_MEASURE);
-
-  std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), cmplx(0, 0));
-
-  fill_gmatrix_table(g_mat);
-
-  // Transform the circulant vectors into their equivalently-diagonal
-  // representation. Buckle up.
-
-  fftw_execute(circulant_plan);
-
-  // This accounts for FFTW's *un*normalized transform -- it takes the least
-  // amount of computational effort to put all of the normalizations here.
-
-  Eigen::Map<Eigen::ArrayXcd> gs(g_mat.data(), g_mat.num_elements());
-  gs /= 8 * num_elements;
-
-  fftw_destroy_plan(circulant_plan);
 }
 
 AIM::AimInteraction::TransformPair AIM::AimInteraction::spatial_fft_plans()
@@ -289,19 +268,41 @@ Array<AIM::AimInteraction::Expansion> AIM::AimInteraction::expansions() const
   return table;
 }
 
-void AIM::AimInteraction::fill_source_table(const int step)
+Eigen::VectorXd AIM::AimInteraction::q_vector(const Eigen::Vector3d &pos) const
 {
-  for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
-    for(int idx = 0; idx < std::pow(box_order + 1, 3); ++idx) {
-      const Expansion &e = expansion_table[dot_idx][idx];
-      Eigen::Vector3i coord = grid.idx_to_coord(e.index);
+  const int len = std::pow(box_order + 1, 3);
+  Eigen::VectorXd q_vec(len);
 
-      // This is the seam between what's stored in the History (density matrix
-      // elements) and the electromagnetic source quantities. Ideally the AIM
-      // code should not have knowledge of this to better encapsulate
-      // "propagation," but this is good enough for now.
-      source_table[step][coord(0)][coord(1)][coord(2)] =
-          e.weight * history->array[dot_idx][step][0][1];
+  int i = 0;
+  for(int nx = 0; nx <= box_order; ++nx) {
+    for(int ny = 0; ny <= box_order; ++ny) {
+      for(int nz = 0; nz <= box_order; ++nz) {
+        q_vec(i++) =
+            std::pow(pos(0), nx) * std::pow(pos(1), ny) * std::pow(pos(2), nz);
+      }
     }
   }
+
+  return q_vec;
+}
+
+Eigen::MatrixXd AIM::AimInteraction::w_matrix(const Eigen::Vector3d &pos) const
+{
+  const int len = std::pow(box_order + 1, 3);
+  Eigen::MatrixXd w_mat(len, len);
+
+  auto expansion_indices = grid.expansion_box_indices(pos, box_order);
+
+  for(int i = 0; i < len; ++i) {
+    w_mat.col(i) = q_vector(grid.spatial_coord_of_box(expansion_indices.at(i)));
+  }
+
+  return w_mat;
+}
+
+Eigen::VectorXd AIM::AimInteraction::solve_expansion_system(
+    const Eigen::Vector3d &pos) const
+{
+  Eigen::FullPivLU<Eigen::MatrixXd> lu(w_matrix(pos));
+  return lu.solve(q_vector(pos));
 }

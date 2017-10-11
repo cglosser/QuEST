@@ -44,12 +44,12 @@ class AIM::AimInteraction final : public HistoryInteraction {
       const int);
 
   const ResultArray &evaluate(const int) final;
-  void fill_gmatrix_table(SpacetimeVector<cmplx> &) const;
+
+  // Expansion coefficients
+  Array<Expansion> expansions() const;
   Eigen::VectorXd q_vector(const Eigen::Vector3d &) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
   Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
-
-  Array<Expansion> expansions() const;
 
   // private:
   Grid grid;
@@ -60,10 +60,11 @@ class AIM::AimInteraction final : public HistoryInteraction {
   SpacetimeVector<cmplx> fourier_table, source_table, obs_table;
   TransformPair spatial_transforms;
 
-  void fill_fourier_table();
-  TransformPair spatial_fft_plans();
   void fill_source_table(const int);
-  Eigen::VectorXcd fast_multiply(const int, const int) const;
+
+  SpacetimeVector<cmplx> circulant_fourier_table();
+  void fill_gmatrix_table(SpacetimeVector<cmplx> &) const;
+  TransformPair spatial_fft_plans();
 };
 
 #endif
