@@ -112,27 +112,28 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
 
 BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
 {
+  const double step = 0.5;
   Eigen::Vector3i num_boxes(4, 4, 4);
   Grid grid(unit_spacing, num_boxes);
-  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
+  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, step, grid,
                           expansion_order);
-  auto circulant_shape = grid.circulant_shape(c0, dt);
+  auto circulant_shape = grid.circulant_shape(c0, step);
 
   // Set the source radiator -- presumed to sit on a grid point
-  double mean = circulant_shape[0] / 2, sd = circulant_shape[0] / 8.0;
+  double mean = 3.5, sd = 1;
   for(int t = 0; t < circulant_shape[0]; ++t) {
-    aim.source_table[t][0][0][0] = std::exp(std::pow((t - mean) / sd, 2) / 2.0);
+    double val = std::exp(std::pow((t * step - mean) / sd, 2) / -2.0);
+    aim.source_table[t][0][0][0] = val;
     fftw_execute_dft(
         aim.spatial_transforms.forward,
         reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]),
         reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]));
   }
 
-  //for(int t = 0; t < circulant_shape[0]; ++t) {
-    //std::cout << aim.evaluate(t) << std::endl;
-  //}
+  for(int t = 0; t < circulant_shape[0]; ++t) {
+    std::cout << aim.evaluate(t).transpose() << std::endl;
+  }
 
-  std::cout << aim.evaluate(circulant_shape[0] - 1) << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM_Fourier_transforms

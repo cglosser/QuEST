@@ -122,18 +122,16 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
                    reinterpret_cast<fftw_complex *>(&obs_table[step][0][0][0]),
                    reinterpret_cast<fftw_complex *>(&obs_table[step][0][0][0]));
 
-  // std::cout << obs_vec << std::endl;
+  results = ResultArray(grid.num_boxes);
 
-  // results = ResultArray(grid.num_boxes);
-
-  // int i = 0;
-  // for(auto x = 0l; x < grid.dimensions(0); ++x) {
-  // for(auto y = 0l; y < grid.dimensions(1); ++y) {
-  // for(auto z = 0l; z < grid.dimensions(2); ++z) {
-  // results(i++) = obs_table[step][x][y][z];
-  //}
-  //}
-  //}
+  int i = 0;
+  for(auto x = 0l; x < grid.dimensions(0); ++x) {
+    for(auto y = 0l; y < grid.dimensions(1); ++y) {
+      for(auto z = 0l; z < grid.dimensions(2); ++z) {
+        results(i++) = obs_table[step][x][y][z];
+      }
+    }
+  }
 
   return results;
 }
