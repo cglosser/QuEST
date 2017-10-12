@@ -62,3 +62,82 @@ std::array<int, 4> AIM::Grid::circulant_shape(const double c,
 
   return shape;
 }
+
+std::vector<DotRange> AIM::Grid::box_contents_map(
+    const std::shared_ptr<DotVector> &dots) const
+{
+  std::vector<DotRange> boxes(num_boxes);
+  for(size_t box_idx = 0; box_idx < boxes.size(); ++box_idx) {
+    auto IsInBox = [=](const QuantumDot &qd) {
+      return coord_to_idx(grid_coordinate(qd.position())) == box_idx;
+    };
+
+    auto begin = std::find_if(dots->begin(), dots->end(), IsInBox);
+    auto end = std::find_if_not(begin, dots->end(), IsInBox);
+    boxes.at(box_idx) = std::make_pair(begin, end);
+  }
+
+  return boxes;
+}
+
+Eigen::Vector3i AIM::Grid::grid_coordinate(const Eigen::Vector3d &coord) const
+{
+  return floor(coord.cwiseQuotient(spacing.matrix()).array()).cast<int>();
+}
+
+size_t AIM::Grid::coord_to_idx(const Eigen::Vector3i &coord) const
+{
+  Eigen::Vector3i shifted(coord - bounds.col(0).matrix());
+
+  return shifted(0) + dimensions(0) * (shifted(1) + dimensions(1) * shifted(2));
+}
+
+Eigen::Vector3i AIM::Grid::idx_to_coord(size_t idx) const
+{
+  const int nxny = dimensions(0) * dimensions(1);
+  const int z = idx / nxny;
+  idx -= z * nxny;
+  const int y = idx / dimensions(0);
+  const int x = idx % dimensions(0);
+
+  return Eigen::Vector3i(x, y, z);
+}
+
+Eigen::Vector3d AIM::Grid::spatial_coord_of_box(const size_t box_id) const
+{
+  const Eigen::Vector3d r =
+      (idx_to_coord(box_id).cast<double>().array() * spacing);
+  return r + bounds.col(0).cast<double>().matrix();
+}
+
+std::vector<size_t> AIM::Grid::expansion_box_indices(const Eigen::Vector3d &pos,
+                                                     const int order) const
+{
+  Eigen::Vector3i origin = grid_coordinate(pos);
+  std::vector<size_t> indices(std::pow(order + 1, 3));
+
+  size_t idx = 0;
+  for(int nx = 0; nx <= order; ++nx) {
+    for(int ny = 0; ny <= order; ++ny) {
+      for(int nz = 0; nz <= order; ++nz) {
+        const Eigen::Vector3i delta(grid_sequence(nx), grid_sequence(ny),
+                                    grid_sequence(nz));
+        const size_t grid_idx = coord_to_idx(origin + delta);
+
+        indices.at(idx++) = grid_idx;
+      }
+    }
+  }
+
+  return indices;
+}
+
+void AIM::Grid::sort_points_on_boxidx() const
+{
+  auto grid_comparitor = [&](const QuantumDot &q1, const QuantumDot &q2) {
+    return coord_to_idx(grid_coordinate(q1.position())) <
+           coord_to_idx(grid_coordinate(q2.position()));
+  };
+
+  std::stable_sort(dots->begin(), dots->end(), grid_comparitor);
+}

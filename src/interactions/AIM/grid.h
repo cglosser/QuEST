@@ -1,5 +1,9 @@
+#ifndef GRID_H
+#define GRID_H
+
 #include <Eigen/Dense>
-#include "../../quantum_dot.h"
+#include "math_utils.h"
+#include "quantum_dot.h"
 
 namespace AIM {
   class Grid;
@@ -14,6 +18,8 @@ class AIM::Grid {
   Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector> &, const int);
   Grid(const Eigen::Array3d &, const Eigen::Array3i &);
 
+  BoundsArray calculate_bounds() const;
+  std::array<int, 4> circulant_shape(const double, const double) const;
   std::vector<DotRange> box_contents_map(
       const std::shared_ptr<DotVector> &) const;
 
@@ -34,9 +40,6 @@ class AIM::Grid {
     return static_cast<int>(ceil(max_diagonal / (c * dt)));
   };
 
-  BoundsArray calculate_bounds() const;
-  std::array<int, 4> circulant_shape(const double, const double) const;
-
  private:
   Eigen::Array3d spacing;
   std::shared_ptr<DotVector> dots;
@@ -45,3 +48,5 @@ class AIM::Grid {
 
   void sort_points_on_boxidx() const;
 };
+
+#endif
