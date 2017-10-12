@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(OnePointExpansion)
                              Eigen::Vector3d(0, 0, 0)));
   Grid grid(unit_spacing, dots, expansion_order);
   auto expansions =
-      LeastSquaresExpansionSolver(expansion_order, grid).table(*dots);
+      LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
 
   for(int i = 0; i < 8; ++i) {
     BOOST_CHECK_EQUAL(expansions[0][i].weight, 1.0 / 8);
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(TwoPointExpansions)
                              Eigen::Vector3d(0, 0, 0)));
   Grid grid(unit_spacing, dots, expansion_order);
   auto expansions =
-      LeastSquaresExpansionSolver(expansion_order, grid).table(*dots);
+      LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
 
   for(int dot = 0; dot < 2; ++dot) {
     for(int pt = 0; pt < 8; ++pt) {
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   Eigen::Vector3i num_boxes(4, 4, 4);
   Grid grid(unit_spacing, num_boxes);
   auto expansions =
-      LeastSquaresExpansionSolver(expansion_order, grid).table(*dots);
+      LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
                           expansions);
   auto circulant_shape = grid.circulant_shape(c0, dt);
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
   Eigen::Vector3i num_boxes(4, 4, 4);
   Grid grid(unit_spacing, num_boxes);
   auto expansions =
-      LeastSquaresExpansionSolver(expansion_order, grid).table(*dots);
+      LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, step,
                           grid, expansions);
   auto circulant_shape = grid.circulant_shape(c0, step);

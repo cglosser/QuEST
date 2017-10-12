@@ -1,5 +1,11 @@
 #include "expansion.h"
 
+Array<AIM::Expansion> AIM::LeastSquaresExpansionSolver::get(
+    const int box_order, const Grid &grid, const std::vector<QuantumDot> &dots)
+{
+  return LeastSquaresExpansionSolver(box_order, grid).table(dots);
+}
+
 Array<AIM::Expansion> AIM::LeastSquaresExpansionSolver::table(
     const std::vector<QuantumDot> &dots) const
 {

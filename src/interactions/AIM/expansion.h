@@ -14,14 +14,17 @@ namespace AIM {
 
 class AIM::LeastSquaresExpansionSolver {
  public:
-  LeastSquaresExpansionSolver(const int box_order, const Grid &grid)
-      : box_order(box_order), num_pts(std::pow(box_order + 1, 3)), grid(grid){};
+  static Array<Expansion> get(const int,
+                              const Grid &,
+                              const std::vector<QuantumDot> &);
   Array<Expansion> table(const std::vector<QuantumDot> &) const;
   Eigen::VectorXd q_vector(const Eigen::Vector3d &) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
   Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
 
  private:
+  LeastSquaresExpansionSolver(const int box_order, const Grid &grid)
+      : box_order(box_order), num_pts(std::pow(box_order + 1, 3)), grid(grid){};
   const int box_order, num_pts;
   const Grid &grid;
 };
