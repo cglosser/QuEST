@@ -131,7 +131,8 @@ BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
   }
 
   for(int t = 0; t < circulant_shape[0]; ++t) {
-    std::cout << aim.evaluate(t).transpose() << std::endl;
+    //std::cout << std::exp(std::pow((t * step - mean) / sd, 2) / -2.0) << " 0";
+    std::cout << t << " " << t * step << " " << aim.evaluate(t).transpose().real() << std::endl;
   }
 
 }
