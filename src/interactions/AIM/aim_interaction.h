@@ -7,8 +7,6 @@
 #include <limits>
 #include <numeric>
 
-#include <iomanip>
-
 #include "common.h"
 #include "expansion.h"
 #include "grid.h"
@@ -20,7 +18,6 @@ namespace AIM {
 
 class AIM::AimInteraction final : public HistoryInteraction {
  public:
-
   struct TransformPair {
     fftw_plan forward, backward;
     ~TransformPair()
@@ -41,7 +38,6 @@ class AIM::AimInteraction final : public HistoryInteraction {
       const Array<Expansion> &);
 
   const ResultArray &evaluate(const int) final;
-
 
   // private:
   Grid grid;
