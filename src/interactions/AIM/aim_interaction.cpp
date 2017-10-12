@@ -19,10 +19,10 @@ AIM::AimInteraction::AimInteraction(
       obs_table(circulant_dimensions),
       spatial_transforms(spatial_fft_plans())
 {
-  // std::fill(source_table.data(),
-  // source_table.data() + source_table.num_elements(), cmplx(0, 0));
-  // std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
-  // cmplx(0, 0));
+  std::fill(source_table.data(),
+            source_table.data() + source_table.num_elements(), cmplx(0, 0));
+  std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
+            cmplx(0, 0));
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
