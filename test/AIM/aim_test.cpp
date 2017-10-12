@@ -130,12 +130,11 @@ BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
         reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]));
   }
 
-  for(int t = 0; t < circulant_shape[0]; ++t) {
-    // std::cout << std::exp(std::pow((t * step - mean) / sd, 2) / -2.0) << "
-    // 0";
-    std::cout << t << " " << t * step << " "
-              << aim.evaluate(t).transpose().real() << std::endl;
-  }
+  //for(int t = 0; t < circulant_shape[0]; ++t) {
+    //std::cout << std::exp(std::pow((t * step - mean) / sd, 2) / -2.0) << "0 ";
+    //std::cout << t << " " << t * step << " "
+              //<< aim.evaluate(t).transpose().real() << std::endl;
+  //}
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM_Fourier_transforms

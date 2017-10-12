@@ -1,9 +1,8 @@
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
-#include <fftw3.h>
-
 #include "common.h"
+#include "fourier.h"
 
 BOOST_AUTO_TEST_SUITE(common)
 
@@ -72,14 +71,15 @@ BOOST_FIXTURE_TEST_CASE(matrix_multiply, Shapes)
   const int num_spatial_elements = dims[1] * dims[2] * dims[3];
   SpacetimeVector<cmplx> mat(dims), vec(dims);
 
-  fftw_plan fwd = fftw_plan_dft_3d(
-      dims[1], dims[2], dims[3], reinterpret_cast<fftw_complex *>(mat.data()),
-      reinterpret_cast<fftw_complex *>(mat.data()), FFTW_FORWARD, FFTW_MEASURE);
-
-  fftw_plan bkwd = fftw_plan_dft_3d(
-      dims[1], dims[2], dims[3], reinterpret_cast<fftw_complex *>(mat.data()),
-      reinterpret_cast<fftw_complex *>(mat.data()), FFTW_BACKWARD,
-      FFTW_MEASURE);
+  TransformPair transforms = {
+      fftw_plan_dft_3d(dims[1], dims[2], dims[3],
+                       reinterpret_cast<fftw_complex *>(mat.data()),
+                       reinterpret_cast<fftw_complex *>(mat.data()),
+                       FFTW_FORWARD, FFTW_MEASURE),
+      fftw_plan_dft_3d(dims[1], dims[2], dims[3],
+                       reinterpret_cast<fftw_complex *>(mat.data()),
+                       reinterpret_cast<fftw_complex *>(mat.data()),
+                       FFTW_BACKWARD, FFTW_MEASURE)};
 
   std::fill(mat.data(), mat.data() + mat.num_elements(), cmplx(0, 0));
   std::fill(vec.data(), vec.data() + vec.num_elements(), cmplx(0, 0));
@@ -99,9 +99,11 @@ BOOST_FIXTURE_TEST_CASE(matrix_multiply, Shapes)
 
   fill_circulant_mirror(mat);
 
-  fftw_execute_dft(fwd, reinterpret_cast<fftw_complex *>(mat.data()),
+  fftw_execute_dft(transforms.forward,
+                   reinterpret_cast<fftw_complex *>(mat.data()),
                    reinterpret_cast<fftw_complex *>(mat.data()));
-  fftw_execute_dft(fwd, reinterpret_cast<fftw_complex *>(vec.data()),
+  fftw_execute_dft(transforms.forward,
+                   reinterpret_cast<fftw_complex *>(vec.data()),
                    reinterpret_cast<fftw_complex *>(vec.data()));
 
   SpacetimeVector<cmplx> result(dims);
@@ -111,7 +113,8 @@ BOOST_FIXTURE_TEST_CASE(matrix_multiply, Shapes)
   fft_mat /= num_spatial_elements;
   fft_result = fft_mat * fft_vec;
 
-  fftw_execute_dft(bkwd, reinterpret_cast<fftw_complex *>(result.data()),
+  fftw_execute_dft(transforms.backward,
+                   reinterpret_cast<fftw_complex *>(result.data()),
                    reinterpret_cast<fftw_complex *>(result.data()));
 
   std::vector<int> check = {

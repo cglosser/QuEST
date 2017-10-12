@@ -1,7 +1,6 @@
 #ifndef AIM_INTERACTION_H
 #define AIM_INTERACTION_H
 
-#include <fftw3.h>
 #include <algorithm>
 #include <functional>
 #include <limits>
@@ -9,6 +8,7 @@
 
 #include "common.h"
 #include "expansion.h"
+#include "fourier.h"
 #include "grid.h"
 #include "interactions/history_interaction.h"
 
@@ -18,15 +18,6 @@ namespace AIM {
 
 class AIM::AimInteraction final : public HistoryInteraction {
  public:
-  struct TransformPair {
-    fftw_plan forward, backward;
-    ~TransformPair()
-    {
-      fftw_destroy_plan(forward);
-      fftw_destroy_plan(backward);
-    }
-  };
-
   AimInteraction(
       const std::shared_ptr<const DotVector> &,
       const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &,

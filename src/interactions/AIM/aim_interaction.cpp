@@ -80,11 +80,13 @@ SpacetimeVector<cmplx> AIM::AimInteraction::circulant_fourier_table()
 
   const int num_gridpts = circulant_dimensions[1] * circulant_dimensions[2] *
                           circulant_dimensions[3];
-  fftw_plan circulant_plan = fftw_plan_many_dft(
-      3, &circulant_dimensions[1], circulant_dimensions[0],
-      reinterpret_cast<fftw_complex *>(g_mat.data()), nullptr, 1, num_gridpts,
-      reinterpret_cast<fftw_complex *>(g_mat.data()), nullptr, 1, num_gridpts,
-      FFTW_FORWARD, FFTW_MEASURE);
+  TransformPair circulant_plan = {
+      fftw_plan_many_dft(3, &circulant_dimensions[1], circulant_dimensions[0],
+                         reinterpret_cast<fftw_complex *>(g_mat.data()),
+                         nullptr, 1, num_gridpts,
+                         reinterpret_cast<fftw_complex *>(g_mat.data()),
+                         nullptr, 1, num_gridpts, FFTW_FORWARD, FFTW_MEASURE),
+      nullptr};
 
   std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), cmplx(0, 0));
 
@@ -93,15 +95,13 @@ SpacetimeVector<cmplx> AIM::AimInteraction::circulant_fourier_table()
   // Transform the circulant vectors into their equivalently-diagonal
   // representation. Buckle up.
 
-  fftw_execute(circulant_plan);
+  fftw_execute(circulant_plan.forward);
 
   // This accounts for FFTW's *un*normalized transform -- it takes the least
   // amount of computational effort to put all of the normalizations here.
 
   Eigen::Map<Eigen::ArrayXcd> gs(g_mat.data(), g_mat.num_elements());
   gs /= num_gridpts;
-
-  fftw_destroy_plan(circulant_plan);
 
   return g_mat;
 }
@@ -142,7 +142,7 @@ void AIM::AimInteraction::fill_gmatrix_table(
   fill_circulant_mirror(gmatrix_table);
 }
 
-AIM::AimInteraction::TransformPair AIM::AimInteraction::spatial_fft_plans()
+TransformPair AIM::AimInteraction::spatial_fft_plans()
 {
   // Set up FFTW plans to transform projected source distributions. Due to the
   // requirements of the circulant extension, these plans perform transforms of
@@ -151,7 +151,7 @@ AIM::AimInteraction::TransformPair AIM::AimInteraction::spatial_fft_plans()
   // the I_0 source), the advanced FFTW interface allows them to stride forward
   // to equivalently transform the source currents at every timestep.
 
-  auto make_plan = [=](const int sign) {
+  auto make_plan = [&](const int sign) {
     return fftw_plan_dft_3d(
         circulant_dimensions[1], circulant_dimensions[2],
         circulant_dimensions[3],
@@ -160,10 +160,5 @@ AIM::AimInteraction::TransformPair AIM::AimInteraction::spatial_fft_plans()
         FFTW_MEASURE);
   };
 
-  fftw_plan fwd, bkwd;
-
-  fwd = make_plan(FFTW_FORWARD);
-  bkwd = make_plan(FFTW_BACKWARD);
-
-  return {fwd, bkwd};
+  return {make_plan(FFTW_FORWARD), make_plan(FFTW_BACKWARD)};
 }
