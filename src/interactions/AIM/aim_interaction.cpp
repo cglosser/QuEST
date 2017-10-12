@@ -8,13 +8,12 @@ AIM::AimInteraction::AimInteraction(
     const double c0,
     const double dt,
     const Grid &grid,
-    const int box_order)
+    const Array<Expansion> &expansion_table)
     : HistoryInteraction(dots, history, propagator, interp_order, c0, dt),
       grid(grid),
-      box_order(box_order),
+      expansion_table(expansion_table),
       max_transit_steps(grid.max_transit_steps(c0, dt)),
       circulant_dimensions(grid.circulant_shape(c0, dt)),
-      expansion_table(expansions()),
       fourier_table(circulant_fourier_table()),
       source_table(circulant_dimensions),
       obs_table(circulant_dimensions),
@@ -59,9 +58,10 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 
 void AIM::AimInteraction::fill_source_table(const int step)
 {
-  for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
-    for(int idx = 0; idx < std::pow(box_order + 1, 3); ++idx) {
-      const Expansion &e = expansion_table[dot_idx][idx];
+  for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
+    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
+        ++expansion_idx) {
+      const Expansion &e = expansion_table[dot_idx][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
 
       // This is the seam between what's stored in the History (density matrix
@@ -82,8 +82,8 @@ SpacetimeVector<cmplx> AIM::AimInteraction::circulant_fourier_table()
                           circulant_dimensions[3];
   fftw_plan circulant_plan = fftw_plan_many_dft(
       3, &circulant_dimensions[1], circulant_dimensions[0],
-      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_gridpts,
-      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_gridpts,
+      reinterpret_cast<fftw_complex *>(g_mat.data()), nullptr, 1, num_gridpts,
+      reinterpret_cast<fftw_complex *>(g_mat.data()), nullptr, 1, num_gridpts,
       FFTW_FORWARD, FFTW_MEASURE);
 
   std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), cmplx(0, 0));
@@ -166,62 +166,4 @@ AIM::AimInteraction::TransformPair AIM::AimInteraction::spatial_fft_plans()
   bkwd = make_plan(FFTW_BACKWARD);
 
   return {fwd, bkwd};
-}
-
-Array<AIM::AimInteraction::Expansion> AIM::AimInteraction::expansions() const
-{
-  const size_t num_pts = std::pow(box_order + 1, 3);
-  Array<AIM::AimInteraction::Expansion> table(
-      boost::extents[dots->size()][num_pts]);
-
-  for(size_t dot_idx = 0; dot_idx < dots->size(); ++dot_idx) {
-    const auto indices =
-        grid.expansion_box_indices(dots->at(dot_idx).position(), box_order);
-    const auto weights = solve_expansion_system(dots->at(dot_idx).position());
-
-    for(size_t w = 0; w < num_pts; ++w) {
-      table[dot_idx][w] = {indices[w], weights[w]};
-    }
-  }
-
-  return table;
-}
-
-Eigen::VectorXd AIM::AimInteraction::q_vector(const Eigen::Vector3d &pos) const
-{
-  const int len = std::pow(box_order + 1, 3);
-  Eigen::VectorXd q_vec(len);
-
-  int i = 0;
-  for(int nx = 0; nx <= box_order; ++nx) {
-    for(int ny = 0; ny <= box_order; ++ny) {
-      for(int nz = 0; nz <= box_order; ++nz) {
-        q_vec(i++) =
-            std::pow(pos(0), nx) * std::pow(pos(1), ny) * std::pow(pos(2), nz);
-      }
-    }
-  }
-
-  return q_vec;
-}
-
-Eigen::MatrixXd AIM::AimInteraction::w_matrix(const Eigen::Vector3d &pos) const
-{
-  const int len = std::pow(box_order + 1, 3);
-  Eigen::MatrixXd w_mat(len, len);
-
-  auto expansion_indices = grid.expansion_box_indices(pos, box_order);
-
-  for(int i = 0; i < len; ++i) {
-    w_mat.col(i) = q_vector(grid.spatial_coord_of_box(expansion_indices.at(i)));
-  }
-
-  return w_mat;
-}
-
-Eigen::VectorXd AIM::AimInteraction::solve_expansion_system(
-    const Eigen::Vector3d &pos) const
-{
-  Eigen::FullPivLU<Eigen::MatrixXd> lu(w_matrix(pos));
-  return lu.solve(q_vector(pos));
 }

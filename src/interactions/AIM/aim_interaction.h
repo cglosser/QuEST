@@ -10,6 +10,7 @@
 #include <iomanip>
 
 #include "common.h"
+#include "expansion.h"
 #include "grid.h"
 #include "interactions/history_interaction.h"
 
@@ -19,10 +20,6 @@ namespace AIM {
 
 class AIM::AimInteraction final : public HistoryInteraction {
  public:
-  struct Expansion {
-    size_t index;
-    double weight;
-  };
 
   struct TransformPair {
     fftw_plan forward, backward;
@@ -41,22 +38,17 @@ class AIM::AimInteraction final : public HistoryInteraction {
       const double,
       const double,
       const Grid &,
-      const int);
+      const Array<Expansion> &);
 
   const ResultArray &evaluate(const int) final;
 
-  // Expansion coefficients
-  Array<Expansion> expansions() const;
-  Eigen::VectorXd q_vector(const Eigen::Vector3d &) const;
-  Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
-  Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
 
   // private:
   Grid grid;
+  Array<Expansion> expansion_table;
   int box_order, max_transit_steps;
   std::array<int, 4> circulant_dimensions;
 
-  Array<Expansion> expansion_table;
   SpacetimeVector<cmplx> fourier_table, source_table, obs_table;
   TransformPair spatial_transforms;
 

@@ -34,10 +34,8 @@ BOOST_AUTO_TEST_CASE(OnePointExpansion)
   dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), 0, {0.0, 0.0},
                              Eigen::Vector3d(0, 0, 0)));
   Grid grid(unit_spacing, dots, expansion_order);
-  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-                          expansion_order);
-
-  auto expansions = aim.expansions();
+  auto expansions =
+      LeastSquaresExpansionSolver(expansion_order, grid).table(*dots);
 
   for(int i = 0; i < 8; ++i) {
     BOOST_CHECK_EQUAL(expansions[0][i].weight, 1.0 / 8);
@@ -51,10 +49,8 @@ BOOST_AUTO_TEST_CASE(TwoPointExpansions)
   dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 10.5), 0, {0.0, 0.0},
                              Eigen::Vector3d(0, 0, 0)));
   Grid grid(unit_spacing, dots, expansion_order);
-  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-                          expansion_order);
-
-  auto expansions = aim.expansions();
+  auto expansions =
+      LeastSquaresExpansionSolver(expansion_order, grid).table(*dots);
 
   for(int dot = 0; dot < 2; ++dot) {
     for(int pt = 0; pt < 8; ++pt) {
@@ -67,8 +63,10 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
 {
   Eigen::Vector3i num_boxes(4, 4, 4);
   Grid grid(unit_spacing, num_boxes);
+  auto expansions =
+      LeastSquaresExpansionSolver(expansion_order, grid).table(*dots);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-                          expansion_order);
+                          expansions);
   auto circulant_shape = grid.circulant_shape(c0, dt);
 
   std::fill(aim.source_table.data(),
@@ -115,8 +113,10 @@ BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
   const double step = 0.5;
   Eigen::Vector3i num_boxes(4, 4, 4);
   Grid grid(unit_spacing, num_boxes);
-  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, step, grid,
-                          expansion_order);
+  auto expansions =
+      LeastSquaresExpansionSolver(expansion_order, grid).table(*dots);
+  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, step,
+                          grid, expansions);
   auto circulant_shape = grid.circulant_shape(c0, step);
 
   // Set the source radiator -- presumed to sit on a grid point
@@ -131,10 +131,11 @@ BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
   }
 
   for(int t = 0; t < circulant_shape[0]; ++t) {
-    //std::cout << std::exp(std::pow((t * step - mean) / sd, 2) / -2.0) << " 0";
-    std::cout << t << " " << t * step << " " << aim.evaluate(t).transpose().real() << std::endl;
+    // std::cout << std::exp(std::pow((t * step - mean) / sd, 2) / -2.0) << "
+    // 0";
+    std::cout << t << " " << t * step << " "
+              << aim.evaluate(t).transpose().real() << std::endl;
   }
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM_Fourier_transforms
