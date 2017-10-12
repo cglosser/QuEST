@@ -79,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE(ODE_ERROR, SigmoidalSystem)
   }
 
   Integrator::PredictorCorrector<double> solver(dt, 18, 22, 3.15, hist,
-                                                system_rhs);
+                                                std::move(system_rhs));
   solver.solve();
 
   BOOST_CHECK_CLOSE(hist->array[0][200][0], solution(200 * dt), 1e-12);
