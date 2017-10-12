@@ -157,12 +157,12 @@ SpacetimeVector<cmplx> AIM::AimInteraction::circulant_fourier_table()
 {
   SpacetimeVector<cmplx> g_mat(circulant_dimensions);
 
-  const int num_elements = circulant_dimensions[1] * circulant_dimensions[2] *
+  const int num_gridpts = circulant_dimensions[1] * circulant_dimensions[2] *
                            circulant_dimensions[3];
   fftw_plan circulant_plan = fftw_plan_many_dft(
       3, &circulant_dimensions[1], circulant_dimensions[0],
-      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_elements,
-      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_elements,
+      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_gridpts,
+      reinterpret_cast<fftw_complex *>(g_mat.data()), NULL, 1, num_gridpts,
       FFTW_FORWARD, FFTW_MEASURE);
 
   std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), cmplx(0, 0));
@@ -178,7 +178,7 @@ SpacetimeVector<cmplx> AIM::AimInteraction::circulant_fourier_table()
   // amount of computational effort to put all of the normalizations here.
 
   Eigen::Map<Eigen::ArrayXcd> gs(g_mat.data(), g_mat.num_elements());
-  gs /= 8 * num_elements;
+  gs /= num_gridpts;
 
   fftw_destroy_plan(circulant_plan);
 
