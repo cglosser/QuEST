@@ -5,6 +5,43 @@
 
 BOOST_AUTO_TEST_SUITE(AIM)
 
+BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
+{
+  const int interp_order = 4;
+  Eigen::Vector3i num_boxes(4, 4, 4);
+  Grid grid(Eigen::Vector3d(16, 16, 16), num_boxes);
+  AIM::AimInteraction aim(interp_order, grid, AIM::normalization::unit);
+  auto circulant_shape = grid.circulant_shape(1, 1);
+
+  // Set the source signal
+  double mean = grid.max_diagonal / 2.0;
+  double sd = mean / 5;
+  auto src = [=](const double t) {
+    return std::exp(std::pow((t - mean) / sd, 2) / -2.0);
+  };
+
+  // Source signal assumed to radiate from 0th grid point
+  for(int t = 0; t < circulant_shape[0]; ++t) {
+    aim.source_table[t][0][0][0] = src(t);
+    fftw_execute_dft(
+        aim.spatial_transforms.forward,
+        reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]),
+        reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]));
+  }
+
+  // Check against analytic retardation of source
+  for(int t = 0; t < circulant_shape[0]; ++t) {
+    auto retarded_signal = aim.evaluate(t).real();
+    for(auto b = 1u; b < grid.num_boxes; ++b) {
+      const double delay =
+          (grid.spatial_coord_of_box(b) - grid.spatial_coord_of_box(0)).norm();
+      // Must use BOOST_CHECK_SMALL because some retarded_signal values may be
+      // zero (as the signal hasn't arrived yet)
+      BOOST_CHECK_SMALL(src(t - delay) - retarded_signal(b), 1e-5);
+    }
+  }
+}
+
 struct DummyPropagation {
   std::shared_ptr<DotVector> dots;
   std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
@@ -108,34 +145,34 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   }
 }
 
-BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
-{
-  const double step = 0.5;
-  Eigen::Vector3i num_boxes(4, 4, 4);
-  Grid grid(unit_spacing, num_boxes);
-  auto expansions =
-      LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
-  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, step,
-                          grid, expansions, AIM::normalization::unit);
-  auto circulant_shape = grid.circulant_shape(c0, step);
+// BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
+//{
+// const double step = 0.5;
+// Eigen::Vector3i num_boxes(4, 4, 4);
+// Grid grid(unit_spacing, num_boxes);
+// auto expansions =
+// LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
+// AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, step,
+// grid, expansions, AIM::normalization::unit);
+// auto circulant_shape = grid.circulant_shape(c0, step);
 
-  // Set the source radiator -- presumed to sit on a grid point
-  double mean = 3.5, sd = 1;
-  for(int t = 0; t < circulant_shape[0]; ++t) {
-    double val = std::exp(std::pow((t * step - mean) / sd, 2) / -2.0);
-    aim.source_table[t][0][0][0] = val;
-    fftw_execute_dft(
-        aim.spatial_transforms.forward,
-        reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]),
-        reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]));
-  }
+//// Set the source radiator -- presumed to sit on a grid point
+// double mean = 3.5, sd = 1;
+// for(int t = 0; t < circulant_shape[0]; ++t) {
+// double val = std::exp(std::pow((t * step - mean) / sd, 2) / -2.0);
+// aim.source_table[t][0][0][0] = val;
+// fftw_execute_dft(
+// aim.spatial_transforms.forward,
+// reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]),
+// reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]));
+//}
 
-  for(int t = 0; t < circulant_shape[0]; ++t) {
-    //std::cout << std::exp(std::pow((t * step - mean) / sd, 2) / -2.0) << "0 ";
-    std::cout << t << " " << t * step << " "
-              << aim.evaluate(t).transpose().real() << std::endl;
-  }
-}
+// for(int t = 0; t < circulant_shape[0]; ++t) {
+////std::cout << std::exp(std::pow((t * step - mean) / sd, 2) / -2.0) << "0 ";
+// std::cout << t << " " << t * step << " "
+//<< aim.evaluate(t).transpose().real() << std::endl;
+//}
+//}
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM_Fourier_transforms
 

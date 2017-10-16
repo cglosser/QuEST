@@ -1,6 +1,22 @@
 #include "aim_interaction.h"
 
 AIM::AimInteraction::AimInteraction(
+    const int interp_order,
+    const Grid &grid,
+    const normalization::SpatialNorm normalization)
+    : AimInteraction(nullptr,
+                     nullptr,
+                     nullptr,
+                     interp_order,
+                     1,
+                     1,
+                     grid,
+                     Array<Expansion>(),
+                     normalization)
+{
+}
+
+AIM::AimInteraction::AimInteraction(
     const std::shared_ptr<const DotVector> &dots,
     const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &history,
     const std::shared_ptr<Propagation::RotatingFramePropagator> &propagator,
@@ -9,11 +25,11 @@ AIM::AimInteraction::AimInteraction(
     const double dt,
     const Grid &grid,
     const Array<Expansion> &expansion_table,
-    const normalization::SpatialNorm &normalization)
+    const normalization::SpatialNorm normalization)
     : HistoryInteraction(dots, history, propagator, interp_order, c0, dt),
       grid(grid),
       expansion_table(expansion_table),
-      normalization(normalization),
+      normalization(std::move(normalization)),
       max_transit_steps(grid.max_transit_steps(c0, dt)),
       circulant_dimensions(grid.circulant_shape(c0, dt)),
       fourier_table(circulant_fourier_table()),
