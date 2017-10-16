@@ -14,6 +14,18 @@
 
 namespace AIM {
   class AimInteraction;
+
+  namespace normalization {
+    using SpatialNorm = std::function<double(const Eigen::Vector3d &)>;
+    const SpatialNorm unit = [](__attribute__((unused))
+                                const Eigen::Vector3d &v) { return 1; };
+    const SpatialNorm distance = [](const Eigen::Vector3d &v) {
+      return v.norm();
+    };
+    const SpatialNorm poisson = [](const Eigen::Vector3d &v) {
+      return 4 * M_PI * v.norm();
+    };
+  }
 }
 
 class AIM::AimInteraction final : public HistoryInteraction {
@@ -26,13 +38,15 @@ class AIM::AimInteraction final : public HistoryInteraction {
       const double,
       const double,
       const Grid &,
-      const Array<Expansion> &);
+      const Array<Expansion> &,
+      const normalization::SpatialNorm &);
 
   const ResultArray &evaluate(const int) final;
 
   // private:
   Grid grid;
   Array<Expansion> expansion_table;
+  normalization::SpatialNorm normalization;
   int box_order, max_transit_steps;
   std::array<int, 4> circulant_dimensions;
 

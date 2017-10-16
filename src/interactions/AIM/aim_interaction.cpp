@@ -8,10 +8,12 @@ AIM::AimInteraction::AimInteraction(
     const double c0,
     const double dt,
     const Grid &grid,
-    const Array<Expansion> &expansion_table)
+    const Array<Expansion> &expansion_table,
+    const normalization::SpatialNorm &normalization)
     : HistoryInteraction(dots, history, propagator, interp_order, c0, dt),
       grid(grid),
       expansion_table(expansion_table),
+      normalization(normalization),
       max_transit_steps(grid.max_transit_steps(c0, dt)),
       circulant_dimensions(grid.circulant_shape(c0, dt)),
       fourier_table(circulant_fourier_table()),
@@ -132,7 +134,8 @@ void AIM::AimInteraction::fill_gmatrix_table(
           const int polynomial_idx = static_cast<int>(ceil(t - arg));
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
-            gmatrix_table[t][x][y][z] = interp.evaluations[0][polynomial_idx];
+            gmatrix_table[t][x][y][z] =
+                interp.evaluations[0][polynomial_idx] / normalization(dr);
           }
         }
       }

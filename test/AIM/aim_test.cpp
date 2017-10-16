@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   auto expansions =
       LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-                          expansions);
+                          expansions, AIM::normalization::unit);
   auto circulant_shape = grid.circulant_shape(c0, dt);
 
   std::fill(aim.source_table.data(),
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
   auto expansions =
       LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, step,
-                          grid, expansions);
+                          grid, expansions, AIM::normalization::unit);
   auto circulant_shape = grid.circulant_shape(c0, step);
 
   // Set the source radiator -- presumed to sit on a grid point
@@ -130,11 +130,11 @@ BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
         reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]));
   }
 
-  //for(int t = 0; t < circulant_shape[0]; ++t) {
+  for(int t = 0; t < circulant_shape[0]; ++t) {
     //std::cout << std::exp(std::pow((t * step - mean) / sd, 2) / -2.0) << "0 ";
-    //std::cout << t << " " << t * step << " "
-              //<< aim.evaluate(t).transpose().real() << std::endl;
-  //}
+    std::cout << t << " " << t * step << " "
+              << aim.evaluate(t).transpose().real() << std::endl;
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM_Fourier_transforms
