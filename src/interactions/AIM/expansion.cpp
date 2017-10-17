@@ -1,15 +1,15 @@
 #include "expansion.h"
 
-Array<AIM::Expansion> AIM::LeastSquaresExpansionSolver::get(
+Array2<AIM::Expansion> AIM::LeastSquaresExpansionSolver::get_expansions(
     const int box_order, const Grid &grid, const std::vector<QuantumDot> &dots)
 {
   return LeastSquaresExpansionSolver(box_order, grid).table(dots);
 }
 
-Array<AIM::Expansion> AIM::LeastSquaresExpansionSolver::table(
+Array2<AIM::Expansion> AIM::LeastSquaresExpansionSolver::table(
     const std::vector<QuantumDot> &dots) const
 {
-  Array<AIM::Expansion> table(boost::extents[dots.size()][num_pts]);
+  Array2<AIM::Expansion> table(boost::extents[dots.size()][num_pts]);
 
   for(auto dot_idx = 0u; dot_idx < dots.size(); ++dot_idx) {
     const auto indices =

@@ -30,7 +30,7 @@ namespace AIM {
 
 class AIM::AimInteraction final : public HistoryInteraction {
  public:
-  AimInteraction(const int, const Grid &, const normalization::SpatialNorm);
+  AimInteraction(const int, const Grid &, normalization::SpatialNorm);
   AimInteraction(
       const std::shared_ptr<const DotVector> &,
       const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &,
@@ -39,16 +39,16 @@ class AIM::AimInteraction final : public HistoryInteraction {
       const double,
       const double,
       const Grid &,
-      const Array<Expansion> &,
-      const normalization::SpatialNorm);
+      const Array2<Expansion> &,
+      normalization::SpatialNorm);
 
   const ResultArray &evaluate(const int) final;
 
   // private:
   Grid grid;
-  Array<Expansion> expansion_table;
+  Array2<Expansion> expansion_table;
   normalization::SpatialNorm normalization;
-  int box_order, max_transit_steps;
+  int max_transit_steps;
   std::array<int, 4> circulant_dimensions;
 
   SpacetimeVector<cmplx> fourier_table, source_table, obs_table;

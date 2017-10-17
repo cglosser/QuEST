@@ -9,7 +9,7 @@ typedef std::complex<double> cmplx;
 constexpr cmplx iu(0, 1);
 
 template <class T>
-using Array = boost::multi_array<T, 2>;
+using Array2 = boost::multi_array<T, 2>;
 
 template <class T>
 using SpacetimeVector = boost::multi_array<T, 4>;

@@ -3,7 +3,7 @@
 AIM::AimInteraction::AimInteraction(
     const int interp_order,
     const Grid &grid,
-    const normalization::SpatialNorm normalization)
+    normalization::SpatialNorm normalization)
     : AimInteraction(nullptr,
                      nullptr,
                      nullptr,
@@ -11,7 +11,7 @@ AIM::AimInteraction::AimInteraction(
                      1,
                      1,
                      grid,
-                     Array<Expansion>(),
+                     Array2<Expansion>(),
                      normalization)
 {
 }
@@ -24,8 +24,8 @@ AIM::AimInteraction::AimInteraction(
     const double c0,
     const double dt,
     const Grid &grid,
-    const Array<Expansion> &expansion_table,
-    const normalization::SpatialNorm normalization)
+    const Array2<Expansion> &expansion_table,
+    normalization::SpatialNorm normalization)
     : HistoryInteraction(dots, history, propagator, interp_order, c0, dt),
       grid(grid),
       expansion_table(expansion_table),
@@ -45,7 +45,7 @@ AIM::AimInteraction::AimInteraction(
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
-  const int nb = 8 * grid.num_boxes;
+  const auto nb = 8 * grid.num_boxes;
   Eigen::Map<Eigen::ArrayXcd> obs_vec(&obs_table[step][0][0][0], nb);
   obs_vec = 0;
 
@@ -147,7 +147,7 @@ void AIM::AimInteraction::fill_gmatrix_table(
         const std::pair<int, double> split_arg = split_double(arg);
 
         for(int t = 1; t < circulant_dimensions[0]; ++t) {
-          const int polynomial_idx = static_cast<int>(ceil(t - arg));
+          const auto polynomial_idx = static_cast<int>(ceil(t - arg));
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
             gmatrix_table[t][x][y][z] =
