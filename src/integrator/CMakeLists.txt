@@ -6,4 +6,6 @@ target_sources(quest
     "${CMAKE_CURRENT_LIST_DIR}/integrator.h"
     "${CMAKE_CURRENT_LIST_DIR}/weights.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/weights.h"
+    "${CMAKE_CURRENT_LIST_DIR}/euler.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/euler.h"
 )
