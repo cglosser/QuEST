@@ -68,10 +68,10 @@ BOOST_AUTO_TEST_CASE(SplitDouble)
 
 BOOST_AUTO_TEST_CASE(FALLING_FACTORIAL)
 {
-  BOOST_CHECK_EQUAL(falling_factorial(1, 1), 1);
-  BOOST_CHECK_EQUAL(falling_factorial(1.5, 2), 0);
-  BOOST_CHECK_EQUAL(falling_factorial(2, 3), 0);
-  BOOST_CHECK_EQUAL(falling_factorial(3.14159, 3), 0);
+  BOOST_CHECK_EQUAL(falling_factorial(1, 0), 1);
+  BOOST_CHECK_EQUAL(falling_factorial(1.5, 0), 1);
+  BOOST_CHECK_EQUAL(falling_factorial(2, 0), 1);
+  BOOST_CHECK_EQUAL(falling_factorial(3.14159, 0), 1);
 
   BOOST_CHECK_EQUAL(falling_factorial(1, 1), 1);
   BOOST_CHECK_EQUAL(falling_factorial(1, 2), 0);
