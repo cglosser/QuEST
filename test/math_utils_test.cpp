@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_CASE(LinSpace)
 
   BOOST_CHECK_SMALL(ls.at(0), TOLER);
   for(int i = 1; i < 10; ++i) {
-    BOOST_CHECK_CLOSE(ls.at(i), i/9.0, TOLER);
+    BOOST_CHECK_CLOSE(ls.at(i), i / 9.0, TOLER);
   }
 }
 
@@ -64,6 +64,26 @@ BOOST_AUTO_TEST_CASE(SplitDouble)
   auto x3 = split_double(-8.4);
   BOOST_CHECK_EQUAL(x3.first, -8);
   BOOST_CHECK_CLOSE(x3.second, -0.4, 1e-13);
+}
+
+BOOST_AUTO_TEST_CASE(FALLING_FACTORIAL)
+{
+  BOOST_CHECK_EQUAL(falling_factorial(1, 1), 1);
+  BOOST_CHECK_EQUAL(falling_factorial(1.5, 2), 0);
+  BOOST_CHECK_EQUAL(falling_factorial(2, 3), 0);
+  BOOST_CHECK_EQUAL(falling_factorial(3.14159, 3), 0);
+
+  BOOST_CHECK_EQUAL(falling_factorial(1, 1), 1);
+  BOOST_CHECK_EQUAL(falling_factorial(1, 2), 0);
+  BOOST_CHECK_EQUAL(falling_factorial(1, 3), 0);
+
+  BOOST_CHECK_EQUAL(falling_factorial(1, 1), 1);
+  BOOST_CHECK_EQUAL(falling_factorial(2, 1), 2);
+  BOOST_CHECK_EQUAL(falling_factorial(3, 1), 3);
+
+  BOOST_CHECK_EQUAL(falling_factorial(1.5, 2), 3.0 / 4.0);
+  BOOST_CHECK_EQUAL(falling_factorial(2.5, 2), 15.0 / 4.0);
+  BOOST_CHECK_EQUAL(falling_factorial(3.5, 2), 35.0 / 4.0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

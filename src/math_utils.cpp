@@ -45,3 +45,12 @@ std::pair<int, double> split_double(const double delay)
 
   return result;
 }
+
+double falling_factorial(const double x, const int n)
+{
+  if(n == 0) return 1;
+  double result = x;
+  for(int i = 1; i < n; ++i) result *= x - i;
+
+  return result;
+}
