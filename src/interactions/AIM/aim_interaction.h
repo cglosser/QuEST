@@ -51,8 +51,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   int max_transit_steps;
   std::array<int, 4> circulant_dimensions;
 
-  SpacetimeVector<cmplx> fourier_table, source_table;
-  Eigen::ArrayXcd obs_table;
+  SpacetimeVector<cmplx> fourier_table, source_table, obs_table;
   TransformPair spatial_transforms;
 
   void fill_source_table(const int);

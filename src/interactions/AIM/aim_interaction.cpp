@@ -33,36 +33,54 @@ AIM::AimInteraction::AimInteraction(
       circulant_dimensions(grid.circulant_shape(c0, dt)),
       fourier_table(circulant_fourier_table()),
       source_table(circulant_dimensions),
-      obs_table(8 * grid.num_boxes),
+      obs_table(circulant_dimensions),
       spatial_transforms(spatial_fft_plans())
 {
   std::fill(source_table.data(),
             source_table.data() + source_table.num_elements(), cmplx(0, 0));
+  std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
+            cmplx(0, 0));
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
+  const auto wrapped_step = step % circulant_dimensions[0];
   const auto nb = 8 * grid.num_boxes;
-  obs_table = 0;
 
-  for(int i = 0; i < step; ++i) {
-    Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[step - i][0][0][0], nb);
-    Eigen::Map<Eigen::ArrayXcd> src(&source_table[i][0][0][0], nb);
+  Eigen::Map<Eigen::ArrayXcd> observers(&obs_table[wrapped_step][0][0][0], nb);
+  observers = 0;
 
-    obs_table += prop * src;
+  for(int i = 1; i < circulant_dimensions[0]; ++i) {
+    if(step - i < 0) continue;
+    auto wrap = (step - i) % circulant_dimensions[0];
+    Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
+    Eigen::Map<Eigen::ArrayXcd> src(&source_table[wrap][0][0][0], nb);
+
+    observers += prop * src;
   }
 
   fftw_execute_dft(spatial_transforms.backward,
-                   reinterpret_cast<fftw_complex *>(obs_table.data()),
-                   reinterpret_cast<fftw_complex *>(obs_table.data()));
+                   reinterpret_cast<fftw_complex *>(observers.data()),
+                   reinterpret_cast<fftw_complex *>(observers.data()));
 
   results = ResultArray(grid.num_boxes);
 
-  return obs_table;
+  int i = 0;
+  for(auto x = 0l; x < grid.dimensions(0); ++x) {
+    for(auto y = 0l; y < grid.dimensions(1); ++y) {
+      for(auto z = 0l; z < grid.dimensions(2); ++z) {
+        results(i++) = obs_table[wrapped_step][x][y][z];
+      }
+    }
+  }
+
+  return results;
 }
 
 void AIM::AimInteraction::fill_source_table(const int step)
 {
+  const int wrapped_step = step % circulant_dimensions[0];
+
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
         ++expansion_idx) {
@@ -73,7 +91,7 @@ void AIM::AimInteraction::fill_source_table(const int step)
       // elements) and the electromagnetic source quantities. Ideally the AIM
       // code should not have knowledge of this to better encapsulate
       // "propagation," but this is good enough for now.
-      source_table[step][coord(0)][coord(1)][coord(2)] =
+      source_table[wrapped_step][coord(0)][coord(1)][coord(2)] =
           e.weight * history->array[dot_idx][step][0][1];
     }
   }
