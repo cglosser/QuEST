@@ -95,6 +95,11 @@ void AIM::AimInteraction::fill_source_table(const int step)
           e.weight * history->array[dot_idx][step][0][1];
     }
   }
+
+  fftw_execute_dft(
+      spatial_transforms.forward,
+      reinterpret_cast<fftw_complex *>(&source_table[wrapped_step][0][0][0]),
+      reinterpret_cast<fftw_complex *>(&source_table[wrapped_step][0][0][0]));
 }
 
 SpacetimeVector<cmplx> AIM::AimInteraction::circulant_fourier_table()

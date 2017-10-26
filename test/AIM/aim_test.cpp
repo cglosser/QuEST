@@ -87,13 +87,11 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
   AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
                           grid, expansions, AIM::normalization::unit);
 
-  aim.fill_source_table(0);
-  for(int i = 1; i < num_steps; ++i) {
+  for(int i = 0; i < num_steps; ++i) {
     aim.fill_source_table(i);
     aim.evaluate(i);
   }
 }
-
 
 struct DummyPropagation {
   std::shared_ptr<DotVector> dots;
