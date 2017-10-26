@@ -1,9 +1,8 @@
 #include "aim_interaction.h"
 
-AIM::AimInteraction::AimInteraction(
-    const int interp_order,
-    const Grid &grid,
-    normalization::SpatialNorm normalization)
+AIM::AimInteraction::AimInteraction(const int interp_order,
+                                    const Grid &grid,
+                                    normalization::SpatialNorm normalization)
     : AimInteraction(nullptr,
                      nullptr,
                      nullptr,
@@ -34,44 +33,32 @@ AIM::AimInteraction::AimInteraction(
       circulant_dimensions(grid.circulant_shape(c0, dt)),
       fourier_table(circulant_fourier_table()),
       source_table(circulant_dimensions),
-      obs_table(circulant_dimensions),
+      obs_table(8 * grid.num_boxes),
       spatial_transforms(spatial_fft_plans())
 {
   std::fill(source_table.data(),
             source_table.data() + source_table.num_elements(), cmplx(0, 0));
-  std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
-            cmplx(0, 0));
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
   const auto nb = 8 * grid.num_boxes;
-  Eigen::Map<Eigen::ArrayXcd> obs_vec(&obs_table[step][0][0][0], nb);
-  obs_vec = 0;
+  obs_table = 0;
 
   for(int i = 0; i < step; ++i) {
     Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[step - i][0][0][0], nb);
     Eigen::Map<Eigen::ArrayXcd> src(&source_table[i][0][0][0], nb);
 
-    obs_vec += prop * src;
+    obs_table += prop * src;
   }
 
   fftw_execute_dft(spatial_transforms.backward,
-                   reinterpret_cast<fftw_complex *>(&obs_table[step][0][0][0]),
-                   reinterpret_cast<fftw_complex *>(&obs_table[step][0][0][0]));
+                   reinterpret_cast<fftw_complex *>(obs_table.data()),
+                   reinterpret_cast<fftw_complex *>(obs_table.data()));
 
   results = ResultArray(grid.num_boxes);
 
-  int i = 0;
-  for(auto x = 0l; x < grid.dimensions(0); ++x) {
-    for(auto y = 0l; y < grid.dimensions(1); ++y) {
-      for(auto z = 0l; z < grid.dimensions(2); ++z) {
-        results(i++) = obs_table[step][x][y][z];
-      }
-    }
-  }
-
-  return results;
+  return obs_table;
 }
 
 void AIM::AimInteraction::fill_source_table(const int step)
