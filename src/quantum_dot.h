@@ -23,6 +23,7 @@ typedef Eigen::Vector2cd matrix_elements;
 typedef std::function<Eigen::Vector2cd(const Eigen::Vector2cd,
                                        const std::complex<double>)>
     BlochFunctionType;
+enum MatrixElement { RHO_00, RHO_01 };
 
 class QuantumDot {
  public:

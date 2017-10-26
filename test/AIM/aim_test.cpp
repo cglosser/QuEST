@@ -3,43 +3,52 @@
 
 #include "interactions/AIM/aim_interaction.h"
 
+struct PARAMETERS {
+  double c, dt;
+  int interpolation_order, expansion_order;
+  PARAMETERS() : c(1), dt(1), interpolation_order(4), expansion_order(0){};
+};
+
 BOOST_AUTO_TEST_SUITE(AIM)
 
-BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
+BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
 {
-  const int interp_order = 4;
-  Eigen::Vector3i num_boxes(4, 4, 4);
-  Grid grid(Eigen::Vector3d(16, 16, 16), num_boxes);
-  AIM::AimInteraction aim(interp_order, grid, AIM::normalization::unit);
-  auto circulant_shape = grid.circulant_shape(1, 1);
+  Eigen::Array3i num_boxes(4, 4, 4);
+  Eigen::Array3d spacing(Eigen::Array3d(1, 1, 1) * c * dt);
 
-  // Set the source signal
-  double mean = grid.max_diagonal / 2.0;
-  double sd = mean / 5;
+  // Place one QD *on* the most-separated grid points
+  std::shared_ptr<DotVector> dots = std::make_shared<DotVector>(
+      DotVector{QuantumDot(Eigen::Vector3d::Zero()),
+                QuantumDot(spacing * num_boxes.cast<double>())});
+
+  Grid grid(spacing, dots, expansion_order);
+  BOOST_CHECK_EQUAL(
+      (dots->at(1).position() - grid.spatial_coord_of_box(grid.num_boxes - 1))
+          .norm(),
+      0);
+
+  auto expansions =
+      LeastSquaresExpansionSolver::get_expansions(expansion_order, grid, *dots);
+
+  const int num_steps = 64;
+
   auto src = [=](const double t) {
-    return std::exp(std::pow((t - mean) / sd, 2) / -2.0);
+    int i = t / dt;
+    double arg = (i - num_steps / 2.0) / (num_steps / 5.0);
+    return gaussian(arg);
   };
 
-  // Source signal assumed to radiate from 0th grid point
-  for(int t = 0; t < circulant_shape[0]; ++t) {
-    aim.source_table[t][0][0][0] = src(t);
-    fftw_execute_dft(
-        aim.spatial_transforms.forward,
-        reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]),
-        reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]));
+  // Set up and pre-fill the source particle in a History table
+  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history =
+      std::make_shared<Integrator::History<Eigen::Vector2cd>>(dots->size(), 10,
+                                                              num_steps);
+  history->fill(Eigen::Vector2cd::Zero());
+  for(int i = -10; i < num_steps; ++i) {
+    history->array[0][i][0](RHO_01) = src(i * dt);
   }
 
-  // Check against analytic retardation of source
-  for(int t = 0; t < circulant_shape[0]; ++t) {
-    auto retarded_signal = aim.evaluate(t).real();
-    for(auto b = 1u; b < grid.num_boxes; ++b) {
-      const double delay =
-          (grid.spatial_coord_of_box(b) - grid.spatial_coord_of_box(0)).norm();
-      // Must use BOOST_CHECK_SMALL because some retarded_signal values may be
-      // zero (as the signal hasn't arrived yet)
-      BOOST_CHECK_SMALL(src(t - delay) - retarded_signal(b), 1e-5);
-    }
-  }
+  AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
+                          grid, expansions, AIM::normalization::unit);
 }
 
 struct DummyPropagation {
