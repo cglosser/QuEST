@@ -30,7 +30,7 @@ AIM::AimInteraction::AimInteraction(
       expansion_table(expansion_table),
       normalization(std::move(normalization)),
       max_transit_steps(grid.max_transit_steps(c0, dt)),
-      circulant_dimensions(grid.circulant_shape(c0, dt)),
+      circulant_dimensions(grid.circulant_shape(c0, dt, interp_order)),
       fourier_table(circulant_fourier_table()),
       source_table(circulant_dimensions),
       obs_table(circulant_dimensions),
