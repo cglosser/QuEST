@@ -55,6 +55,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   TransformPair spatial_transforms;
 
   void fill_source_table(const int);
+  void fill_results_table(const int);
 
   SpacetimeVector<cmplx> circulant_fourier_table();
   void fill_gmatrix_table(SpacetimeVector<cmplx> &) const;
