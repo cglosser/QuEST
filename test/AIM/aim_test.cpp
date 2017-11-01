@@ -3,7 +3,62 @@
 
 #include "interactions/AIM/aim_interaction.h"
 
+struct PARAMETERS {
+  double c, dt;
+  int interpolation_order, expansion_order;
+  PARAMETERS() : c(1), dt(1), interpolation_order(4), expansion_order(0){};
+};
+
 BOOST_AUTO_TEST_SUITE(AIM)
+
+BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
+{
+  Eigen::Array3i num_boxes(4, 4, 4);
+  Eigen::Array3d spacing(Eigen::Array3d(1, 1, 1) * c * dt);
+
+  // Place one QD *on* the most-separated grid points
+  std::shared_ptr<DotVector> dots = std::make_shared<DotVector>(
+      DotVector{QuantumDot(Eigen::Vector3d::Zero()),
+                QuantumDot(spacing * num_boxes.cast<double>())});
+
+  Grid grid(spacing, dots, expansion_order);
+  BOOST_CHECK_EQUAL(
+      (dots->at(1).position() - grid.spatial_coord_of_box(grid.num_boxes - 1))
+          .norm(),
+      0);
+
+  auto expansions =
+      LeastSquaresExpansionSolver::get_expansions(expansion_order, grid, *dots);
+
+  const int num_steps = 256;
+
+  auto src = [=](const double t) {
+    int i = t / dt;
+    double arg = (i - num_steps / 2.0) / (num_steps / 12.0);
+    return gaussian(arg);
+  };
+
+  // Set up and pre-fill the source particle in a History table
+  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history =
+      std::make_shared<Integrator::History<Eigen::Vector2cd>>(dots->size(), 10,
+                                                              num_steps);
+  history->fill(Eigen::Vector2cd::Zero());
+  for(int i = -10; i < num_steps; ++i) {
+    history->array[0][i][0](RHO_01) = src(i * dt);
+  }
+
+  AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
+                          grid, expansions, AIM::normalization::unit);
+
+  const double delay =
+      (dots->at(1).position() - dots->at(0).position()).norm() / c;
+  for(int i = 0; i < num_steps; ++i) {
+    aim.fill_source_table(i);
+    auto x = aim.evaluate(i);
+    std::cout << x(1).real() << " " << src(i * dt - delay) << " "
+              << x(1).real() - src(i * dt - delay) << std::endl;
+  }
+}
 
 struct DummyPropagation {
   std::shared_ptr<DotVector> dots;
@@ -29,44 +84,14 @@ BOOST_FIXTURE_TEST_SUITE(AIM_Fourier_transforms, DummyPropagation)
 // data. Does not account for *anything* relating to propagation, therefore
 // those data members have been initialized to their appropriate null value.
 
-BOOST_AUTO_TEST_CASE(OnePointExpansion)
-{
-  dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), 0, {0.0, 0.0},
-                             Eigen::Vector3d(0, 0, 0)));
-  Grid grid(unit_spacing, dots, expansion_order);
-  auto expansions =
-      LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
-
-  for(int i = 0; i < 8; ++i) {
-    BOOST_CHECK_EQUAL(expansions[0][i].weight, 1.0 / 8);
-  }
-}
-
-BOOST_AUTO_TEST_CASE(TwoPointExpansions)
-{
-  dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), 0, {0.0, 0.0},
-                             Eigen::Vector3d(0, 0, 0)));
-  dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 10.5), 0, {0.0, 0.0},
-                             Eigen::Vector3d(0, 0, 0)));
-  Grid grid(unit_spacing, dots, expansion_order);
-  auto expansions =
-      LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
-
-  for(int dot = 0; dot < 2; ++dot) {
-    for(int pt = 0; pt < 8; ++pt) {
-      BOOST_CHECK_EQUAL(expansions[dot][pt].weight, 1.0 / 8);
-    }
-  }
-}
-
 BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
 {
   Eigen::Vector3i num_boxes(4, 4, 4);
   Grid grid(unit_spacing, num_boxes);
   auto expansions =
-      LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
+      LeastSquaresExpansionSolver::get_expansions(expansion_order, grid, *dots);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-                          expansions);
+                          expansions, AIM::normalization::unit);
   auto circulant_shape = grid.circulant_shape(c0, dt);
 
   std::fill(aim.source_table.data(),
@@ -108,67 +133,6 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   }
 }
 
-BOOST_AUTO_TEST_CASE(GAUSSIAN_PROPAGATION)
-{
-  const double step = 0.5;
-  Eigen::Vector3i num_boxes(4, 4, 4);
-  Grid grid(unit_spacing, num_boxes);
-  auto expansions =
-      LeastSquaresExpansionSolver::get(expansion_order, grid, *dots);
-  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, step,
-                          grid, expansions);
-  auto circulant_shape = grid.circulant_shape(c0, step);
-
-  // Set the source radiator -- presumed to sit on a grid point
-  double mean = 3.5, sd = 1;
-  for(int t = 0; t < circulant_shape[0]; ++t) {
-    double val = std::exp(std::pow((t * step - mean) / sd, 2) / -2.0);
-    aim.source_table[t][0][0][0] = val;
-    fftw_execute_dft(
-        aim.spatial_transforms.forward,
-        reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]),
-        reinterpret_cast<fftw_complex *>(&aim.source_table[t][0][0][0]));
-  }
-
-  //for(int t = 0; t < circulant_shape[0]; ++t) {
-    //std::cout << std::exp(std::pow((t * step - mean) / sd, 2) / -2.0) << "0 ";
-    //std::cout << t << " " << t * step << " "
-              //<< aim.evaluate(t).transpose().real() << std::endl;
-  //}
-}
-
 BOOST_AUTO_TEST_SUITE_END()  // AIM_Fourier_transforms
-
-struct TwoStaticDots {
-  double c0, dt;
-  int interp_order, expansion_order;
-  std::shared_ptr<DotVector> dots;
-  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
-  std::shared_ptr<Propagation::RotatingFramePropagator> propagator;
-  Eigen::Vector3d unit_spacing;
-  Grid grid;
-  TwoStaticDots()
-      : c0(1),
-        dt(1),
-        interp_order(3),
-        expansion_order(1),
-        dots(std::make_shared<DotVector>()),
-        history(std::make_shared<Integrator::History<Eigen::Vector2cd>>(
-            2, 22, 100)),
-        propagator(std::make_shared<Propagation::RotatingFramePropagator>(
-            1, c0, 1, 1)),
-        unit_spacing(Eigen::Vector3d(1, 1, 1))
-  {
-    dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), 0, {0.0, 0.0},
-                               Eigen::Vector3d(0, 0, 0)));
-    dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 9.5), 0, {0.0, 0.0},
-                               Eigen::Vector3d(0, 0, 0)));
-    grid = Grid(unit_spacing, dots, expansion_order);
-  };
-};
-
-BOOST_FIXTURE_TEST_SUITE(StaticPropagation, TwoStaticDots)
-
-BOOST_AUTO_TEST_SUITE_END()  // StaticPropagation
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM

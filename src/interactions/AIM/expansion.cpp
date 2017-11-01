@@ -1,15 +1,15 @@
 #include "expansion.h"
 
-Array<AIM::Expansion> AIM::LeastSquaresExpansionSolver::get(
+Array2<AIM::Expansion> AIM::LeastSquaresExpansionSolver::get_expansions(
     const int box_order, const Grid &grid, const std::vector<QuantumDot> &dots)
 {
   return LeastSquaresExpansionSolver(box_order, grid).table(dots);
 }
 
-Array<AIM::Expansion> AIM::LeastSquaresExpansionSolver::table(
+Array2<AIM::Expansion> AIM::LeastSquaresExpansionSolver::table(
     const std::vector<QuantumDot> &dots) const
 {
-  Array<AIM::Expansion> table(boost::extents[dots.size()][num_pts]);
+  Array2<AIM::Expansion> table(boost::extents[dots.size()][num_pts]);
 
   for(auto dot_idx = 0u; dot_idx < dots.size(); ++dot_idx) {
     const auto indices =
@@ -25,16 +25,22 @@ Array<AIM::Expansion> AIM::LeastSquaresExpansionSolver::table(
 }
 
 Eigen::VectorXd AIM::LeastSquaresExpansionSolver::q_vector(
-    const Eigen::Vector3d &pos) const
+    const Eigen::Vector3d &pos,
+    const std::array<int, 3> &derivatives = {0, 0, 0}) const
 {
   Eigen::VectorXd q_vec(num_pts);
 
   int i = 0;
   for(int nx = 0; nx <= box_order; ++nx) {
+    double x_term = falling_factorial(nx, derivatives[0]) *
+                    std::pow(pos(0), nx - derivatives[0]);
     for(int ny = 0; ny <= box_order; ++ny) {
+      double y_term = falling_factorial(ny, derivatives[1]) *
+                      std::pow(pos(1), ny - derivatives[1]);
       for(int nz = 0; nz <= box_order; ++nz) {
-        q_vec(i++) =
-            std::pow(pos(0), nx) * std::pow(pos(1), ny) * std::pow(pos(2), nz);
+        double z_term = falling_factorial(nz, derivatives[2]) *
+                        std::pow(pos(2), nz - derivatives[2]);
+        q_vec(i++) = x_term * y_term * z_term;
       }
     }
   }

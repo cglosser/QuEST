@@ -1,5 +1,20 @@
 #include "aim_interaction.h"
 
+AIM::AimInteraction::AimInteraction(const int interp_order,
+                                    const Grid &grid,
+                                    normalization::SpatialNorm normalization)
+    : AimInteraction(nullptr,
+                     nullptr,
+                     nullptr,
+                     interp_order,
+                     1,
+                     1,
+                     grid,
+                     Array2<Expansion>(),
+                     normalization)
+{
+}
+
 AIM::AimInteraction::AimInteraction(
     const std::shared_ptr<const DotVector> &dots,
     const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &history,
@@ -8,12 +23,14 @@ AIM::AimInteraction::AimInteraction(
     const double c0,
     const double dt,
     const Grid &grid,
-    const Array<Expansion> &expansion_table)
+    const Array2<Expansion> &expansion_table,
+    normalization::SpatialNorm normalization)
     : HistoryInteraction(dots, history, propagator, interp_order, c0, dt),
       grid(grid),
       expansion_table(expansion_table),
+      normalization(std::move(normalization)),
       max_transit_steps(grid.max_transit_steps(c0, dt)),
-      circulant_dimensions(grid.circulant_shape(c0, dt)),
+      circulant_dimensions(grid.circulant_shape(c0, dt, interp_order)),
       fourier_table(circulant_fourier_table()),
       source_table(circulant_dimensions),
       obs_table(circulant_dimensions),
@@ -27,37 +44,37 @@ AIM::AimInteraction::AimInteraction(
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
-  const int nb = 8 * grid.num_boxes;
-  Eigen::Map<Eigen::ArrayXcd> obs_vec(&obs_table[step][0][0][0], nb);
-  obs_vec = 0;
+  const auto wrapped_step = step % circulant_dimensions[0];
+  const auto nb = 8 * grid.num_boxes;
 
-  for(int i = 0; i < step; ++i) {
-    Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[step - i][0][0][0], nb);
-    Eigen::Map<Eigen::ArrayXcd> src(&source_table[i][0][0][0], nb);
+  Eigen::Map<Eigen::ArrayXcd> observers(&obs_table[wrapped_step][0][0][0], nb);
+  observers = 0;
 
-    obs_vec += prop * src;
+  for(int i = 1; i < circulant_dimensions[0]; ++i) {
+    if(step - i < 0) continue;
+    auto wrap = (step - i) % circulant_dimensions[0];
+
+    Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
+    Eigen::Map<Eigen::ArrayXcd> src(&source_table[wrap][0][0][0], nb);
+
+    observers += prop * src;
   }
 
   fftw_execute_dft(spatial_transforms.backward,
-                   reinterpret_cast<fftw_complex *>(&obs_table[step][0][0][0]),
-                   reinterpret_cast<fftw_complex *>(&obs_table[step][0][0][0]));
+                   reinterpret_cast<fftw_complex *>(observers.data()),
+                   reinterpret_cast<fftw_complex *>(observers.data()));
 
-  results = ResultArray(grid.num_boxes);
-
-  int i = 0;
-  for(auto x = 0l; x < grid.dimensions(0); ++x) {
-    for(auto y = 0l; y < grid.dimensions(1); ++y) {
-      for(auto z = 0l; z < grid.dimensions(2); ++z) {
-        results(i++) = obs_table[step][x][y][z];
-      }
-    }
-  }
-
+  fill_results_table(step);
   return results;
 }
 
 void AIM::AimInteraction::fill_source_table(const int step)
 {
+  const int wrapped_step = step % circulant_dimensions[0];
+  // std::cout << "(" << step << ", " << wrapped_step << ") ";
+  auto p = &source_table[wrapped_step][0][0][0];
+  std::fill(p, p + 8 * grid.num_boxes, 0);
+
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
         ++expansion_idx) {
@@ -68,8 +85,30 @@ void AIM::AimInteraction::fill_source_table(const int step)
       // elements) and the electromagnetic source quantities. Ideally the AIM
       // code should not have knowledge of this to better encapsulate
       // "propagation," but this is good enough for now.
-      source_table[step][coord(0)][coord(1)][coord(2)] =
-          e.weight * history->array[dot_idx][step][0][1];
+      source_table[wrapped_step][coord(0)][coord(1)][coord(2)] =
+          e.weight * history->array[dot_idx][step][0][RHO_01];
+    }
+  }
+
+  fftw_execute_dft(
+      spatial_transforms.forward,
+      reinterpret_cast<fftw_complex *>(&source_table[wrapped_step][0][0][0]),
+      reinterpret_cast<fftw_complex *>(&source_table[wrapped_step][0][0][0]));
+}
+
+void AIM::AimInteraction::fill_results_table(const int step)
+{
+  results = 0;
+  const int wrapped_step = step % circulant_dimensions[0];
+
+  for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
+    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
+        ++expansion_idx) {
+      const Expansion &e = expansion_table[dot_idx][expansion_idx];
+      Eigen::Vector3i coord = grid.idx_to_coord(e.index);
+
+      results(dot_idx) +=
+          e.weight * obs_table[wrapped_step][coord(0)][coord(1)][coord(2)];
     }
   }
 }
@@ -129,10 +168,11 @@ void AIM::AimInteraction::fill_gmatrix_table(
         const std::pair<int, double> split_arg = split_double(arg);
 
         for(int t = 1; t < circulant_dimensions[0]; ++t) {
-          const int polynomial_idx = static_cast<int>(ceil(t - arg));
+          const auto polynomial_idx = static_cast<int>(ceil(t - arg));
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
-            gmatrix_table[t][x][y][z] = interp.evaluations[0][polynomial_idx];
+            gmatrix_table[t][x][y][z] =
+                interp.evaluations[0][polynomial_idx] / normalization(dr);
           }
         }
       }

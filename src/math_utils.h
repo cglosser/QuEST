@@ -13,4 +13,5 @@ double gaussian(const double);
 double skew_gaussian(const double, const double);
 int grid_sequence(const int);
 std::pair<int, double> split_double(const double);
+double falling_factorial(const double, int);
 #endif

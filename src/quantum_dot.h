@@ -17,15 +17,19 @@ class QuantumDot;
 
 typedef std::vector<QuantumDot> DotVector;
 typedef std::pair<DotVector::iterator, DotVector::iterator> DotRange;
-typedef std::pair<DotVector::const_iterator, DotVector::const_iterator> const_DotRange;
+typedef std::pair<DotVector::const_iterator, DotVector::const_iterator>
+    const_DotRange;
 typedef Eigen::Vector2cd matrix_elements;
 typedef std::function<Eigen::Vector2cd(const Eigen::Vector2cd,
                                        const std::complex<double>)>
     BlochFunctionType;
+enum MatrixElement { RHO_00, RHO_01 };
 
 class QuantumDot {
  public:
   QuantumDot() = default;
+  QuantumDot(const Eigen::Vector3d &pos)
+      : QuantumDot(pos, 0, {0.0, 0.0}, Eigen::Vector3d::Zero()){};
   QuantumDot(const Eigen::Vector3d &,
              const double,
              const std::pair<double, double> &,

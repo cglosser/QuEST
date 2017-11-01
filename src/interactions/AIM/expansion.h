@@ -14,11 +14,12 @@ namespace AIM {
 
 class AIM::LeastSquaresExpansionSolver {
  public:
-  static Array<Expansion> get(const int,
-                              const Grid &,
-                              const std::vector<QuantumDot> &);
-  Array<Expansion> table(const std::vector<QuantumDot> &) const;
-  Eigen::VectorXd q_vector(const Eigen::Vector3d &) const;
+  static Array2<Expansion> get_expansions(const int,
+                                          const Grid &,
+                                          const std::vector<QuantumDot> &);
+  Array2<Expansion> table(const std::vector<QuantumDot> &) const;
+  Eigen::VectorXd q_vector(const Eigen::Vector3d &,
+                           const std::array<int, 3> &) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
   Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
 
