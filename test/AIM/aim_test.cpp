@@ -53,6 +53,8 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
 
   const double delay =
       (dots->at(1).position() - dots->at(0).position()).norm() / c;
+
+  double max_error = 0;
   for(int i = 0; i < num_steps; ++i) {
     aim.fill_source_table(i);
     auto x = aim.evaluate(i);
@@ -61,8 +63,13 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
       // Wait until observer is fully (i.e. has a complete interpolation) inside
       // of light cone
       BOOST_CHECK_CLOSE(x(1).real(), src(i * dt - delay), 1e-7);
+
+      auto relative_error =
+          std::abs((src(i * dt - delay) - x(1).real()) / src(i * dt - delay));
+      max_error = std::max(max_error, relative_error);
     }
   }
+  BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << max_error);
 }
 
 struct DummyPropagation {
