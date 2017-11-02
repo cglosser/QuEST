@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include <cmath>
+#include <iomanip>
 
 #include "interactions/AIM/aim_interaction.h"
 
@@ -33,8 +34,8 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
   const int num_steps = 256;
 
   auto src = [=](const double t) {
-    int i = t / dt;
-    double arg = (i - num_steps / 2.0) / (num_steps / 12.0);
+    const double total_time = num_steps * dt;
+    double arg = (t - total_time / 2.0) / (total_time / 6.0);
     return gaussian(arg);
   };
 
@@ -55,8 +56,12 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
   for(int i = 0; i < num_steps; ++i) {
     aim.fill_source_table(i);
     auto x = aim.evaluate(i);
-    std::cout << x(1).real() << " " << src(i * dt - delay) << " "
-              << x(1).real() - src(i * dt - delay) << std::endl;
+
+    if(i > aim.max_transit_steps) {
+      // Wait until observer is fully (i.e. has a complete interpolation) inside
+      // of light cone
+      BOOST_CHECK_CLOSE(x(1).real(), src(i * dt - delay), 1e-7);
+    }
   }
 }
 
