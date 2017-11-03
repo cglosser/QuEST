@@ -17,20 +17,18 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
 {
   using namespace Integrator::enums;
 
-  Integrator::History<int> int_hist(num_particles, window, num_timesteps);
-  // Particle dimension
-  BOOST_CHECK_EQUAL(int_hist.array.shape()[PARTICLES], num_particles);
-  BOOST_CHECK_EQUAL(int_hist.array.index_bases()[PARTICLES], 0);
+  Integrator::History<int> hist(num_particles, window, num_timesteps);
 
-  // Time dimension
-  BOOST_CHECK_EQUAL(int_hist.array.shape()[TIMES], num_timesteps + window);
-  BOOST_CHECK_EQUAL(int_hist.array.index_bases()[TIMES], -window);
+  BOOST_CHECK_EQUAL(hist.array.shape()[PARTICLES], num_particles);
+  BOOST_CHECK_EQUAL(hist.array.index_bases()[PARTICLES], 0);
 
-  // Derivative dimension
-  BOOST_CHECK_EQUAL(int_hist.array.shape()[DERIVATIVES], 2);
-  BOOST_CHECK_EQUAL(int_hist.array.index_bases()[DERIVATIVES], 0);
+  BOOST_CHECK_EQUAL(hist.array.shape()[TIMES], num_timesteps + window);
+  BOOST_CHECK_EQUAL(hist.array.index_bases()[TIMES], -window);
 
-  BOOST_CHECK_EQUAL(int_hist.array.num_elements(),
+  BOOST_CHECK_EQUAL(hist.array.shape()[DERIVATIVES], 2);
+  BOOST_CHECK_EQUAL(hist.array.index_bases()[DERIVATIVES], 0);
+
+  BOOST_CHECK_EQUAL(hist.array.num_elements(),
                     num_particles * (num_timesteps + window) * 2);
 }
 
