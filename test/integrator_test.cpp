@@ -4,48 +4,44 @@
 #include "../src/integrator/RHS/ode_rhs.h"
 #include "../src/integrator/integrator.h"
 
-BOOST_AUTO_TEST_SUITE(integrator)
+BOOST_AUTO_TEST_SUITE(INTEGRATOR)
 
-struct Shape {
+struct DIMENSIONS {
   int num_particles, window, num_timesteps;
-  Shape() : num_particles(2), window(4), num_timesteps(8){};
+  DIMENSIONS() : num_particles(2), window(4), num_timesteps(8){};
 };
 
-BOOST_FIXTURE_TEST_SUITE(history, Shape)
+BOOST_FIXTURE_TEST_SUITE(HISTORY, DIMENSIONS)
 
-BOOST_AUTO_TEST_CASE(templated_types)
+BOOST_AUTO_TEST_CASE(CONSTRUCTION)
 {
+  using namespace Integrator::enums;
+
   Integrator::History<int> int_hist(num_particles, window, num_timesteps);
-  Integrator::History<double> dbl_hist(num_particles, window, num_timesteps);
-  Integrator::History<Eigen::Vector2cd> cvec_hist(num_particles, window,
-                                                  num_timesteps);
+  // Particle dimension
+  BOOST_CHECK_EQUAL(int_hist.array.shape()[PARTICLES], num_particles);
+  BOOST_CHECK_EQUAL(int_hist.array.index_bases()[PARTICLES], 0);
+
+  // Time dimension
+  BOOST_CHECK_EQUAL(int_hist.array.shape()[TIMES], num_timesteps + window);
+  BOOST_CHECK_EQUAL(int_hist.array.index_bases()[TIMES], -window);
+
+  // Derivative dimension
+  BOOST_CHECK_EQUAL(int_hist.array.shape()[DERIVATIVES], 2);
+  BOOST_CHECK_EQUAL(int_hist.array.index_bases()[DERIVATIVES], 0);
+
+  BOOST_CHECK_EQUAL(int_hist.array.num_elements(),
+                    num_particles * (num_timesteps + window) * 2);
 }
 
-BOOST_AUTO_TEST_CASE(shape)
-{
-  Integrator::History<int> hist(num_particles, window, num_timesteps);
-
-  BOOST_CHECK(hist.array.shape()[0] == static_cast<size_t>(num_particles));
-  BOOST_CHECK(hist.array.shape()[1] ==
-              static_cast<size_t>(num_timesteps + window));
-  BOOST_CHECK(hist.array.shape()[2] == 2);
-
-  BOOST_CHECK(hist.array.index_bases()[0] == 0);
-  BOOST_CHECK(hist.array.index_bases()[1] == -window);
-  BOOST_CHECK(hist.array.index_bases()[2] == 0);
-}
-
-BOOST_AUTO_TEST_CASE(filling)
+BOOST_AUTO_TEST_CASE(FILLING)
 {
   const int fill_value = 4;
   Integrator::History<int> hist(num_particles, window, num_timesteps);
   hist.fill(fill_value);
 
-  for(int n = 0; n < num_particles; ++n) {
-    for(int t = -window; t < num_timesteps; ++t) {
-      BOOST_CHECK(hist.array[n][t][0] == fill_value);
-      BOOST_CHECK(hist.array[n][t][1] == fill_value);
-    }
+  for(auto i = 0u; i < hist.array.num_elements(); ++i) {
+    BOOST_CHECK_EQUAL(hist.array.data()[i], fill_value);
   }
 }
 
