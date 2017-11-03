@@ -23,7 +23,7 @@ namespace Integrator {
 template <class soltype>
 class Integrator::History {
  public:
-  History(const int, const int, const int);
+  History(const int, const int, const int, const int = 2);
   soltype_array<soltype> array;
 
   void fill(const soltype &);
@@ -36,7 +36,7 @@ template <class soltype>
 Integrator::History<soltype>::History(const int num_particles,
                                       const int window,
                                       const int num_timesteps,
-                                      const int num_derivatives = 2)
+                                      const int num_derivatives)
     : array(boost::extents[num_particles][
           typename soltype_array<soltype>::extent_range(-window, num_timesteps)]
                           [num_derivatives])
