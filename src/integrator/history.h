@@ -14,7 +14,7 @@ namespace Integrator {
   template <class soltype>
   using soltype_array = boost::multi_array<soltype, 3>;
 
-  inline namespace enums {
+  inline namespace history_enums {
     enum DIMENSION { PARTICLES, TIMES, DERIVATIVES };
     enum ORDER { DERIV_0, DERIV_1 };
   }
