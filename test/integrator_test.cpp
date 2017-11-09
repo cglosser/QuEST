@@ -56,11 +56,39 @@ struct SIGMOIDAL_SYSTEM {
             std::exp(10) * std::log(std::exp(10) + std::exp(t))) /
            std::exp(t);
   }
+  double max_abs_error()
+  {
+    using namespace Integrator::history_enums;
+
+    double max_error = 0;
+    for(int i = 1; i < num_steps; ++i) {
+      double relative_error =
+          (solution(i * dt) - hist->array[0][i][DERIV_0]) / solution(i * dt);
+      max_error = std::max(max_error, std::abs(relative_error));
+    }
+
+    return max_error;
+  }
 
   const double dt;
   const int window, num_steps;
+  std::shared_ptr<Integrator::History<double>> hist;
 
-  SIGMOIDAL_SYSTEM() : dt(0.1), window(22), num_steps(201){};
+  SIGMOIDAL_SYSTEM()
+      : dt(0.1),
+        window(22),
+        num_steps(201),
+        hist(
+            std::make_shared<Integrator::History<double>>(1, window, num_steps))
+  {
+    using namespace Integrator::history_enums;
+
+    hist->fill(0);
+    for(int i = -window; i <= 0; ++i) {
+      hist->array[0][i][DERIV_0] = solution(i * dt);
+      hist->array[0][i][DERIV_1] = rhs(hist->array[0][i][DERIV_0], i * dt);
+    }
+  };
 };
 
 BOOST_FIXTURE_TEST_SUITE(ODE_ERROR, SIGMOIDAL_SYSTEM)
@@ -68,30 +96,17 @@ BOOST_FIXTURE_TEST_SUITE(ODE_ERROR, SIGMOIDAL_SYSTEM)
 BOOST_AUTO_TEST_CASE(PREDICTOR_CORRECTOR)
 {
   using namespace Integrator::history_enums;
-  auto hist =
-      std::make_shared<Integrator::History<double>>(1, window, num_steps);
+
   std::vector<std::function<double(double, double)>> rhs_funcs{rhs};
   std::unique_ptr<Integrator::RHS<double>> system_rhs =
       std::make_unique<Integrator::ODE_RHS>(dt, hist, rhs_funcs);
 
-  hist->fill(0);
-  for(int i = -window; i <= 0; ++i) {
-    hist->array[0][i][DERIV_0] = solution(i * dt);
-    hist->array[0][i][DERIV_1] = rhs(hist->array[0][i][DERIV_0], i * dt);
-  }
-
-  Integrator::PredictorCorrector<double> solver(dt, 18, window, 3.15, hist,
+  Integrator::PredictorCorrector<double> solver(dt, 32, window, 3.15, hist,
                                                 std::move(system_rhs));
   solver.solve();
 
-  double max_error = 0;
-  for(int i = 1; i < num_steps; ++i) {
-    double relative_error =
-        (solution(i * dt) - hist->array[0][i][DERIV_0]) / solution(i * dt);
-    max_error = std::max(max_error, relative_error);
-  }
   BOOST_TEST_MESSAGE(
-      "Maximum relative predictor/corrector error: " << max_error);
+      "Maximum relative predictor/corrector error: " << max_abs_error());
   BOOST_CHECK_CLOSE(hist->array[0][num_steps - 1][0],
                     solution((num_steps - 1) * dt), 1e-12);
 }
@@ -99,14 +114,6 @@ BOOST_AUTO_TEST_CASE(PREDICTOR_CORRECTOR)
 BOOST_AUTO_TEST_CASE(RUNGE_KUTTA_4)
 {
   using namespace Integrator::history_enums;
-  auto hist =
-      std::make_shared<Integrator::History<double>>(1, window, num_steps);
-
-  hist->fill(0);
-  for(int i = -window; i <= 0; ++i) {
-    hist->array[0][i][DERIV_0] = solution(i * dt);
-    hist->array[0][i][DERIV_1] = rhs(hist->array[0][i][DERIV_0], i * dt);
-  }
 
   for(int i = 0; i < num_steps - 1; ++i) {
     const double &yi = hist->array[0][i][DERIV_0];
@@ -120,13 +127,7 @@ BOOST_AUTO_TEST_CASE(RUNGE_KUTTA_4)
     hist->array[0][i][DERIV_1] = k1;
   }
 
-  double max_error = 0;
-  for(int i = 1; i < num_steps; ++i) {
-    double relative_error =
-        (solution(i * dt) - hist->array[0][i][DERIV_0]) / solution(i * dt);
-    max_error = std::max(max_error, relative_error);
-  }
-  BOOST_TEST_MESSAGE("Maximum relative RK4 error: " << max_error);
+  BOOST_TEST_MESSAGE("Maximum relative RK4 error: " << max_abs_error());
   BOOST_CHECK_CLOSE(hist->array[0][num_steps - 1][0],
                     solution((num_steps - 1) * dt), 1e-6);
 }
