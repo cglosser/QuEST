@@ -34,37 +34,39 @@ AIM::AimInteraction::AimInteraction(
       fourier_table(circulant_fourier_table()),
       source_table(circulant_dimensions),
       obs_table(circulant_dimensions),
-      spatial_transforms(spatial_fft_plans())
+      spatial_vector_transforms(spatial_fft_plans())
 {
   std::fill(source_table.data(),
-            source_table.data() + source_table.num_elements(), cmplx(0, 0));
+            source_table.data() + source_table.num_elements(),
+            Eigen::Vector3cd::Zero());
   std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
-            cmplx(0, 0));
+            Eigen::Vector3cd::Zero());
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
-  const auto wrapped_step = step % circulant_dimensions[0];
-  const auto nb = 8 * grid.num_boxes;
+  // const auto wrapped_step = step % circulant_dimensions[0];
+  // const auto nb = 8 * grid.num_boxes;
 
-  Eigen::Map<Eigen::ArrayXcd> observers(&obs_table[wrapped_step][0][0][0], nb);
-  observers = 0;
+  // Eigen::Map<Eigen::ArrayXcd> observers(&obs_table[wrapped_step][0][0][0],
+  // nb);
+  // observers = 0;
 
-  for(int i = 1; i < circulant_dimensions[0]; ++i) {
-    if(step - i < 0) continue;
-    auto wrap = (step - i) % circulant_dimensions[0];
+  // for(int i = 1; i < circulant_dimensions[0]; ++i) {
+  // if(step - i < 0) continue;
+  // auto wrap = (step - i) % circulant_dimensions[0];
 
-    Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
-    Eigen::Map<Eigen::ArrayXcd> src(&source_table[wrap][0][0][0], nb);
+  // Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
+  // Eigen::Map<Eigen::ArrayXcd> src(&source_table[wrap][0][0][0], nb);
 
-    observers += prop * src;
-  }
+  // observers += prop * src;
+  //}
 
-  fftw_execute_dft(spatial_transforms.backward,
-                   reinterpret_cast<fftw_complex *>(observers.data()),
-                   reinterpret_cast<fftw_complex *>(observers.data()));
+  // fftw_execute_dft(spatial_transforms.backward,
+  // reinterpret_cast<fftw_complex *>(observers.data()),
+  // reinterpret_cast<fftw_complex *>(observers.data()));
 
-  fill_results_table(step);
+  // fill_results_table(step);
   return results;
 }
 
@@ -73,7 +75,7 @@ void AIM::AimInteraction::fill_source_table(const int step)
   const int wrapped_step = step % circulant_dimensions[0];
   // std::cout << "(" << step << ", " << wrapped_step << ") ";
   auto p = &source_table[wrapped_step][0][0][0];
-  std::fill(p, p + 8 * grid.num_boxes, 0);
+  std::fill(p, p + 8 * grid.num_boxes, Eigen::Vector3cd::Zero());
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
@@ -86,12 +88,13 @@ void AIM::AimInteraction::fill_source_table(const int step)
       // code should not have knowledge of this to better encapsulate
       // "propagation," but this is good enough for now.
       source_table[wrapped_step][coord(0)][coord(1)][coord(2)] =
-          e.weight * history->array[dot_idx][step][0][RHO_01];
+          e.weight * (*dots)[dot_idx].dipole() *
+          history->array[dot_idx][step][0][RHO_01];
     }
   }
 
   fftw_execute_dft(
-      spatial_transforms.forward,
+      spatial_vector_transforms.forward,
       reinterpret_cast<fftw_complex *>(&source_table[wrapped_step][0][0][0]),
       reinterpret_cast<fftw_complex *>(&source_table[wrapped_step][0][0][0]));
 }
@@ -108,7 +111,9 @@ void AIM::AimInteraction::fill_results_table(const int step)
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
 
       results(dot_idx) +=
-          e.weight * obs_table[wrapped_step][coord(0)][coord(1)][coord(2)];
+          e.weight *
+          obs_table[wrapped_step][coord(0)][coord(1)][coord(2)].dot(
+              (*dots)[dot_idx].dipole());
     }
   }
 }
@@ -191,13 +196,18 @@ TransformPair AIM::AimInteraction::spatial_fft_plans()
   // the I_0 source), the advanced FFTW interface allows them to stride forward
   // to equivalently transform the source currents at every timestep.
 
+  constexpr int num_transforms = 3;
+  constexpr int transform_rank = 3;
+  constexpr int dist_between_elements = 3;
+  constexpr int dist_between_transforms = 1;
+
   auto make_plan = [&](const int sign) {
-    return fftw_plan_dft_3d(
-        circulant_dimensions[1], circulant_dimensions[2],
-        circulant_dimensions[3],
-        reinterpret_cast<fftw_complex *>(source_table.data()),
-        reinterpret_cast<fftw_complex *>(source_table.data()), sign,
-        FFTW_MEASURE);
+    return fftw_plan_many_dft(
+        transform_rank, &circulant_dimensions[1], num_transforms,
+        reinterpret_cast<fftw_complex *>(source_table.data()), nullptr,
+        dist_between_elements, dist_between_transforms,
+        reinterpret_cast<fftw_complex *>(source_table.data()), nullptr,
+        dist_between_elements, dist_between_transforms, sign, FFTW_MEASURE);
   };
 
   return {make_plan(FFTW_FORWARD), make_plan(FFTW_BACKWARD)};

@@ -51,8 +51,13 @@ class AIM::AimInteraction final : public HistoryInteraction {
   int max_transit_steps;
   std::array<int, 4> circulant_dimensions;
 
-  SpacetimeVector<cmplx> fourier_table, source_table, obs_table;
-  TransformPair spatial_transforms;
+  // This corresponds to delta(t - R/c)/R and thus holds *scalar* quantities
+  SpacetimeVector<cmplx> fourier_table;
+
+  // These correspond to J and E and thus hold *vector* quantities
+  SpacetimeVector<Eigen::Vector3cd> source_table, obs_table;
+
+  TransformPair spatial_vector_transforms;
 
   void fill_source_table(const int);
   void fill_results_table(const int);
