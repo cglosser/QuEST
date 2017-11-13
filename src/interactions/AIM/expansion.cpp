@@ -26,7 +26,7 @@ Array2<AIM::Expansion> AIM::LeastSquaresExpansionSolver::table(
 
 Eigen::VectorXd AIM::LeastSquaresExpansionSolver::q_vector(
     const Eigen::Vector3d &pos,
-    const std::array<int, 3> &derivatives = {0, 0, 0}) const
+    const std::array<int, 3> &derivatives = {{0, 0, 0}}) const
 {
   Eigen::VectorXd q_vec(num_pts);
 
