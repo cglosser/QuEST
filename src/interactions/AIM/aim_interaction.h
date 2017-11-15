@@ -39,14 +39,14 @@ class AIM::AimInteraction final : public HistoryInteraction {
       const double,
       const double,
       const Grid &,
-      const Array2<Expansion> &,
+      const Expansions::ExpansionTable &,
       normalization::SpatialNorm);
 
   const ResultArray &evaluate(const int) final;
 
   // private:
   Grid grid;
-  Array2<Expansion> expansion_table;
+  Expansions::ExpansionTable expansion_table;
   normalization::SpatialNorm normalization;
   int max_transit_steps;
   std::array<int, 4> circulant_dimensions;

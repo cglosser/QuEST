@@ -10,7 +10,7 @@ AIM::AimInteraction::AimInteraction(const int interp_order,
                      1,
                      1,
                      grid,
-                     Array2<Expansion>(),
+                     Expansions::ExpansionTable(),
                      normalization)
 {
 }
@@ -23,7 +23,7 @@ AIM::AimInteraction::AimInteraction(
     const double c0,
     const double dt,
     const Grid &grid,
-    const Array2<Expansion> &expansion_table,
+    const Expansions::ExpansionTable &expansion_table,
     normalization::SpatialNorm normalization)
     : HistoryInteraction(dots, history, propagator, interp_order, c0, dt),
       grid(grid),
@@ -72,6 +72,7 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 
 void AIM::AimInteraction::fill_source_table(const int step)
 {
+  using namespace Expansions::enums;
   const int wrapped_step = step % circulant_dimensions[0];
   // std::cout << "(" << step << ", " << wrapped_step << ") ";
   auto p = &source_table[wrapped_step][0][0][0];
@@ -80,7 +81,8 @@ void AIM::AimInteraction::fill_source_table(const int step)
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
         ++expansion_idx) {
-      const Expansion &e = expansion_table[dot_idx][expansion_idx];
+      const Expansions::Expansion &e =
+          expansion_table[dot_idx][D_0][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
 
       // This is the seam between what's stored in the History (density matrix
@@ -101,13 +103,16 @@ void AIM::AimInteraction::fill_source_table(const int step)
 
 void AIM::AimInteraction::fill_results_table(const int step)
 {
+  using namespace Expansions::enums;
+
   results = 0;
   const int wrapped_step = step % circulant_dimensions[0];
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
         ++expansion_idx) {
-      const Expansion &e = expansion_table[dot_idx][expansion_idx];
+      const Expansions::Expansion &e =
+          expansion_table[dot_idx][D_0][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
 
       results(dot_idx) +=

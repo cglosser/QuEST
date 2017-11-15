@@ -1,32 +1,43 @@
 #include "expansion.h"
 
-Array2<AIM::Expansion> AIM::LeastSquaresExpansionSolver::get_expansions(
+AIM::Expansions::ExpansionTable
+AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
     const int box_order, const Grid &grid, const std::vector<QuantumDot> &dots)
 {
   return LeastSquaresExpansionSolver(box_order, grid).table(dots);
 }
 
-Array2<AIM::Expansion> AIM::LeastSquaresExpansionSolver::table(
+AIM::Expansions::ExpansionTable
+AIM::Expansions::LeastSquaresExpansionSolver::table(
     const std::vector<QuantumDot> &dots) const
 {
-  Array2<AIM::Expansion> table(boost::extents[dots.size()][num_pts]);
+  using namespace enums;
+  AIM::Expansions::ExpansionTable table(boost::extents[dots.size()][NUM_DERIVS][num_pts]);
+  constexpr std::array<DERIVATIVE_ORDER, NUM_DERIVS> derivs = {{D_0, D_X, D_Y, D_Z}};
 
   for(auto dot_idx = 0u; dot_idx < dots.size(); ++dot_idx) {
-    const auto indices =
-        grid.expansion_box_indices(dots.at(dot_idx).position(), box_order);
-    const auto weights = solve_expansion_system(dots.at(dot_idx).position());
+    const auto &pos = dots.at(dot_idx).position();
+    const auto indices = grid.expansion_box_indices(pos, box_order);
+    for(const auto &d : derivs) {
+      Eigen::VectorXd weights;
 
-    for(auto w = 0; w < num_pts; ++w) {
-      table[dot_idx][w] = {indices[w], weights[w]};
+      switch(d) {
+        case(D_0): weights = solve_expansion_system(pos); break;
+        case(D_X): weights = solve_expansion_system(pos, {{1, 0, 0}}); break;
+        case(D_Y): weights = solve_expansion_system(pos, {{0, 1, 0}}); break;
+        case(D_Z): weights = solve_expansion_system(pos, {{0, 0, 1}}); break;
+      }
+      for(auto w = 0; w < num_pts; ++w) {
+        table[dot_idx][d][w] = {indices[w], weights[w]};
+      }
     }
   }
 
   return table;
 }
 
-Eigen::VectorXd AIM::LeastSquaresExpansionSolver::q_vector(
-    const Eigen::Vector3d &pos,
-    const std::array<int, 3> &derivatives = {{0, 0, 0}}) const
+Eigen::VectorXd AIM::Expansions::LeastSquaresExpansionSolver::q_vector(
+    const Eigen::Vector3d &pos, const std::array<int, 3> &derivatives) const
 {
   Eigen::VectorXd q_vec(num_pts);
 
@@ -48,7 +59,7 @@ Eigen::VectorXd AIM::LeastSquaresExpansionSolver::q_vector(
   return q_vec;
 }
 
-Eigen::MatrixXd AIM::LeastSquaresExpansionSolver::w_matrix(
+Eigen::MatrixXd AIM::Expansions::LeastSquaresExpansionSolver::w_matrix(
     const Eigen::Vector3d &pos) const
 {
   Eigen::MatrixXd w_mat(num_pts, num_pts);
@@ -62,9 +73,10 @@ Eigen::MatrixXd AIM::LeastSquaresExpansionSolver::w_matrix(
   return w_mat;
 }
 
-Eigen::VectorXd AIM::LeastSquaresExpansionSolver::solve_expansion_system(
-    const Eigen::Vector3d &pos) const
+Eigen::VectorXd
+AIM::Expansions::LeastSquaresExpansionSolver::solve_expansion_system(
+    const Eigen::Vector3d &pos, const std::array<int, 3> &derivatives) const
 {
   Eigen::FullPivLU<Eigen::MatrixXd> lu(w_matrix(pos));
-  return lu.solve(q_vector(pos));
+  return lu.solve(q_vector(pos, derivatives));
 }

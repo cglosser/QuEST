@@ -5,23 +5,33 @@
 #include "quantum_dot.h"
 
 namespace AIM {
-  struct Expansion {
-    size_t index;
-    double weight;
-  };
-  class LeastSquaresExpansionSolver;
+  namespace Expansions {
+    inline namespace enums {
+      constexpr int NUM_DERIVS = 4;
+      enum DERIVATIVE_ORDER { D_0, D_X, D_Y, D_Z };
+    }
+
+    struct Expansion {
+      size_t index;
+      double weight;
+    };
+    using ExpansionTable = boost::multi_array<Expansion, 3>;
+    class LeastSquaresExpansionSolver;
+  }
 }
 
-class AIM::LeastSquaresExpansionSolver {
+class AIM::Expansions::LeastSquaresExpansionSolver {
  public:
-  static Array2<Expansion> get_expansions(const int,
-                                          const Grid &,
-                                          const std::vector<QuantumDot> &);
-  Array2<Expansion> table(const std::vector<QuantumDot> &) const;
+  static ExpansionTable get_expansions(const int,
+                                       const Grid &,
+                                       const std::vector<QuantumDot> &);
+  ExpansionTable table(const std::vector<QuantumDot> &) const;
   Eigen::VectorXd q_vector(const Eigen::Vector3d &,
-                           const std::array<int, 3> &) const;
+                           const std::array<int, 3> & = {{0, 0, 0}}) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
-  Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
+  Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &,
+                                         const std::array<int, 3> & = {
+                                             {0, 0, 0}}) const;
 
  private:
   LeastSquaresExpansionSolver(const int box_order, const Grid &grid)

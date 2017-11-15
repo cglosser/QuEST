@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
 {
   Eigen::Vector3i num_boxes(4, 4, 4);
   Grid grid(unit_spacing, num_boxes);
-  auto expansions =
-      LeastSquaresExpansionSolver::get_expansions(expansion_order, grid, *dots);
+  auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
+      expansion_order, grid, *dots);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
                           expansions, AIM::normalization::unit);
   auto circulant_shape = grid.circulant_shape(c0, dt);
