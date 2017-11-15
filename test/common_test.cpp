@@ -8,7 +8,7 @@ BOOST_AUTO_TEST_SUITE(common)
 
 struct Shapes {
   std::array<int, 4> dims;
-  Shapes() : dims({2, 6, 8, 10}){};
+  Shapes() : dims({{2, 6, 8, 10}}){};
 };
 
 BOOST_FIXTURE_TEST_CASE(circulant_mirror, Shapes)
