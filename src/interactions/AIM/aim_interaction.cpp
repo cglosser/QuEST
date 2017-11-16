@@ -44,28 +44,28 @@ AIM::AimInteraction::AimInteraction(
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
-  // const auto wrapped_step = step % circulant_dimensions[0];
-  // const auto nb = 3 * 8 * grid.num_boxes;
+  const auto wrapped_step = step % circulant_dimensions[0];
+  const auto nb = 8 * grid.num_boxes;
 
-  // Eigen::Map<Eigen::ArrayXcd> observers(&obs_table[wrapped_step][0][0][0],
-  // nb);
-  // observers = 0;
+  std::array<int, 5> front = {{wrapped_step, 0, 0, 0, 0}};
+  Eigen::Map<Eigen::Array3Xcd> observers(&obs_table(front), 3, nb);
+  observers = 0;
 
-  // for(int i = 1; i < circulant_dimensions[0]; ++i) {
-  // if(step - i < 0) continue;
-  // auto wrap = (step - i) % circulant_dimensions[0];
+  for(int i = 1; i < circulant_dimensions[0]; ++i) {
+    if(step - i < 0) continue;
+    auto wrap = (step - i) % circulant_dimensions[0];
 
-  // Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
-  // Eigen::Map<Eigen::ArrayXcd> src(&source_table[wrap][0][0][0], nb);
+    Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
+    Eigen::Map<Eigen::Array3Xcd> src(&source_table[wrap][0][0][0][0], 3, nb);
 
-  // observers += prop * src;
-  //}
+    observers += src.rowwise() * prop.transpose();
+  }
 
-  // fftw_execute_dft(spatial_transforms.backward,
-  // reinterpret_cast<fftw_complex *>(observers.data()),
-  // reinterpret_cast<fftw_complex *>(observers.data()));
+  fftw_execute_dft(spatial_vector_transforms.backward,
+                   reinterpret_cast<fftw_complex *>(observers.data()),
+                   reinterpret_cast<fftw_complex *>(observers.data()));
 
-  // fill_results_table(step);
+  fill_results_table(step);
   return results;
 }
 
@@ -78,7 +78,7 @@ void AIM::AimInteraction::fill_source_table(const int step)
   std::fill(p, p + 3 * 8 * grid.num_boxes, cmplx(0, 0));
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
-    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
+    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[2];
         ++expansion_idx) {
       const Expansions::Expansion &e =
           expansion_table[dot_idx][D_0][expansion_idx];

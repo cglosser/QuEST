@@ -30,6 +30,8 @@ class QuantumDot {
   QuantumDot() = default;
   QuantumDot(const Eigen::Vector3d &pos)
       : QuantumDot(pos, 0, {0.0, 0.0}, Eigen::Vector3d::Zero()){};
+  QuantumDot(const Eigen::Vector3d &pos, const Eigen::Vector3d &dip)
+      : QuantumDot(pos, 0, {0.0, 0.0}, dip){};
   QuantumDot(const Eigen::Vector3d &,
              const double,
              const std::pair<double, double> &,

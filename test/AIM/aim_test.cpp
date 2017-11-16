@@ -12,66 +12,66 @@ struct PARAMETERS {
 
 BOOST_AUTO_TEST_SUITE(AIM)
 
-// BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
-//{
-// Eigen::Array3i num_boxes(4, 4, 4);
-// Eigen::Array3d spacing(Eigen::Array3d(1, 1, 1) * c * dt);
+BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
+{
+  Eigen::Array3i num_boxes(4, 4, 4);
+  Eigen::Array3d spacing(Eigen::Array3d(1, 1, 1) * c * dt);
 
-//// Place one QD *on* the most-separated grid points
-// std::shared_ptr<DotVector> dots = std::make_shared<DotVector>(
-// DotVector{QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
-// QuantumDot(spacing * num_boxes.cast<double>(),
-// Eigen::Vector3d(0, 0, 1))});
+  // Place one QD *on* the most-separated grid points
+  std::shared_ptr<DotVector> dots = std::make_shared<DotVector>(
+      DotVector{QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
+                QuantumDot(spacing * num_boxes.cast<double>(),
+                           Eigen::Vector3d(0, 0, 1))});
 
-// Grid grid(spacing, dots, expansion_order);
-// BOOST_CHECK_EQUAL(
-//(dots->at(1).position() - grid.spatial_coord_of_box(grid.num_boxes - 1))
-//.norm(),
-// 0);
+  Grid grid(spacing, dots, expansion_order);
+  BOOST_CHECK_EQUAL(
+      (dots->at(1).position() - grid.spatial_coord_of_box(grid.num_boxes - 1))
+          .norm(),
+      0);
 
-// auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
-// expansion_order, grid, *dots);
+  auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
+      expansion_order, grid, *dots);
 
-// const int num_steps = 256;
+  const int num_steps = 256;
 
-// auto src = [=](const double t) {
-// const double total_time = num_steps * dt;
-// double arg = (t - total_time / 2.0) / (total_time / 6.0);
-// return gaussian(arg);
-//};
+  auto src = [=](const double t) {
+    const double total_time = num_steps * dt;
+    double arg = (t - total_time / 2.0) / (total_time / 6.0);
+    return gaussian(arg);
+  };
 
-//// Set up and pre-fill the source particle in a History table
-// std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history =
-// std::make_shared<Integrator::History<Eigen::Vector2cd>>(dots->size(), 10,
-// num_steps);
-// history->fill(Eigen::Vector2cd::Zero());
-// for(int i = -10; i < num_steps; ++i) {
-// history->array[0][i][0](RHO_01) = src(i * dt);
-//}
+  // Set up and pre-fill the source particle in a History table
+  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history =
+      std::make_shared<Integrator::History<Eigen::Vector2cd>>(dots->size(), 10,
+                                                              num_steps);
+  history->fill(Eigen::Vector2cd::Zero());
+  for(int i = -10; i < num_steps; ++i) {
+    history->array[0][i][0](RHO_01) = src(i * dt);
+  }
 
-// AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
-// grid, expansions, AIM::normalization::unit);
+  AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
+                          grid, expansions, AIM::normalization::unit);
 
-// const double delay =
-//(dots->at(1).position() - dots->at(0).position()).norm() / c;
+  const double delay =
+      (dots->at(1).position() - dots->at(0).position()).norm() / c;
 
-// double max_error = 0;
-// for(int i = 0; i < num_steps; ++i) {
-// aim.fill_source_table(i);
-// auto x = aim.evaluate(i);
+   double max_error = 0;
+   for(int i = 0; i < num_steps; ++i) {
+   aim.fill_source_table(i);
+   auto x = aim.evaluate(i);
 
-// if(i > aim.max_transit_steps) {
-//// Wait until observer is fully (i.e. has a complete interpolation) inside
-//// of light cone
-// BOOST_CHECK_CLOSE(x(1).real(), src(i * dt - delay), 1e-7);
+   if(i > aim.max_transit_steps) {
+  // Wait until observer is fully (i.e. has a complete interpolation) inside
+  // of light cone
+   BOOST_CHECK_CLOSE(x(1).real(), src(i * dt - delay), 1e-7);
 
-// auto relative_error =
-// std::abs((src(i * dt - delay) - x(1).real()) / src(i * dt - delay));
-// max_error = std::max(max_error, relative_error);
-//}
-//}
-// BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << max_error);
-//}
+   auto relative_error =
+   std::abs((src(i * dt - delay) - x(1).real()) / src(i * dt - delay));
+   max_error = std::max(max_error, relative_error);
+  }
+  }
+   BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << max_error);
+}
 
 struct DummyPropagation {
   std::shared_ptr<DotVector> dots;
