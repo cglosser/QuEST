@@ -19,8 +19,9 @@ BOOST_AUTO_TEST_SUITE(AIM)
 
 //// Place one QD *on* the most-separated grid points
 // std::shared_ptr<DotVector> dots = std::make_shared<DotVector>(
-// DotVector{QuantumDot(Eigen::Vector3d::Zero()),
-// QuantumDot(spacing * num_boxes.cast<double>())});
+// DotVector{QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
+// QuantumDot(spacing * num_boxes.cast<double>(),
+// Eigen::Vector3d(0, 0, 1))});
 
 // Grid grid(spacing, dots, expansion_order);
 // BOOST_CHECK_EQUAL(
@@ -28,8 +29,8 @@ BOOST_AUTO_TEST_SUITE(AIM)
 //.norm(),
 // 0);
 
-// auto expansions =
-// LeastSquaresExpansionSolver::get_expansions(expansion_order, grid, *dots);
+// auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
+// expansion_order, grid, *dots);
 
 // const int num_steps = 256;
 
@@ -108,14 +109,15 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
 
   std::fill(aim.source_table.data(),
             aim.source_table.data() + aim.source_table.num_elements(),
-            Eigen::Vector3cd::Zero());
+            cmplx(0, 0));
 
   for(int t = 0; t < circulant_shape[0]; ++t) {
     int i = 1;
     for(int x = 0; x < circulant_shape[1] / 2; ++x) {
       for(int y = 0; y < circulant_shape[2] / 2; ++y) {
         for(int z = 0; z < circulant_shape[3] / 2; ++z) {
-          aim.source_table[t][x][y][z] = Eigen::Vector3cd(i, -2 * i, 0);
+          Eigen::Map<Eigen::Vector3cd> m(&aim.source_table[t][x][y][z][0]);
+          m = Eigen::Vector3cd(i, -2 * i, 0);
           i++;
         }
       }
@@ -134,19 +136,21 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   };
 
   // The spatial transform should transform the first "time block"...
+  Eigen::Map<Eigen::Array3Xcd> vecs(aim.source_table.data(), 3,
+                                    (2 * num_boxes).prod());
   for(auto j = 0u; j < test_fft.size(); ++j) {
-    const auto &vec = aim.source_table.data()[j];
-    BOOST_CHECK_SMALL(std::norm(test_fft.at(j) - vec(0)), 1e-12);
-    BOOST_CHECK_SMALL(std::norm(-2.0 * test_fft.at(j) - vec(1)), 1e-12);
-    BOOST_CHECK_SMALL(std::norm(vec(2)), 1e-12);
+    BOOST_CHECK_SMALL(std::norm(test_fft.at(j) - vecs(0, j)), 1e-16);
+    BOOST_CHECK_SMALL(std::norm(-2.0 * test_fft.at(j) - vecs(1, j)), 1e-16);
+    BOOST_CHECK_SMALL(std::norm(vecs(2, j)), 1e-16);
   }
 
   // ...and leave the second one alone.
+  new(&vecs) Eigen::Map<Eigen::Array3Xcd>(&aim.source_table[1][0][0][0][0], 3,
+                                          (2 * num_boxes).prod());
   for(auto j = 0u; j < test_int.size(); ++j) {
-    const auto &vec = (&aim.source_table[1][0][0][0])[j];
-    BOOST_CHECK_EQUAL(test_int.at(j), vec(0));
-    BOOST_CHECK_EQUAL(-2.0 * test_int.at(j), vec(1));
-    BOOST_CHECK_EQUAL(0.0, vec(2));
+    BOOST_CHECK_EQUAL(test_int.at(j), vecs(0, j));
+    BOOST_CHECK_EQUAL(-2.0 * test_int.at(j), vecs(1, j));
+    BOOST_CHECK_EQUAL(0.0, vecs(2, j));
   }
 }
 

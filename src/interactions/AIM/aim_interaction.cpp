@@ -32,40 +32,40 @@ AIM::AimInteraction::AimInteraction(
       max_transit_steps(grid.max_transit_steps(c0, dt)),
       circulant_dimensions(grid.circulant_shape(c0, dt, interp_order)),
       fourier_table(circulant_fourier_table()),
-      source_table(circulant_dimensions),
-      obs_table(circulant_dimensions),
+      source_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
+      obs_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
       spatial_vector_transforms(spatial_fft_plans())
 {
   std::fill(source_table.data(),
-            source_table.data() + source_table.num_elements(),
-            Eigen::Vector3cd::Zero());
+            source_table.data() + source_table.num_elements(), cmplx(0, 0));
   std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
-            Eigen::Vector3cd::Zero());
+            cmplx(0, 0));
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
-  //const auto wrapped_step = step % circulant_dimensions[0];
-  //const auto nb = 3 * 8 * grid.num_boxes;
+  // const auto wrapped_step = step % circulant_dimensions[0];
+  // const auto nb = 3 * 8 * grid.num_boxes;
 
-  //Eigen::Map<Eigen::ArrayXcd> observers(&obs_table[wrapped_step][0][0][0], nb);
-  //observers = 0;
+  // Eigen::Map<Eigen::ArrayXcd> observers(&obs_table[wrapped_step][0][0][0],
+  // nb);
+  // observers = 0;
 
-  //for(int i = 1; i < circulant_dimensions[0]; ++i) {
-    //if(step - i < 0) continue;
-    //auto wrap = (step - i) % circulant_dimensions[0];
+  // for(int i = 1; i < circulant_dimensions[0]; ++i) {
+  // if(step - i < 0) continue;
+  // auto wrap = (step - i) % circulant_dimensions[0];
 
-    //Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
-    //Eigen::Map<Eigen::ArrayXcd> src(&source_table[wrap][0][0][0], nb);
+  // Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
+  // Eigen::Map<Eigen::ArrayXcd> src(&source_table[wrap][0][0][0], nb);
 
-    //observers += prop * src;
+  // observers += prop * src;
   //}
 
-  //fftw_execute_dft(spatial_transforms.backward,
-                   //reinterpret_cast<fftw_complex *>(observers.data()),
-                   //reinterpret_cast<fftw_complex *>(observers.data()));
+  // fftw_execute_dft(spatial_transforms.backward,
+  // reinterpret_cast<fftw_complex *>(observers.data()),
+  // reinterpret_cast<fftw_complex *>(observers.data()));
 
-  //fill_results_table(step);
+  // fill_results_table(step);
   return results;
 }
 
@@ -74,8 +74,8 @@ void AIM::AimInteraction::fill_source_table(const int step)
   using namespace Expansions::enums;
   const int wrapped_step = step % circulant_dimensions[0];
   // std::cout << "(" << step << ", " << wrapped_step << ") ";
-  auto p = &source_table[wrapped_step][0][0][0];
-  std::fill(p, p + 8 * grid.num_boxes, Eigen::Vector3cd::Zero());
+  auto p = &source_table[wrapped_step][0][0][0][0];
+  std::fill(p, p + 3 * 8 * grid.num_boxes, cmplx(0, 0));
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
@@ -84,20 +84,23 @@ void AIM::AimInteraction::fill_source_table(const int step)
           expansion_table[dot_idx][D_0][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
 
-      // This is the seam between what's stored in the History (density matrix
-      // elements) and the electromagnetic source quantities. Ideally the AIM
+      Eigen::Map<Eigen::Vector3cd> grid_field(
+          &source_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
+
+      // This is the seam between what's stored in the History (density
+      // matrix
+      // elements) and the electromagnetic source quantities. Ideally the
+      // AIM
       // code should not have knowledge of this to better encapsulate
       // "propagation," but this is good enough for now.
-      source_table[wrapped_step][coord(0)][coord(1)][coord(2)] =
-          e.weight * (*dots)[dot_idx].dipole() *
-          history->array[dot_idx][step][0][RHO_01];
+      grid_field = e.weight * (*dots)[dot_idx].dipole() *
+                   history->array[dot_idx][step][0][RHO_01];
     }
   }
 
-  fftw_execute_dft(
-      spatial_vector_transforms.forward,
-      reinterpret_cast<fftw_complex *>(&source_table[wrapped_step][0][0][0]),
-      reinterpret_cast<fftw_complex *>(&source_table[wrapped_step][0][0][0]));
+  fftw_execute_dft(spatial_vector_transforms.forward,
+                   reinterpret_cast<fftw_complex *>(p),
+                   reinterpret_cast<fftw_complex *>(p));
 }
 
 void AIM::AimInteraction::fill_results_table(const int step)
@@ -114,10 +117,10 @@ void AIM::AimInteraction::fill_results_table(const int step)
           expansion_table[dot_idx][D_0][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
 
-      results(dot_idx) +=
-          e.weight *
-          obs_table[wrapped_step][coord(0)][coord(1)][coord(2)].dot(
-              (*dots)[dot_idx].dipole());
+      Eigen::Map<Eigen::Vector3cd> efield(
+          &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
+
+      results(dot_idx) += e.weight * efield.dot((*dots)[dot_idx].dipole());
     }
   }
 }

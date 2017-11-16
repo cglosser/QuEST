@@ -24,6 +24,13 @@ namespace AIM {
     // Last dim holds X, Y, Z components of a vector quantity
 
     template <class T>
+    vector3d<T> make_vector3d(const std::array<int, 4> &dims)
+    {
+      // Convenience function to build vector3d from "circulant shape" std::arrays
+      return vector3d<T>(boost::extents[dims[0]][dims[1]][dims[2]][dims[3]][3]);
+    }
+
+    template <class T>
     void fill_circulant_mirror(spacetime::vector<T> &);
   }
 
@@ -67,7 +74,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   spacetime::vector<cmplx> fourier_table;
 
   // These correspond to J and E and thus hold *vector* quantities
-  spacetime::vector<Eigen::Vector3cd> source_table, obs_table;
+  spacetime::vector3d<cmplx> source_table, obs_table;
 
   TransformPair spatial_vector_transforms;
 
