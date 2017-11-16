@@ -45,28 +45,27 @@ AIM::AimInteraction::AimInteraction(
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
-  // const auto wrapped_step = step % circulant_dimensions[0];
-  // const auto nb = 8 * grid.num_boxes;
+  //const auto wrapped_step = step % circulant_dimensions[0];
+  //const auto nb = 3 * 8 * grid.num_boxes;
 
-  // Eigen::Map<Eigen::ArrayXcd> observers(&obs_table[wrapped_step][0][0][0],
-  // nb);
-  // observers = 0;
+  //Eigen::Map<Eigen::ArrayXcd> observers(&obs_table[wrapped_step][0][0][0], nb);
+  //observers = 0;
 
-  // for(int i = 1; i < circulant_dimensions[0]; ++i) {
-  // if(step - i < 0) continue;
-  // auto wrap = (step - i) % circulant_dimensions[0];
+  //for(int i = 1; i < circulant_dimensions[0]; ++i) {
+    //if(step - i < 0) continue;
+    //auto wrap = (step - i) % circulant_dimensions[0];
 
-  // Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
-  // Eigen::Map<Eigen::ArrayXcd> src(&source_table[wrap][0][0][0], nb);
+    //Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
+    //Eigen::Map<Eigen::ArrayXcd> src(&source_table[wrap][0][0][0], nb);
 
-  // observers += prop * src;
+    //observers += prop * src;
   //}
 
-  // fftw_execute_dft(spatial_transforms.backward,
-  // reinterpret_cast<fftw_complex *>(observers.data()),
-  // reinterpret_cast<fftw_complex *>(observers.data()));
+  //fftw_execute_dft(spatial_transforms.backward,
+                   //reinterpret_cast<fftw_complex *>(observers.data()),
+                   //reinterpret_cast<fftw_complex *>(observers.data()));
 
-  // fill_results_table(step);
+  //fill_results_table(step);
   return results;
 }
 
@@ -123,9 +122,9 @@ void AIM::AimInteraction::fill_results_table(const int step)
   }
 }
 
-SpacetimeVector<cmplx> AIM::AimInteraction::circulant_fourier_table()
+AIM::spacetime::vector<cmplx> AIM::AimInteraction::circulant_fourier_table()
 {
-  SpacetimeVector<cmplx> g_mat(circulant_dimensions);
+  spacetime::vector<cmplx> g_mat(circulant_dimensions);
 
   const int num_gridpts = circulant_dimensions[1] * circulant_dimensions[2] *
                           circulant_dimensions[3];
@@ -156,12 +155,12 @@ SpacetimeVector<cmplx> AIM::AimInteraction::circulant_fourier_table()
 }
 
 void AIM::AimInteraction::fill_gmatrix_table(
-    SpacetimeVector<cmplx> &gmatrix_table) const
+    spacetime::vector<cmplx> &gmatrix_table) const
 {  // Build the circulant vectors that define the G "matrices." Since the G
   // matrices are Toeplitz (and symmetric), they're uniquely determined by
   // their first row. The first row gets computed here then mirrored to make a
   // list of every circulant (and thus FFT-able) vector. This function needs to
-  // accept a non-const reference to a SpacetimeVector (instead of just
+  // accept a non-const reference to a spacetime::vector (instead of just
   // returning such an array) to play nice with FFTW and its workspaces.
 
   Interpolation::UniformLagrangeSet interp(interp_order);
@@ -189,7 +188,7 @@ void AIM::AimInteraction::fill_gmatrix_table(
     }
   }
 
-  fill_circulant_mirror(gmatrix_table);
+  spacetime::fill_circulant_mirror(gmatrix_table);
 }
 
 TransformPair AIM::AimInteraction::spatial_fft_plans()
