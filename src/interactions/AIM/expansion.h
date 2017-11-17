@@ -20,6 +20,25 @@ namespace AIM {
     using ExpansionTable = boost::multi_array<Expansion, 2>;
     class LeastSquaresExpansionSolver;
   }
+
+  using ExpansionFunction = std::function<Eigen::Vector3cd(
+      const Eigen::Vector3cd &, const Expansions::DerivativeTable &)>;
+
+  const ExpansionFunction Identity = [](
+      const Eigen::Vector3cd &grid_field,
+      const Expansions::DerivativeTable &derivs) {
+    using namespace Expansions::enums;
+    return derivs[D_0] * grid_field;
+  };
+
+  const ExpansionFunction GradDiv = [](
+      const Eigen::Vector3cd &grid_field,
+      const Expansions::DerivativeTable &derivs) {
+    using namespace Expansions::enums;
+    Eigen::Map<Eigen::Vector3d> del(&derivs[D_X]);
+    cmplx divergence = del.dot(grid_field);
+    return del * divergence;
+  }
 }
 
 class AIM::Expansions::LeastSquaresExpansionSolver {
