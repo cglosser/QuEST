@@ -44,6 +44,45 @@ AIM::AimInteraction::AimInteraction(
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
+  fill_source_table(step);
+  propagate(step);
+  fill_results_table(step);
+  return results;
+}
+
+void AIM::AimInteraction::fill_source_table(const int step)
+{
+  using namespace Expansions::enums;
+
+  const int wrapped_step = step % circulant_dimensions[0];
+  const auto p = &source_table[wrapped_step][0][0][0][0];
+  std::fill(p, p + 3 * 8 * grid.num_boxes, cmplx(0, 0));
+
+  for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
+    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[2];
+        ++expansion_idx) {
+      const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
+      Eigen::Vector3i coord = grid.idx_to_coord(e.index);
+
+      Eigen::Map<Eigen::Vector3cd> grid_field(
+          &source_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
+
+      // This is the seam between what's stored in the History (density matrix
+      // elements) and the electromagnetic source quantities. Ideally the AIM
+      // code should not have knowledge of this to better encapsulate
+      // "propagation," but this is good enough for now.
+      grid_field = e.weights[D_0] * (*dots)[dot_idx].dipole() *
+                   history->array[dot_idx][step][0][RHO_01];
+    }
+  }
+
+  fftw_execute_dft(spatial_vector_transforms.forward,
+                   reinterpret_cast<fftw_complex *>(p),
+                   reinterpret_cast<fftw_complex *>(p));
+}
+
+void AIM::AimInteraction::propagate(const int step)
+{
   const auto wrapped_step = step % circulant_dimensions[0];
   const auto nb = 8 * grid.num_boxes;
 
@@ -64,43 +103,6 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
   fftw_execute_dft(spatial_vector_transforms.backward,
                    reinterpret_cast<fftw_complex *>(observers.data()),
                    reinterpret_cast<fftw_complex *>(observers.data()));
-
-  fill_results_table(step);
-  return results;
-}
-
-void AIM::AimInteraction::fill_source_table(const int step)
-{
-  using namespace Expansions::enums;
-  const int wrapped_step = step % circulant_dimensions[0];
-  // std::cout << "(" << step << ", " << wrapped_step << ") ";
-  auto p = &source_table[wrapped_step][0][0][0][0];
-  std::fill(p, p + 3 * 8 * grid.num_boxes, cmplx(0, 0));
-
-  for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
-    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[2];
-        ++expansion_idx) {
-      const Expansions::Expansion &e =
-          expansion_table[dot_idx][D_0][expansion_idx];
-      Eigen::Vector3i coord = grid.idx_to_coord(e.index);
-
-      Eigen::Map<Eigen::Vector3cd> grid_field(
-          &source_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
-
-      // This is the seam between what's stored in the History (density
-      // matrix
-      // elements) and the electromagnetic source quantities. Ideally the
-      // AIM
-      // code should not have knowledge of this to better encapsulate
-      // "propagation," but this is good enough for now.
-      grid_field = e.weight * (*dots)[dot_idx].dipole() *
-                   history->array[dot_idx][step][0][RHO_01];
-    }
-  }
-
-  fftw_execute_dft(spatial_vector_transforms.forward,
-                   reinterpret_cast<fftw_complex *>(p),
-                   reinterpret_cast<fftw_complex *>(p));
 }
 
 void AIM::AimInteraction::fill_results_table(const int step)
@@ -113,14 +115,14 @@ void AIM::AimInteraction::fill_results_table(const int step)
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
         ++expansion_idx) {
-      const Expansions::Expansion &e =
-          expansion_table[dot_idx][D_0][expansion_idx];
+      const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
 
       Eigen::Map<Eigen::Vector3cd> efield(
           &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
 
-      results(dot_idx) += e.weight * efield.dot((*dots)[dot_idx].dipole());
+      results(dot_idx) +=
+          e.weights[D_0] * efield.dot((*dots)[dot_idx].dipole());
     }
   }
 }

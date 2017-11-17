@@ -79,6 +79,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   TransformPair spatial_vector_transforms;
 
   void fill_source_table(const int);
+  void propagate(const int);
   void fill_results_table(const int);
 
   spacetime::vector<cmplx> circulant_fourier_table();

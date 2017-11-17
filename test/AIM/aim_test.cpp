@@ -57,7 +57,6 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
 
   double max_error = 0;
   for(int i = 0; i < num_steps; ++i) {
-    aim.fill_source_table(i);
     auto x = aim.evaluate(i);
 
     if(i > aim.max_transit_steps) {

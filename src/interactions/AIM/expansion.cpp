@@ -12,24 +12,23 @@ AIM::Expansions::LeastSquaresExpansionSolver::table(
     const std::vector<QuantumDot> &dots) const
 {
   using namespace enums;
-  AIM::Expansions::ExpansionTable table(boost::extents[dots.size()][NUM_DERIVS][num_pts]);
-  constexpr std::array<DERIVATIVE_ORDER, NUM_DERIVS> derivs = {{D_0, D_X, D_Y, D_Z}};
+  AIM::Expansions::ExpansionTable table(
+      boost::extents[dots.size()][num_pts]);
 
   for(auto dot_idx = 0u; dot_idx < dots.size(); ++dot_idx) {
     const auto &pos = dots.at(dot_idx).position();
     const auto indices = grid.expansion_box_indices(pos, box_order);
-    for(const auto &d : derivs) {
-      Eigen::VectorXd weights;
 
-      switch(d) {
-        case(D_0): weights = solve_expansion_system(pos); break;
-        case(D_X): weights = solve_expansion_system(pos, {{1, 0, 0}}); break;
-        case(D_Y): weights = solve_expansion_system(pos, {{0, 1, 0}}); break;
-        case(D_Z): weights = solve_expansion_system(pos, {{0, 0, 1}}); break;
-      }
-      for(auto w = 0; w < num_pts; ++w) {
-        table[dot_idx][d][w] = {indices[w], weights[w]};
-      }
+    Eigen::Array4Xd weights(4, num_pts);
+    weights.row(D_0) = solve_expansion_system(pos, {{0, 0, 0}});
+    weights.row(D_X) = solve_expansion_system(pos, {{1, 0, 0}});
+    weights.row(D_Y) = solve_expansion_system(pos, {{0, 1, 0}});
+    weights.row(D_Z) = solve_expansion_system(pos, {{0, 0, 1}});
+
+    for(auto w = 0; w < num_pts; ++w) {
+      table[dot_idx][w].index = indices[w];
+      Eigen::Map<Eigen::Array4d>(table[dot_idx][w].weights.data()) =
+          weights.col(w);
     }
   }
 

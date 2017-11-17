@@ -11,11 +11,13 @@ namespace AIM {
       enum DERIVATIVE_ORDER { D_0, D_X, D_Y, D_Z };
     }
 
+    using DerivativeTable = std::array<double, 4>;
+
     struct Expansion {
       size_t index;
-      double weight;
+      DerivativeTable weights;
     };
-    using ExpansionTable = boost::multi_array<Expansion, 3>;
+    using ExpansionTable = boost::multi_array<Expansion, 2>;
     class LeastSquaresExpansionSolver;
   }
 }
