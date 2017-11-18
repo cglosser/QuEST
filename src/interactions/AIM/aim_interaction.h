@@ -26,7 +26,7 @@ namespace AIM {
     template <class T>
     vector3d<T> make_vector3d(const std::array<int, 4> &dims)
     {
-      // Convenience function to build vector3d from "circulant shape" std::arrays
+      // Convenience function to build vector3d from "circulant shape" array
       return vector3d<T>(boost::extents[dims[0]][dims[1]][dims[2]][dims[3]][3]);
     }
 
@@ -59,6 +59,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
       const double,
       const Grid &,
       const Expansions::ExpansionTable &,
+      Expansions::ExpansionFunction,
       normalization::SpatialNorm);
 
   const ResultArray &evaluate(const int) final;
@@ -66,6 +67,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   // private:
   Grid grid;
   Expansions::ExpansionTable expansion_table;
+  Expansions::ExpansionFunction expansion_function;
   normalization::SpatialNorm normalization;
   int max_transit_steps;
   std::array<int, 4> circulant_dimensions;

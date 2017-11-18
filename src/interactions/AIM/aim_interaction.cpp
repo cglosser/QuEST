@@ -11,6 +11,7 @@ AIM::AimInteraction::AimInteraction(const int interp_order,
                      1,
                      grid,
                      Expansions::ExpansionTable(),
+                     Expansions::Identity,
                      normalization)
 {
 }
@@ -24,10 +25,12 @@ AIM::AimInteraction::AimInteraction(
     const double dt,
     const Grid &grid,
     const Expansions::ExpansionTable &expansion_table,
+    Expansions::ExpansionFunction expansion_function,
     normalization::SpatialNorm normalization)
     : HistoryInteraction(dots, history, propagator, interp_order, c0, dt),
       grid(grid),
       expansion_table(expansion_table),
+      expansion_function(std::move(expansion_function)),
       normalization(std::move(normalization)),
       max_transit_steps(grid.max_transit_steps(c0, dt)),
       circulant_dimensions(grid.circulant_shape(c0, dt, interp_order)),
@@ -122,7 +125,7 @@ void AIM::AimInteraction::fill_results_table(const int step)
           &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
 
       results(dot_idx) +=
-          e.weights[D_0] * efield.dot((*dots)[dot_idx].dipole());
+          expansion_function(efield, e.weights).dot((*dots)[dot_idx].dipole());
     }
   }
 }

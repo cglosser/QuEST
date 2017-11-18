@@ -50,7 +50,8 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
   }
 
   AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
-                          grid, expansions, AIM::normalization::unit);
+                          grid, expansions, AIM::Expansions::Identity,
+                          AIM::normalization::unit);
 
   const double delay =
       (dots->at(1).position() - dots->at(0).position()).norm() / c;
@@ -103,7 +104,7 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
       expansion_order, grid, *dots);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-                          expansions, AIM::normalization::unit);
+                          expansions, AIM::Expansions::Identity, AIM::normalization::unit);
   auto circulant_shape = grid.circulant_shape(c0, dt);
 
   std::fill(aim.source_table.data(),
