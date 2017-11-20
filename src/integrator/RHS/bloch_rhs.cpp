@@ -2,7 +2,7 @@
 
 Integrator::BlochRHS::BlochRHS(
     const double dt,
-    const std::shared_ptr<Integrator::History<Eigen::Vector2cd>> &history,
+    const std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history,
     std::vector<std::shared_ptr<Interaction>> interactions,
     std::vector<BlochFunctionType> rhs_functions)
     : Integrator::RHS<Eigen::Vector2cd>(dt, history),

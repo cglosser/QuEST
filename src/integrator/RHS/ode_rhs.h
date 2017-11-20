@@ -12,8 +12,8 @@ namespace Integrator {
 
 class Integrator::ODE_RHS : public RHS<double> {
  public:
-  ODE_RHS(const double, const std::shared_ptr<Integrator::History<double>> &,
-          const std::vector<std::function<double(double, double)>> &);
+  ODE_RHS(const double, const std::shared_ptr<Integrator::History<double>>,
+          const std::vector<std::function<double(double, double)>>);
   void evaluate(const int) const;
 
  private:
@@ -22,9 +22,9 @@ class Integrator::ODE_RHS : public RHS<double> {
 
 Integrator::ODE_RHS::ODE_RHS(
     const double dt,
-    const std::shared_ptr<Integrator::History<double>> &history,
-    const std::vector<std::function<double(double, double)>> &rhs_functions)
-    : RHS(dt, history), rhs_functions(rhs_functions)
+    const std::shared_ptr<Integrator::History<double>> history,
+    const std::vector<std::function<double(double, double)>> rhs_functions)
+    : RHS(dt, history), rhs_functions(std::move(rhs_functions))
 {
 }
 
