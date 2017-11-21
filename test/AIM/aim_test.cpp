@@ -73,6 +73,55 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
   BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << max_error);
 }
 
+BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
+{
+  Eigen::Array3i num_boxes(4, 4, 4);
+  Eigen::Array3d spacing(Eigen::Array3d(1, 1, 1) * c * dt);
+
+  // Place one QD *on* the most-separated grid points
+  const double h = 0.5;
+  std::shared_ptr<DotVector> dots = std::make_shared<DotVector>(DotVector{
+      QuantumDot(Eigen::Vector3d(h, h, h), Eigen::Vector3d(0, 0, 1)),
+      QuantumDot(
+          spacing * (num_boxes.cast<double>() + Eigen::Array3d(h, h, h)),
+          Eigen::Vector3d(0, 0, 1))});
+
+  Grid grid(spacing, dots, 1);
+  auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
+      1, grid, *dots);
+
+  const int num_steps = 256;
+
+  auto src = [=](const double t) {
+    const double total_time = num_steps * dt;
+    double arg = (t - total_time / 2.0) / (total_time / 6.0);
+    return gaussian(arg);
+  };
+
+  // Set up and pre-fill the source particle in a History table
+  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history =
+      std::make_shared<Integrator::History<Eigen::Vector2cd>>(dots->size(), 10,
+                                                              num_steps);
+  history->fill(Eigen::Vector2cd::Zero());
+  for(int i = -10; i < num_steps; ++i) {
+    history->array[0][i][0](RHO_01) = src(i * dt);
+  }
+
+  AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
+                          grid, expansions, AIM::Expansions::GradDiv,
+                          AIM::normalization::unit);
+
+  const double delay =
+      (dots->at(1).position() - dots->at(0).position()).norm() / c;
+
+  std::cout << std::scientific;
+  std::cout << "START HERE" << std::endl;
+  for(int i = 0; i < num_steps; ++i) {
+    auto x = aim.evaluate(i);
+    //std::cout << x.transpose().real() << std::endl;
+  }
+}
+
 struct DummyPropagation {
   std::shared_ptr<DotVector> dots;
   std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
@@ -104,7 +153,8 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
       expansion_order, grid, *dots);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-                          expansions, AIM::Expansions::Identity, AIM::normalization::unit);
+                          expansions, AIM::Expansions::Identity,
+                          AIM::normalization::unit);
   auto circulant_shape = grid.circulant_shape(c0, dt);
 
   std::fill(aim.source_table.data(),
