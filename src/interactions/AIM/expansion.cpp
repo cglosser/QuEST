@@ -12,8 +12,7 @@ AIM::Expansions::LeastSquaresExpansionSolver::table(
     const std::vector<QuantumDot> &dots) const
 {
   using namespace enums;
-  AIM::Expansions::ExpansionTable table(
-      boost::extents[dots.size()][num_pts]);
+  AIM::Expansions::ExpansionTable table(boost::extents[dots.size()][num_pts]);
 
   for(auto dot_idx = 0u; dot_idx < dots.size(); ++dot_idx) {
     const auto &pos = dots.at(dot_idx).position();
@@ -40,16 +39,23 @@ Eigen::VectorXd AIM::Expansions::LeastSquaresExpansionSolver::q_vector(
 {
   Eigen::VectorXd q_vec(num_pts);
 
+  // The nx, ny, nz loops correspond to Taylor expansions in the various
+  // dimensions. The ternary if statements zero out the constant-term entries of
+  // qvec that disappear after differentiation.
+
   int i = 0;
   for(int nx = 0; nx <= box_order; ++nx) {
-    double x_term = falling_factorial(nx, derivatives[0]) *
-                    std::pow(pos(0), nx - derivatives[0]);
+    double x_term =
+        nx < derivatives[0] ? 0 : falling_factorial(nx, derivatives[0]) *
+                                      std::pow(pos(0), nx - derivatives[0]);
     for(int ny = 0; ny <= box_order; ++ny) {
-      double y_term = falling_factorial(ny, derivatives[1]) *
-                      std::pow(pos(1), ny - derivatives[1]);
+      double y_term =
+          ny < derivatives[1] ? 0 : falling_factorial(ny, derivatives[1]) *
+                                        std::pow(pos(1), ny - derivatives[1]);
       for(int nz = 0; nz <= box_order; ++nz) {
-        double z_term = falling_factorial(nz, derivatives[2]) *
-                        std::pow(pos(2), nz - derivatives[2]);
+        double z_term =
+            nz < derivatives[2] ? 0 : falling_factorial(nz, derivatives[2]) *
+                                          std::pow(pos(2), nz - derivatives[2]);
         q_vec(i++) = x_term * y_term * z_term;
       }
     }
