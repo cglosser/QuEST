@@ -114,12 +114,6 @@ BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
   const double delay =
       (dots->at(1).position() - dots->at(0).position()).norm() / c;
 
-  std::cout << std::scientific;
-  std::cout << "START HERE" << std::endl;
-  for(int i = 0; i < num_steps; ++i) {
-    auto x = aim.evaluate(i);
-    //std::cout << x.transpose().real() << std::endl;
-  }
 }
 
 struct DummyPropagation {

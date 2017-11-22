@@ -47,12 +47,8 @@ class AIM::Expansions::LeastSquaresExpansionSolver {
                                        const Grid &,
                                        const std::vector<QuantumDot> &);
   ExpansionTable table(const std::vector<QuantumDot> &) const;
-  Eigen::VectorXd q_vector(const Eigen::Vector3d &,
-                           const std::array<int, 3> & = {{0, 0, 0}}) const;
+  Eigen::VectorXd q_vector(const std::array<int, 3> & = {{0, 0, 0}}) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
-  Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &,
-                                         const std::array<int, 3> & = {
-                                             {0, 0, 0}}) const;
 
  private:
   LeastSquaresExpansionSolver(const int box_order, const Grid &grid)

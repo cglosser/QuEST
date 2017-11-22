@@ -92,24 +92,6 @@ BOOST_AUTO_TEST_CASE(GRADIENT)
   auto expansions =
       AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(1, grid,
                                                                    *dots);
-
-  std::array<int, 8> on_point_d0 = {{1, 0, 0, 0, 0, 0, 0, 0}};
-  std::array<int, 8> on_point_dX = {{-1, 0, 0, 0, 1, 0, 0, 0}};
-  std::array<int, 8> on_point_dY = {{-1, 0, 1, 0, 0, 0, 0, 0}};
-  std::array<int, 8> on_point_dZ = {{-1, 1, 0, 0, 0, 0, 0, 0}};
-  for(int i = 0; i < 8; ++i) {
-    BOOST_CHECK_EQUAL(expansions[0][i].weights[0], on_point_d0[i]);
-    BOOST_CHECK_EQUAL(expansions[0][i].weights[1], on_point_dX[i]);
-    BOOST_CHECK_EQUAL(expansions[0][i].weights[2], on_point_dY[i]);
-    BOOST_CHECK_EQUAL(expansions[0][i].weights[3], on_point_dZ[i]);
-  }
-
-  for(int i = 0; i < 8; ++i) {
-    BOOST_CHECK_CLOSE(expansions[1][i].weights[0], 1.0 / 8.0, 1e-12);
-    BOOST_CHECK_CLOSE(std::abs(expansions[1][i].weights[1]), 1.0 / 4.0, 1e-12);
-    BOOST_CHECK_CLOSE(std::abs(expansions[1][i].weights[2]), 1.0 / 4.0, 1e-12);
-    BOOST_CHECK_CLOSE(std::abs(expansions[1][i].weights[3]), 1.0 / 4.0, 1e-12);
-  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // EXPANSIONS
