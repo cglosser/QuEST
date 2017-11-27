@@ -63,7 +63,7 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
     if(i > aim.max_transit_steps) {
       // Wait until observer is fully (i.e. has a complete interpolation) inside
       // of light cone
-      BOOST_CHECK_CLOSE(x(1).real(), src(i * dt - delay), 1e-7);
+      BOOST_CHECK_CLOSE(x(1).real(), src(i * dt - delay), 1e-5);
 
       auto relative_error =
           std::abs((src(i * dt - delay) - x(1).real()) / src(i * dt - delay));

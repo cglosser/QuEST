@@ -74,8 +74,9 @@ void AIM::AimInteraction::fill_source_table(const int step)
       // elements) and the electromagnetic source quantities. Ideally the AIM
       // code should not have knowledge of this to better encapsulate
       // "propagation," but this is good enough for now.
-      grid_field = e.weights[D_0] * (*dots)[dot_idx].dipole() *
-                   history->array[dot_idx][step][0][RHO_01];
+      auto source_field = e.weights[D_0] * (*dots)[dot_idx].dipole() *
+                          history->array[dot_idx][step][0][RHO_01];
+      grid_field += source_field;
     }
   }
 
@@ -116,6 +117,7 @@ void AIM::AimInteraction::fill_results_table(const int step)
   const int wrapped_step = step % circulant_dimensions[0];
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
+    Eigen::Vector3cd e_tot = Eigen::Vector3cd::Zero();
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
         ++expansion_idx) {
       const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
@@ -124,9 +126,9 @@ void AIM::AimInteraction::fill_results_table(const int step)
       Eigen::Map<Eigen::Vector3cd> efield(
           &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
 
-      results(dot_idx) +=
-          expansion_function(efield, e.weights).dot((*dots)[dot_idx].dipole());
+      e_tot += expansion_function(efield, e.weights);
     }
+    results(dot_idx) += e_tot.dot((*dots)[dot_idx].dipole());
   }
 }
 
@@ -143,8 +145,6 @@ AIM::spacetime::vector<cmplx> AIM::AimInteraction::circulant_fourier_table()
                          reinterpret_cast<fftw_complex *>(g_mat.data()),
                          nullptr, 1, num_gridpts, FFTW_FORWARD, FFTW_MEASURE),
       nullptr};
-
-  std::fill(g_mat.data(), g_mat.data() + g_mat.num_elements(), cmplx(0, 0));
 
   fill_gmatrix_table(g_mat);
 
@@ -171,13 +171,25 @@ void AIM::AimInteraction::fill_gmatrix_table(
   // accept a non-const reference to a spacetime::vector (instead of just
   // returning such an array) to play nice with FFTW and its workspaces.
 
-  Interpolation::UniformLagrangeSet interp(interp_order);
-  for(int x = 0; x < grid.dimensions(0); ++x) {
-    for(int y = 0; y < grid.dimensions(1); ++y) {
-      for(int z = 0; z < grid.dimensions(2); ++z) {
-        const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(x, y, z));
-        if(box_idx == 0) continue;
+  std::fill(gmatrix_table.data(),
+            gmatrix_table.data() + gmatrix_table.num_elements(),
+            cmplx(0.0, 0.0));
 
+  Interpolation::UniformLagrangeSet interp(interp_order);
+
+  bool nearfield_point = true;
+  for(int x = 0; x < grid.dimensions(0); ++x) {
+    nearfield_point = nearfield_point && x <= interp_order;
+
+    for(int y = 0; y < grid.dimensions(1); ++y) {
+      nearfield_point = nearfield_point && y <= interp_order;
+
+      for(int z = 0; z < grid.dimensions(2); ++z) {
+        nearfield_point = nearfield_point && z <= interp_order;
+
+        if(nearfield_point) continue;
+
+        const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(x, y, z));
         const auto dr =
             grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
 
