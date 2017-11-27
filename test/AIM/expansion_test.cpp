@@ -83,15 +83,22 @@ BOOST_FIXTURE_TEST_CASE(TWO_POINTS_OFF_GRID, PARAMETERS)
 
 BOOST_AUTO_TEST_CASE(GRADIENT)
 {
+  using namespace AIM::Expansions::enums;
   auto dots = std::make_shared<DotVector>();
   dots->reserve(2);
   dots->push_back(QuantumDot(Eigen::Vector3d(0.0, 0.0, 0.0)));
   dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5)));
 
-  AIM::Grid grid(Eigen::Array3d(1, 1, 1), dots, 1);
+  AIM::Grid grid(Eigen::Array3d(1, 1, 1), dots, 2);
   auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(1, grid,
+      AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(2, grid,
                                                                    *dots);
+
+  for(int p = 0; p < 27; ++p) {
+    std::cout << Eigen::Map<Eigen::Matrix3d>(&expansions[1][p].weights[D_XX])
+              << std::endl;
+    std::cout << std::endl;
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // EXPANSIONS

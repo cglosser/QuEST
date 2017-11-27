@@ -7,11 +7,25 @@
 namespace AIM {
   namespace Expansions {
     inline namespace enums {
-      constexpr int NUM_DERIVS = 4;
-      enum DERIVATIVE_ORDER { D_0, D_X, D_Y, D_Z };
+      constexpr int NUM_DERIVS = 13;
+      enum DERIVATIVE_ORDER {
+        D_0,
+        D_X,
+        D_Y,
+        D_Z,
+        D_XX,
+        D_XY,
+        D_XZ,
+        D_YX,
+        D_YY,
+        D_YZ,
+        D_ZX,
+        D_ZY,
+        D_ZZ
+      };
     }
 
-    using DerivativeTable = std::array<double, 4>;
+    using DerivativeTable = std::array<double, enums::NUM_DERIVS>;
 
     struct Expansion {
       size_t index;
@@ -30,13 +44,27 @@ namespace AIM {
       return derivs[D_0] * grid_field;
     };
 
+    const ExpansionFunction DerivX = [](
+        const Eigen::Vector3cd &grid_field,
+        const Expansions::DerivativeTable &derivs) {
+      using namespace Expansions::enums;
+      return derivs[D_X] * grid_field;
+    };
+
+    const ExpansionFunction DerivXX = [](
+        const Eigen::Vector3cd &grid_field,
+        const Expansions::DerivativeTable &derivs) {
+      using namespace Expansions::enums;
+      return derivs[D_XX] * grid_field;
+    };
+
     const ExpansionFunction GradDiv = [](
         const Eigen::Vector3cd &grid_field,
         const Expansions::DerivativeTable &derivs) {
       using namespace Expansions::enums;
-      Eigen::Map<const Eigen::Vector3d> del(&derivs[D_X]);
-      cmplx divergence = del.dot(grid_field);
-      return del * divergence;
+      Eigen::Map<const Eigen::Matrix3d> del_del(&derivs[D_XX]);
+      return del_del * grid_field;
+      // return grid_field;
     };
   }
 }
