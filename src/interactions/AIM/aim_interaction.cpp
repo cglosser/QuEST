@@ -95,12 +95,13 @@ void AIM::AimInteraction::propagate(const int step)
   observers = 0;
 
   for(int i = 1; i < circulant_dimensions[0]; ++i) {
-    if(step - i < 0) continue;
-    auto wrap = (step - i) % circulant_dimensions[0];
+    // If (step - i) runs "off the end", just propagate src[0][...]
+    auto wrap = std::max(step - i, 0) % circulant_dimensions[0];
 
     Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
     Eigen::Map<Eigen::Array3Xcd> src(&source_table[wrap][0][0][0][0], 3, nb);
 
+    // Use broadcasting to do the x, y, and z component propagation
     observers += src.rowwise() * prop.transpose();
   }
 
