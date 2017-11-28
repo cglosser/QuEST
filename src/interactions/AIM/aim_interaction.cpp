@@ -178,16 +178,11 @@ void AIM::AimInteraction::fill_gmatrix_table(
 
   Interpolation::UniformLagrangeSet interp(interp_order);
 
-  bool nearfield_point = true;
   for(int x = 0; x < grid.dimensions(0); ++x) {
-    nearfield_point = nearfield_point && x <= interp_order;
-
     for(int y = 0; y < grid.dimensions(1); ++y) {
-      nearfield_point = nearfield_point && y <= interp_order;
-
       for(int z = 0; z < grid.dimensions(2); ++z) {
-        nearfield_point = nearfield_point && z <= interp_order;
-
+        bool nearfield_point =
+            (x <= interp_order) && (y <= interp_order) && (z <= interp_order);
         if(nearfield_point) continue;
 
         const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(x, y, z));
