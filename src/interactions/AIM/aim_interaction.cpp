@@ -112,8 +112,6 @@ void AIM::AimInteraction::propagate(const int step)
 
 void AIM::AimInteraction::fill_results_table(const int step)
 {
-  using namespace Expansions::enums;
-
   results = 0;
   const int wrapped_step = step % circulant_dimensions[0];
 

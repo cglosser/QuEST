@@ -90,19 +90,20 @@ BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
                 QuantumDot(spacing * (num_boxes.cast<double>()),
                            Eigen::Vector3d(0, 0, 1))});
 
-  interpolation_order = 1;
-  Grid grid(spacing, dots, interpolation_order);
+  expansion_order = 1;
+  Grid grid(spacing, dots, expansion_order);
   auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
-      interpolation_order, grid, *dots);
+      expansion_order, grid, *dots);
 
   AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
-                          grid, expansions, AIM::Expansions::DerivX,
+                          grid, expansions, AIM::Expansions::DerivativeX,
                           AIM::normalization::unit);
 
+  std::cout.precision(17);
   std::cout << std::scientific;
   for(int i = 0; i < num_steps; ++i) {
     auto x = aim.evaluate(i);
-    std::cout << x.transpose().real() << std::endl;
+    // std::cout << x.transpose().real() << std::endl;
   }
 }
 
