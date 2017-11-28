@@ -39,19 +39,26 @@ namespace AIM {
 
     const ExpansionFunction Identity = [](
         const Eigen::Vector3cd &grid_field,
+        __attribute__((unused)) const Expansions::DerivativeTable &derivs) {
+      using namespace Expansions::enums;
+      return grid_field;
+    };
+
+    const ExpansionFunction Derivative0 = [](
+        const Eigen::Vector3cd &grid_field,
         const Expansions::DerivativeTable &derivs) {
       using namespace Expansions::enums;
       return derivs[D_0] * grid_field;
     };
 
-    const ExpansionFunction DerivX = [](
+    const ExpansionFunction DerivativeX = [](
         const Eigen::Vector3cd &grid_field,
         const Expansions::DerivativeTable &derivs) {
       using namespace Expansions::enums;
       return derivs[D_X] * grid_field;
     };
 
-    const ExpansionFunction DerivXX = [](
+    const ExpansionFunction DerivativeXX = [](
         const Eigen::Vector3cd &grid_field,
         const Expansions::DerivativeTable &derivs) {
       using namespace Expansions::enums;
@@ -64,7 +71,6 @@ namespace AIM {
       using namespace Expansions::enums;
       Eigen::Map<const Eigen::Matrix3d> del_del(&derivs[D_XX]);
       return del_del * grid_field;
-      // return grid_field;
     };
   }
 }

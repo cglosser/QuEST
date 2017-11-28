@@ -118,18 +118,18 @@ void AIM::AimInteraction::fill_results_table(const int step)
   const int wrapped_step = step % circulant_dimensions[0];
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
-    Eigen::Vector3cd e_tot = Eigen::Vector3cd::Zero();
+    Eigen::Vector3cd total_field = Eigen::Vector3cd::Zero();
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
         ++expansion_idx) {
       const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
 
-      Eigen::Map<Eigen::Vector3cd> efield(
+      Eigen::Map<Eigen::Vector3cd> field(
           &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
 
-      e_tot += expansion_function(efield, e.weights);
+      total_field += expansion_function(field, e.weights);
     }
-    results(dot_idx) += e_tot.dot((*dots)[dot_idx].dipole());
+    results(dot_idx) += total_field.dot((*dots)[dot_idx].dipole());
   }
 }
 
