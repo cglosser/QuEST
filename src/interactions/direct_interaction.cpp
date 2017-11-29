@@ -1,9 +1,9 @@
 #include "direct_interaction.h"
 
 DirectInteraction::DirectInteraction(
-    const std::shared_ptr<const DotVector> &dots,
-    const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &history,
-    const std::shared_ptr<Propagation::RotatingFramePropagator> &propagator,
+    const std::shared_ptr<const DotVector> dots,
+    const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
+    const std::shared_ptr<Propagation::RotatingFramePropagator> propagator,
     const int interp_order,
     const double c0,
     const double dt)

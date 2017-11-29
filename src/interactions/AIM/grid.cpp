@@ -6,10 +6,10 @@ AIM::Grid::Grid()
 }
 
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
-                const std::shared_ptr<DotVector> &dots,
+                const std::shared_ptr<DotVector> dots,
                 const int expansion_order)
     : spacing(spacing),
-      dots(dots),
+      dots(std::move(dots)),
       expansion_order(expansion_order),
       bounds(calculate_bounds())
 {

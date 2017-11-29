@@ -15,7 +15,7 @@ class AIM::Grid {
   using ipair_t = std::pair<int, int>;
 
   Grid();
-  Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector> &, const int);
+  Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector>, const int);
   Grid(const Eigen::Array3d &, const Eigen::Array3i &);
 
   BoundsArray calculate_bounds() const;

@@ -5,23 +5,84 @@
 #include "quantum_dot.h"
 
 namespace AIM {
-  struct Expansion {
-    size_t index;
-    double weight;
-  };
-  class LeastSquaresExpansionSolver;
+  namespace Expansions {
+    inline namespace enums {
+      constexpr int NUM_DERIVS = 13;
+      enum DERIVATIVE_ORDER {
+        D_0,
+        D_X,
+        D_Y,
+        D_Z,
+        D_XX,
+        D_XY,
+        D_XZ,
+        D_YX,
+        D_YY,
+        D_YZ,
+        D_ZX,
+        D_ZY,
+        D_ZZ
+      };
+    }
+
+    using DerivativeTable = std::array<double, enums::NUM_DERIVS>;
+
+    struct Expansion {
+      size_t index;
+      DerivativeTable weights;
+    };
+    using ExpansionTable = boost::multi_array<Expansion, 2>;
+    class LeastSquaresExpansionSolver;
+
+    using ExpansionFunction = std::function<Eigen::Vector3cd(
+        const Eigen::Vector3cd &, const Expansions::DerivativeTable &)>;
+
+    const ExpansionFunction Identity = [](
+        const Eigen::Vector3cd &grid_field,
+        __attribute__((unused)) const Expansions::DerivativeTable &derivs) {
+      using namespace Expansions::enums;
+      return grid_field;
+    };
+
+    const ExpansionFunction Derivative0 = [](
+        const Eigen::Vector3cd &grid_field,
+        const Expansions::DerivativeTable &derivs) {
+      using namespace Expansions::enums;
+      return derivs[D_0] * grid_field;
+    };
+
+    const ExpansionFunction DerivativeX = [](
+        const Eigen::Vector3cd &grid_field,
+        const Expansions::DerivativeTable &derivs) {
+      using namespace Expansions::enums;
+      return derivs[D_X] * grid_field;
+    };
+
+    const ExpansionFunction DerivativeXX = [](
+        const Eigen::Vector3cd &grid_field,
+        const Expansions::DerivativeTable &derivs) {
+      using namespace Expansions::enums;
+      return derivs[D_XX] * grid_field;
+    };
+
+    const ExpansionFunction GradDiv = [](
+        const Eigen::Vector3cd &grid_field,
+        const Expansions::DerivativeTable &derivs) {
+      using namespace Expansions::enums;
+      Eigen::Map<const Eigen::Matrix3d> del_del(&derivs[D_XX]);
+      return del_del * grid_field;
+    };
+  }
 }
 
-class AIM::LeastSquaresExpansionSolver {
+class AIM::Expansions::LeastSquaresExpansionSolver {
  public:
-  static Array2<Expansion> get_expansions(const int,
-                                          const Grid &,
-                                          const std::vector<QuantumDot> &);
-  Array2<Expansion> table(const std::vector<QuantumDot> &) const;
-  Eigen::VectorXd q_vector(const Eigen::Vector3d &,
-                           const std::array<int, 3> &) const;
+  static ExpansionTable get_expansions(const int,
+                                       const Grid &,
+                                       const std::vector<QuantumDot> &);
+  ExpansionTable table(const std::vector<QuantumDot> &) const;
+  Eigen::VectorXd q_vector(const std::array<int, 3> & = {{0, 0, 0}}) const;
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
-  Eigen::VectorXd solve_expansion_system(const Eigen::Vector3d &) const;
 
  private:
   LeastSquaresExpansionSolver(const int box_order, const Grid &grid)

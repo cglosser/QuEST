@@ -3,17 +3,18 @@
 
 #include "common.h"
 #include "fourier.h"
+#include "interactions/AIM/aim_interaction.h"
 
-BOOST_AUTO_TEST_SUITE(common)
+BOOST_AUTO_TEST_SUITE(SPACETIME)
 
-struct Shapes {
+struct SHAPE {
   std::array<int, 4> dims;
-  Shapes() : dims({2, 6, 8, 10}){};
+  SHAPE() : dims({{2, 6, 8, 10}}){};
 };
 
-BOOST_FIXTURE_TEST_CASE(circulant_mirror, Shapes)
+BOOST_FIXTURE_TEST_CASE(CIRCULANT_MIRROR, SHAPE)
 {
-  SpacetimeVector<int> stv(dims);
+  AIM::spacetime::vector<int> stv(dims);
   std::fill(stv.data(), stv.data() + stv.num_elements(), 0);
 
   int i = 1;
@@ -27,7 +28,7 @@ BOOST_FIXTURE_TEST_CASE(circulant_mirror, Shapes)
     }
   }
 
-  fill_circulant_mirror(stv);
+  AIM::spacetime::fill_circulant_mirror(stv);
 
   // Built using substitution rules in Mathematica -- does not contain the
   // flipped temporal entries!
@@ -66,10 +67,10 @@ BOOST_FIXTURE_TEST_CASE(circulant_mirror, Shapes)
   }
 }
 
-BOOST_FIXTURE_TEST_CASE(matrix_multiply, Shapes)
+BOOST_FIXTURE_TEST_CASE(FFT_MATRIX_MULTIPLY, SHAPE)
 {
   const int num_spatial_elements = dims[1] * dims[2] * dims[3];
-  SpacetimeVector<cmplx> mat(dims), vec(dims);
+  AIM::spacetime::vector<cmplx> mat(dims), vec(dims);
 
   TransformPair transforms = {
       fftw_plan_dft_3d(dims[1], dims[2], dims[3],
@@ -97,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE(matrix_multiply, Shapes)
     }
   }
 
-  fill_circulant_mirror(mat);
+  AIM::spacetime::fill_circulant_mirror(mat);
 
   fftw_execute_dft(transforms.forward,
                    reinterpret_cast<fftw_complex *>(mat.data()),
@@ -106,7 +107,7 @@ BOOST_FIXTURE_TEST_CASE(matrix_multiply, Shapes)
                    reinterpret_cast<fftw_complex *>(vec.data()),
                    reinterpret_cast<fftw_complex *>(vec.data()));
 
-  SpacetimeVector<cmplx> result(dims);
+  AIM::spacetime::vector<cmplx> result(dims);
   Eigen::Map<Eigen::ArrayXcd> fft_mat(mat.data(), num_spatial_elements);
   Eigen::Map<Eigen::ArrayXcd> fft_vec(vec.data(), num_spatial_elements);
   Eigen::Map<Eigen::ArrayXcd> fft_result(result.data(), num_spatial_elements);
