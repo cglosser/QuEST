@@ -59,7 +59,7 @@ void AIM::AimInteraction::fill_source_table(const int step)
 
   const int wrapped_step = step % circulant_dimensions[0];
   const auto p = &source_table[wrapped_step][0][0][0][0];
-  std::fill(p, p + 3 * 8 * grid.num_boxes, cmplx(0, 0));
+  std::fill(p, p + 3 * 8 * grid.num_gridpoints, cmplx(0, 0));
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[2];
@@ -88,7 +88,7 @@ void AIM::AimInteraction::fill_source_table(const int step)
 void AIM::AimInteraction::propagate(const int step)
 {
   const auto wrapped_step = step % circulant_dimensions[0];
-  const auto nb = 8 * grid.num_boxes;
+  const auto nb = 8 * grid.num_gridpoints;
 
   std::array<int, 5> front = {{wrapped_step, 0, 0, 0, 0}};
   Eigen::Map<Eigen::Array3Xcd> observers(&obs_table(front), 3, nb);

@@ -93,12 +93,6 @@ BOOST_AUTO_TEST_CASE(GRADIENT)
   auto expansions =
       AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(2, grid,
                                                                    *dots);
-
-  for(int p = 0; p < 27; ++p) {
-    std::cout << Eigen::Map<Eigen::Matrix3d>(&expansions[1][p].weights[D_XX])
-              << std::endl;
-    std::cout << std::endl;
-  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // EXPANSIONS

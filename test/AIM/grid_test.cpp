@@ -8,7 +8,7 @@ BOOST_AUTO_TEST_SUITE(GridTest)
 BOOST_AUTO_TEST_CASE(DummyConstructor)
 {
   AIM::Grid grid(Eigen::Vector3d(1, 1, 1), Eigen::Vector3i(30, 30, 30));
-  BOOST_CHECK_EQUAL(grid.num_boxes, std::pow(30, 3));
+  BOOST_CHECK_EQUAL(grid.num_gridpoints, std::pow(30, 3));
 }
 
 BOOST_AUTO_TEST_CASE(CIRCULANT_MATRIX_SHAPE)
@@ -44,7 +44,7 @@ BOOST_FIXTURE_TEST_CASE(GRID_SUFFICIENT_FOR_EXPANSIONS, OffsetDot)
 
   for(int order = 0; order < max_order; ++order) {
     AIM::Grid grid(unit_spacing, dot, order);
-    BOOST_CHECK_EQUAL(grid.num_boxes, std::pow(order + 1, 3));
+    BOOST_CHECK_EQUAL(grid.num_gridpoints, std::pow(order + 1, 3));
   }
 }
 
@@ -72,13 +72,13 @@ BOOST_FIXTURE_TEST_CASE(In_middle_box_for_even_expansions, OffsetDot)
   for(int order = 0; order < max_order; order += 2) {
     AIM::Grid grid(unit_spacing, dot, order);
     auto idx = grid.coord_to_idx(grid.grid_coordinate(dot->front().position()));
-    BOOST_CHECK_EQUAL(idx, grid.num_boxes / 2);
+    BOOST_CHECK_EQUAL(idx, grid.num_gridpoints / 2);
   }
 }
 
 BOOST_FIXTURE_TEST_CASE(ExpansionIndices, OffsetDot)
 {
-  // Check that a single dot expands "into" [0, num_boxes) available gridpoints
+  // Check that a single dot expands "into" [0, num_gridpoints) available gridpoints
 
   for(int order = 0; order < max_order; ++order) {
     AIM::Grid grid(unit_spacing, dot, order);
@@ -119,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(NumberOfGridPts, TwoOffsetDots)
 {
   for(int order = 0; order < max_order; ++order) {
     AIM::Grid grid(Eigen::Vector3d(1, 1, 1), dots, order);
-    BOOST_CHECK_EQUAL(grid.num_boxes, std::pow(order + 1, 2) * (order + 2));
+    BOOST_CHECK_EQUAL(grid.num_gridpoints, std::pow(order + 1, 2) * (order + 2));
   }
 }
 

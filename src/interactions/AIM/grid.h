@@ -34,7 +34,7 @@ class AIM::Grid {
                                             const int) const;
 
   Eigen::Array3i dimensions;
-  size_t num_boxes;
+  size_t num_gridpoints;
   double max_diagonal;
 
   int max_transit_steps(double c, double dt) const

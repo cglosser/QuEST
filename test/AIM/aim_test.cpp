@@ -52,10 +52,10 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
                            Eigen::Vector3d(0, 0, 1))});
 
   Grid grid(spacing, dots, expansion_order);
-  BOOST_CHECK_EQUAL(
-      (dots->at(1).position() - grid.spatial_coord_of_box(grid.num_boxes - 1))
-          .norm(),
-      0);
+  BOOST_CHECK_EQUAL((dots->at(1).position() -
+                     grid.spatial_coord_of_box(grid.num_gridpoints - 1))
+                        .norm(),
+                    0);
 
   auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
       expansion_order, grid, *dots);
@@ -86,10 +86,9 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
 
 BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
 {
-  dots = std::make_shared<DotVector>(
-      DotVector{QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
-                QuantumDot(spacing * (num_boxes.cast<double>()),
-                           Eigen::Vector3d(0, 0, 1))});
+  dots = std::make_shared<DotVector>(DotVector{
+      QuantumDot(Eigen::Vector3d(1, 1, 1), Eigen::Vector3d(0, 0, 1)),
+      QuantumDot(Eigen::Vector3d(5, 5, 5), Eigen::Vector3d(0, 0, 1))});
 
   expansion_order = 1;
   Grid grid(spacing, dots, expansion_order);
@@ -97,14 +96,14 @@ BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
       expansion_order, grid, *dots);
 
   AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
-                          grid, expansions, AIM::Expansions::DerivativeX,
+                          grid, expansions, AIM::Expansions::Derivative0,
                           AIM::normalization::unit);
 
   std::cout.precision(17);
   std::cout << std::scientific;
   for(int i = 0; i < num_steps; ++i) {
     auto x = aim.evaluate(i);
-    // std::cout << x.transpose().real() << std::endl;
+    std::cout << i << " " << x.transpose().real() << std::endl;
   }
 }
 

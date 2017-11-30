@@ -1,10 +1,6 @@
 #include "grid.h"
 
-AIM::Grid::Grid()
-    : Grid(Eigen::Vector3d(0, 0, 0), std::make_shared<DotVector>(), 0)
-{
-}
-
+AIM::Grid::Grid() : Grid(Eigen::Vector3d(0, 0, 0), nullptr, 0) {}
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
                 const std::shared_ptr<DotVector> dots,
                 const int expansion_order)
@@ -14,8 +10,10 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
       bounds(calculate_bounds())
 {
   dimensions = bounds.col(1) - bounds.col(0) + 1;
-  num_boxes = dimensions.prod();
-  max_diagonal = (dimensions.cast<double>() * spacing).matrix().norm();
+  num_gridpoints = dimensions.prod();
+  max_diagonal = ((bounds.col(1) - bounds.col(0)).cast<double>() * spacing)
+                     .matrix()
+                     .norm();
 
   sort_points_on_boxidx();
 }
@@ -27,9 +25,9 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing, const Eigen::Array3i &dimensions)
       expansion_order(0)
 {
   bounds.col(0) = 0;
-  bounds.col(1) = dimensions;
+  bounds.col(1) = dimensions + 1;
 
-  num_boxes = dimensions.prod();
+  num_gridpoints = dimensions.prod();
   max_diagonal = (dimensions.cast<double>() * spacing).matrix().norm();
 }
 
@@ -67,14 +65,14 @@ std::array<int, 4> AIM::Grid::circulant_shape(const double c,
 std::vector<DotRange> AIM::Grid::box_contents_map(
     const std::shared_ptr<DotVector> &dots) const
 {
-  std::vector<DotRange> boxes(num_boxes);
+  std::vector<DotRange> boxes(num_gridpoints);
   for(size_t box_idx = 0; box_idx < boxes.size(); ++box_idx) {
-    auto IsInBox = [=](const QuantumDot &qd) {
+    auto NearestGridpoint = [=](const QuantumDot &qd) {
       return coord_to_idx(grid_coordinate(qd.position())) == box_idx;
     };
 
-    auto begin = std::find_if(dots->begin(), dots->end(), IsInBox);
-    auto end = std::find_if_not(begin, dots->end(), IsInBox);
+    auto begin = std::find_if(dots->begin(), dots->end(), NearestGridpoint);
+    auto end = std::find_if_not(begin, dots->end(), NearestGridpoint);
     boxes.at(box_idx) = std::make_pair(begin, end);
   }
 
@@ -95,11 +93,11 @@ size_t AIM::Grid::coord_to_idx(const Eigen::Vector3i &coord) const
 
 Eigen::Vector3i AIM::Grid::idx_to_coord(size_t idx) const
 {
-  const int nxny = dimensions(0) * dimensions(1);
-  const int z = idx / nxny;
-  idx -= z * nxny;
-  const int y = idx / dimensions(0);
-  const int x = idx % dimensions(0);
+  const int nynz = dimensions(1) * dimensions(2);
+  const int x = idx / nynz;
+  idx -= x * nynz;
+  const int y = idx / dimensions(2);
+  const int z = idx % dimensions(2);
 
   return Eigen::Vector3i(x, y, z);
 }
