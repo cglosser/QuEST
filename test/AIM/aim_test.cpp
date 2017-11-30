@@ -22,6 +22,7 @@ struct PARAMETERS {
         interpolation_order(3),
         expansion_order(0),
         num_steps(256),
+        num_dots(2),
         num_boxes(4, 4, 4),
         spacing(Eigen::Array3d(1, 1, 1) * c * dt),
         history(std::make_shared<Integrator::History<Eigen::Vector2cd>>(
