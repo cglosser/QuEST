@@ -18,14 +18,14 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
   sort_points_on_boxidx();
 }
 
-AIM::Grid::Grid(const Eigen::Array3d &spacing, const Eigen::Array3i &dimensions)
+AIM::Grid::Grid(const Eigen::Array3d &spacing, const Eigen::Array3i &dimensions, const Eigen::Array3i &shift)
     : dimensions(dimensions),
       spacing(spacing),
       dots(nullptr),
       expansion_order(0)
 {
-  bounds.col(0) = 0;
-  bounds.col(1) = dimensions + 1;
+  bounds.col(0) = 0 + shift;
+  bounds.col(1) = dimensions + 1 + shift;
 
   num_gridpoints = dimensions.prod();
   max_diagonal = (dimensions.cast<double>() * spacing).matrix().norm();
@@ -81,14 +81,12 @@ std::vector<DotRange> AIM::Grid::box_contents_map(
 
 Eigen::Vector3i AIM::Grid::grid_coordinate(const Eigen::Vector3d &coord) const
 {
-  return floor(coord.cwiseQuotient(spacing.matrix()).array()).cast<int>();
+  return Eigen::Vector3i::Zero();
 }
 
 size_t AIM::Grid::coord_to_idx(const Eigen::Vector3i &coord) const
 {
-  Eigen::Vector3i shifted(coord - bounds.col(0).matrix());
-
-  return shifted(2) + dimensions(2) * (shifted(1) + dimensions(1) * shifted(0));
+  return coord(2) + dimensions(2) * (coord(1) + dimensions(1) * coord(0));
 }
 
 Eigen::Vector3i AIM::Grid::idx_to_coord(size_t idx) const
