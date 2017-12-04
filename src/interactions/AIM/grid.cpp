@@ -88,7 +88,7 @@ size_t AIM::Grid::coord_to_idx(const Eigen::Vector3i &coord) const
 {
   Eigen::Vector3i shifted(coord - bounds.col(0).matrix());
 
-  return shifted(0) + dimensions(0) * (shifted(1) + dimensions(1) * shifted(2));
+  return shifted(2) + dimensions(2) * (shifted(1) + dimensions(1) * shifted(0));
 }
 
 Eigen::Vector3i AIM::Grid::idx_to_coord(size_t idx) const
