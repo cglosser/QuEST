@@ -5,6 +5,8 @@
 
 BOOST_AUTO_TEST_SUITE(GRID)
 
+BOOST_AUTO_TEST_SUITE(EUCLIDEAN_COORDINATES)
+
 BOOST_AUTO_TEST_CASE(INDEXING_WITH_NEGATIVE_SHIFT)
 {
   Eigen::Vector3d spacing(1, 1, 1);
@@ -31,6 +33,37 @@ BOOST_AUTO_TEST_CASE(INDEXING_WITH_NEGATIVE_SHIFT)
   }
 }
 
+BOOST_AUTO_TEST_CASE(EUCLIDEAN_COORDINATES)
+{
+  Eigen::Vector3d spacing(0.2, 0.2, 0.2);
+  Eigen::Array3i shape(10, 10, 10), shift(-5, -5, -5);
+  AIM::Grid grid(spacing, shape, shift);
+
+  // Origin is invariant
+  BOOST_CHECK_EQUAL(
+      grid.grid_coordinate(Eigen::Vector3d::Zero()).cast<double>(),
+      Eigen::Vector3d::Zero());
+
+  // First orthant
+  BOOST_CHECK_EQUAL(
+      grid.grid_coordinate(Eigen::Vector3d(1, 2, 2.1)).cast<double>(),
+      Eigen::Vector3d(5, 10, 10));
+
+  // Opposite orthant
+  BOOST_CHECK_EQUAL(
+      grid.grid_coordinate(Eigen::Vector3d(-2.3, -3.7, -1.4)).cast<double>(),
+      Eigen::Vector3d(-11, -18, -6));
+
+  BOOST_CHECK_EQUAL(grid.coord_to_idx(shift), 0);
+  BOOST_CHECK_EQUAL(grid.idx_to_coord(grid.num_gridpoints - 1),
+                    (shape - 1).matrix());
+
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(0),
+                    (shift.cast<double>() * spacing.array()).matrix());
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // EUCLIDEAN_COORDINATES
+
 BOOST_AUTO_TEST_CASE(CIRCULANT_MATRIX_SHAPE)
 {
   Eigen::Vector3d spacing(1, 1, 1);
@@ -46,7 +79,7 @@ BOOST_AUTO_TEST_CASE(CIRCULANT_MATRIX_SHAPE)
 }
 
 struct PARAMETERS {
-  Eigen::Vector3d spacing;
+  Eigen::Array3d spacing;
   double c, dt;
   int expansion_order;
 
@@ -62,6 +95,13 @@ struct PARAMETERS {
 
 BOOST_FIXTURE_TEST_SUITE(DOTS, PARAMETERS)
 
+BOOST_AUTO_TEST_CASE(EXPANSION_COORDINATES)
+{
+  dots->push_back(QuantumDot(Eigen::Vector3d(0.6, 0.6, 0.6)));
+
+  AIM::Grid grid(Eigen::Array3d(0.5, 0.5, 0.5), std::move(dots),
+                 expansion_order);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 

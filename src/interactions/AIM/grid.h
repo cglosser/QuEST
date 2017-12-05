@@ -18,7 +18,7 @@ class AIM::Grid {
   Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector>, const int);
   Grid(const Eigen::Array3d &,
        const Eigen::Array3i &,
-       const Eigen::Array3i & = Eigen::Vector3i::Zero());
+       const Eigen::Vector3i & = Eigen::Vector3i::Zero());
 
   BoundsArray calculate_bounds() const;
   std::array<int, 4> circulant_shape(const double,
