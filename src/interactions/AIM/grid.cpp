@@ -81,8 +81,7 @@ std::vector<DotRange> AIM::Grid::box_contents_map(
   return boxes;
 }
 
-std::vector<size_t> AIM::Grid::expansion_box_indices(const Eigen::Vector3d &pos,
-                                                     const int order) const
+std::vector<size_t> AIM::Grid::expansion_box_indices(const Eigen::Vector3d &pos) const
 {
   Eigen::Vector3i origin = grid_coordinate(pos);
   std::vector<size_t> indices(std::pow(order + 1, 3));
