@@ -117,10 +117,23 @@ BOOST_FIXTURE_TEST_SUITE(DOTS, PARAMETERS)
 
 BOOST_AUTO_TEST_CASE(EXPANSION_COORDINATES)
 {
-  dots->push_back(QuantumDot(Eigen::Vector3d(0.6, 0.6, 0.6)));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, -3, -3)));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 3, 3)));
+  AIM::Grid grid(spacing, dots, expansion_order);
 
-  AIM::Grid grid(Eigen::Array3d(0.5, 0.5, 0.5), std::move(dots),
-                 expansion_order);
+  BOOST_CHECK_EQUAL(grid.coord_to_idx(grid.idx_to_coord(0)), 0);
+
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(0), Eigen::Vector3d(0, -3, -3));
+  BOOST_CHECK_EQUAL(
+      grid.spatial_coord_of_box(grid.num_gridpoints - 1),
+      Eigen::Vector3d(1, 4, 4));  // <1, 4, 4> due to the expansion order
+
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(
+                        grid.associated_grid_index(dots->at(0).position())),
+                    dots->at(0).position());
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(
+                        grid.associated_grid_index(dots->at(1).position())),
+                    dots->at(1).position());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -33,6 +33,12 @@ class AIM::Grid {
     return (coord.array() / spacing).cast<int>();
   }
 
+  inline size_t associated_grid_index(const Eigen::Vector3d &coord) const
+  {
+    auto grid_coord = grid_coordinate(coord);
+    return coord_to_idx(grid_coord - bounds.col(0).matrix());
+  }
+
   inline size_t coord_to_idx(const Eigen::Vector3i &coord) const
   {
     return coord(2) + dimensions(2) * (coord(1) + dimensions(1) * coord(0));
@@ -54,8 +60,7 @@ class AIM::Grid {
     auto dr = idx_to_coord(box_id) + bounds.col(0).matrix();
     return dr.array().cast<double>() * spacing;
   }
-  std::vector<size_t> expansion_box_indices(const Eigen::Vector3d &,
-                                            const int) const;
+  std::vector<size_t> expansion_box_indices(const Eigen::Vector3d &) const;
 
   Eigen::Array3i dimensions;
   size_t num_gridpoints;

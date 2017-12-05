@@ -87,8 +87,8 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
 BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
 {
   dots = std::make_shared<DotVector>(DotVector{
-      QuantumDot(Eigen::Vector3d(0.1, 0.1, 0.1), Eigen::Vector3d(0, 0, 1)),
-      QuantumDot(Eigen::Vector3d(7.5, 7.5, 7.5), Eigen::Vector3d(0, 0, 1))});
+      QuantumDot(Eigen::Vector3d(-3, -3, -3), Eigen::Vector3d(0, 0, 1)),
+      QuantumDot(Eigen::Vector3d(3, 3, 3), Eigen::Vector3d(0, 0, 1))});
 
   expansion_order = 1;
   Grid grid(spacing, dots, expansion_order);
@@ -103,6 +103,7 @@ BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
   std::cout << std::scientific;
   for(int i = 0; i < num_steps; ++i) {
     auto x = aim.evaluate(i);
+    std::cout << i << " " << x.transpose().real() << std::endl;
   }
 }
 

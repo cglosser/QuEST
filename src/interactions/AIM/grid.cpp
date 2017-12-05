@@ -83,13 +83,13 @@ std::vector<DotRange> AIM::Grid::box_contents_map(
 
 std::vector<size_t> AIM::Grid::expansion_box_indices(const Eigen::Vector3d &pos) const
 {
-  Eigen::Vector3i origin = grid_coordinate(pos);
-  std::vector<size_t> indices(std::pow(order + 1, 3));
+  Eigen::Vector3i origin = idx_to_coord(associated_grid_index(pos));
+  std::vector<size_t> indices(std::pow(expansion_order + 1, 3));
 
   size_t idx = 0;
-  for(int nx = 0; nx <= order; ++nx) {
-    for(int ny = 0; ny <= order; ++ny) {
-      for(int nz = 0; nz <= order; ++nz) {
+  for(int nx = 0; nx <= expansion_order; ++nx) {
+    for(int ny = 0; ny <= expansion_order; ++ny) {
+      for(int nz = 0; nz <= expansion_order; ++nz) {
         const Eigen::Vector3i delta(grid_sequence(nx), grid_sequence(ny),
                                     grid_sequence(nz));
         const size_t grid_idx = coord_to_idx(origin + delta);
@@ -105,8 +105,8 @@ std::vector<size_t> AIM::Grid::expansion_box_indices(const Eigen::Vector3d &pos)
 void AIM::Grid::sort_points_on_boxidx() const
 {
   auto grid_comparitor = [&](const QuantumDot &q1, const QuantumDot &q2) {
-    return coord_to_idx(grid_coordinate(q1.position())) <
-           coord_to_idx(grid_coordinate(q2.position()));
+    return associated_grid_index(q1.position()) <
+           associated_grid_index(q2.position());
   };
 
   std::stable_sort(dots->begin(), dots->end(), grid_comparitor);
