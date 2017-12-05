@@ -69,7 +69,6 @@ class AIM::AimInteraction final : public HistoryInteraction {
   Expansions::ExpansionTable expansion_table;
   Expansions::ExpansionFunction expansion_function;
   normalization::SpatialNorm normalization;
-  int max_transit_steps;
   std::array<int, 4> circulant_dimensions;
 
   // This corresponds to delta(t - R/c)/R and thus holds *scalar* quantities

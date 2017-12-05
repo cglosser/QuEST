@@ -49,14 +49,12 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
   // Place one QD *on* the most-separated grid points
   dots = std::make_shared<DotVector>(
       DotVector{QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
-                QuantumDot(spacing * num_boxes.cast<double>(),
+                QuantumDot(spacing * (num_boxes).cast<double>(),
                            Eigen::Vector3d(0, 0, 1))});
 
   Grid grid(spacing, dots, expansion_order);
-  BOOST_CHECK_EQUAL((dots->at(1).position() -
-                     grid.spatial_coord_of_box(grid.num_gridpoints - 1))
-                        .norm(),
-                    0);
+  BOOST_CHECK_EQUAL(dots->at(1).position(),
+                    grid.spatial_coord_of_box(grid.num_gridpoints - 1));
 
   auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
       expansion_order, grid, *dots);
@@ -72,9 +70,10 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
   for(int i = 0; i < num_steps; ++i) {
     auto x = aim.evaluate(i);
 
-    if(i > aim.max_transit_steps) {
+    if(i > grid.max_transit_steps(c, dt) + 10) {
       // Wait until observer is fully (i.e. has a complete interpolation) inside
-      // of light cone
+      // of light cone. The +10 is "fluff" to allow the propagation
+      // discontinuity to fade.
       BOOST_CHECK_CLOSE(x(1).real(), src(i * dt - delay), 1e-5);
 
       auto relative_error =
@@ -104,7 +103,6 @@ BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
   std::cout << std::scientific;
   for(int i = 0; i < num_steps; ++i) {
     auto x = aim.evaluate(i);
-    std::cout << i << " " << x.transpose().real() << std::endl;
   }
 }
 
