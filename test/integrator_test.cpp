@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(PREDICTOR_CORRECTOR)
   BOOST_TEST_MESSAGE(
       "Maximum relative predictor/corrector error: " << max_abs_error());
   BOOST_CHECK_CLOSE(hist->array[0][num_steps - 1][0],
-                    solution((num_steps - 1) * dt), 1e-12);
+                    solution((num_steps - 1) * dt), 1e-10);
 }
 
 BOOST_AUTO_TEST_CASE(RUNGE_KUTTA_4)
