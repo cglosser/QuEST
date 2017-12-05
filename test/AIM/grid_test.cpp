@@ -7,33 +7,57 @@ BOOST_AUTO_TEST_SUITE(GRID)
 
 BOOST_AUTO_TEST_SUITE(EUCLIDEAN_COORDINATES)
 
-BOOST_AUTO_TEST_CASE(INDEXING_WITH_NEGATIVE_SHIFT)
+BOOST_AUTO_TEST_CASE(COORDINATE_TRANSFORMATIONS_2D)
 {
   Eigen::Vector3d spacing(1, 1, 1);
-  Eigen::Array3i shape(20, 20, 20), shift(-4, -4, -4);
+  Eigen::Array3i shape(6, 5, 1), shift(-2, -2, 0);
   AIM::Grid grid(spacing, shape, shift);
 
-  BOOST_CHECK_EQUAL(grid.num_gridpoints, shape.prod());
+  // Check "bottom left" gridpt maps to index 0
   BOOST_CHECK_EQUAL(grid.idx_to_coord(0), Eigen::Vector3i::Zero());
+  BOOST_CHECK_EQUAL(grid.coord_to_idx(Eigen::Vector3i::Zero()), 0);
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(0),
+                    (spacing.array() * shift.cast<double>()).matrix());
 
-  // Check that "bottom left" gridpoint maps to index 0
-  int origin = 0;
-  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(origin),
-                    (shift.cast<double>() * spacing.array()).matrix());
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(12), Eigen::Vector3d::Zero());
 
-  // Check that "top right" gridpoint maps to index num_pts - 1
-  int far_corner = shape.prod() - 1;
+  // Check that "upper right" gridpt maps to last valid index
   BOOST_CHECK_EQUAL(
-      grid.spatial_coord_of_box(far_corner),
-      ((shape + shift - 1).cast<double>() * spacing.array()).matrix());
+      grid.spatial_coord_of_box(grid.num_gridpoints - 1),
+      grid.spatial_coord_of_box(0) +
+          (spacing.array() * (shape.cast<double>() - 1)).matrix());
 
   // Check that coord_to_idx and idx_to_coord are inverses
-  for(int i = 0; i < far_corner; i++) {
+  for(size_t i = 0; i < grid.num_gridpoints; ++i) {
     BOOST_CHECK_EQUAL(grid.coord_to_idx(grid.idx_to_coord(i)), i);
   }
 }
 
-BOOST_AUTO_TEST_CASE(EUCLIDEAN_COORDINATES)
+BOOST_AUTO_TEST_CASE(COORDINATE_TRANSFORMATIONS_3D)
+{
+  Eigen::Vector3d spacing(1, 1, 1);
+  Eigen::Array3i shape(6, 5, 2), shift(-2, -3, 1);
+  AIM::Grid grid(spacing, shape, shift);
+
+  // Check "bottom left" gridpt maps to index 0
+  BOOST_CHECK_EQUAL(grid.idx_to_coord(0), Eigen::Vector3i::Zero());
+  BOOST_CHECK_EQUAL(grid.coord_to_idx(Eigen::Vector3i::Zero()), 0);
+  BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(0),
+                    (spacing.array() * shift.cast<double>()).matrix());
+
+  // Check that "upper right" gridpt maps to last valid index
+  BOOST_CHECK_EQUAL(
+      grid.spatial_coord_of_box(grid.num_gridpoints - 1),
+      grid.spatial_coord_of_box(0) +
+          (spacing.array() * (shape.cast<double>() - 1)).matrix());
+
+  // Check that coord_to_idx and idx_to_coord are inverses
+  for(size_t i = 0; i < grid.num_gridpoints; ++i) {
+    BOOST_CHECK_EQUAL(grid.coord_to_idx(grid.idx_to_coord(i)), i);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(NONINTEGER_SHIFT)
 {
   Eigen::Vector3d spacing(0.2, 0.2, 0.2);
   Eigen::Array3i shape(10, 10, 10), shift(-5, -5, -5);
@@ -53,10 +77,6 @@ BOOST_AUTO_TEST_CASE(EUCLIDEAN_COORDINATES)
   BOOST_CHECK_EQUAL(
       grid.grid_coordinate(Eigen::Vector3d(-2.3, -3.7, -1.4)).cast<double>(),
       Eigen::Vector3d(-11, -18, -6));
-
-  BOOST_CHECK_EQUAL(grid.coord_to_idx(shift), 0);
-  BOOST_CHECK_EQUAL(grid.idx_to_coord(grid.num_gridpoints - 1),
-                    (shape - 1).matrix());
 
   BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(0),
                     (shift.cast<double>() * spacing.array()).matrix());

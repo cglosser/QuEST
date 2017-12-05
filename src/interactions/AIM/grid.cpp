@@ -88,8 +88,7 @@ Eigen::Vector3i AIM::Grid::grid_coordinate(const Eigen::Vector3d &coord) const
 
 size_t AIM::Grid::coord_to_idx(const Eigen::Vector3i &coord) const
 {
-  auto tmp = coord - bounds.col(0).matrix();
-  return tmp(2) + dimensions(2) * (tmp(1) + dimensions(1) * tmp(0));
+  return coord(2) + dimensions(2) * (coord(1) + dimensions(1) * coord(0));
 }
 
 Eigen::Vector3i AIM::Grid::idx_to_coord(size_t idx) const

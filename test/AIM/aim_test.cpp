@@ -32,6 +32,7 @@ struct PARAMETERS {
     history->fill(Eigen::Vector2cd::Zero());
     for(int i = -10; i < num_steps; ++i) {
       history->array[0][i][0](RHO_01) = src(i * dt);
+      history->array[1][i][0](RHO_01) = 1;
     }
   };
 
@@ -87,8 +88,8 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
 BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
 {
   dots = std::make_shared<DotVector>(DotVector{
-      QuantumDot(Eigen::Vector3d(1, 1, 1), Eigen::Vector3d(0, 0, 1)),
-      QuantumDot(Eigen::Vector3d(5, 5, 5), Eigen::Vector3d(0, 0, 1))});
+      QuantumDot(Eigen::Vector3d(0.1, 0.1, 0.1), Eigen::Vector3d(0, 0, 1)),
+      QuantumDot(Eigen::Vector3d(7.5, 7.5, 7.5), Eigen::Vector3d(0, 0, 1))});
 
   expansion_order = 1;
   Grid grid(spacing, dots, expansion_order);
