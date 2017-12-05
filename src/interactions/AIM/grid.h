@@ -28,10 +28,32 @@ class AIM::Grid {
       const std::shared_ptr<DotVector> &) const;
 
   // Geometry routines (grid <---> space)
-  Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &) const;
-  size_t coord_to_idx(const Eigen::Vector3i &) const;
-  Eigen::Vector3i idx_to_coord(size_t) const;
-  Eigen::Vector3d spatial_coord_of_box(const size_t) const;
+  inline Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &coord) const
+  {
+    return (coord.array() / spacing).cast<int>();
+  }
+
+  inline size_t coord_to_idx(const Eigen::Vector3i &coord) const
+  {
+    return coord(2) + dimensions(2) * (coord(1) + dimensions(1) * coord(0));
+  }
+
+  inline Eigen::Vector3i idx_to_coord(size_t idx) const
+  {
+    const int nynz = dimensions(1) * dimensions(2);
+    const int x = idx / nynz;
+    idx -= x * nynz;
+    const int y = idx / dimensions(2);
+    const int z = idx % dimensions(2);
+
+    return Eigen::Vector3i(x, y, z);
+  }
+
+  inline Eigen::Vector3d spatial_coord_of_box(const size_t box_id) const
+  {
+    auto dr = idx_to_coord(box_id) + bounds.col(0).matrix();
+    return dr.array().cast<double>() * spacing;
+  }
   std::vector<size_t> expansion_box_indices(const Eigen::Vector3d &,
                                             const int) const;
 

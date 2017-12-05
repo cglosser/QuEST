@@ -81,35 +81,6 @@ std::vector<DotRange> AIM::Grid::box_contents_map(
   return boxes;
 }
 
-Eigen::Vector3i AIM::Grid::grid_coordinate(const Eigen::Vector3d &coord) const
-{
-  return (coord.array() / spacing).cast<int>();
-}
-
-size_t AIM::Grid::coord_to_idx(const Eigen::Vector3i &coord) const
-{
-  return coord(2) + dimensions(2) * (coord(1) + dimensions(1) * coord(0));
-}
-
-Eigen::Vector3i AIM::Grid::idx_to_coord(size_t idx) const
-{
-  const int nynz = dimensions(1) * dimensions(2);
-  const int x = idx / nynz;
-  idx -= x * nynz;
-  const int y = idx / dimensions(2);
-  const int z = idx % dimensions(2);
-
-  return Eigen::Vector3i(x, y, z);
-}
-
-Eigen::Vector3d AIM::Grid::spatial_coord_of_box(const size_t box_id) const
-{
-  return (idx_to_coord(box_id) + bounds.col(0).matrix())
-             .array()
-             .cast<double>() *
-         spacing;
-}
-
 std::vector<size_t> AIM::Grid::expansion_box_indices(const Eigen::Vector3d &pos,
                                                      const int order) const
 {
