@@ -35,7 +35,7 @@ class AIM::Grid {
 
   inline size_t associated_grid_index(const Eigen::Vector3d &coord) const
   {
-    auto grid_coord = grid_coordinate(coord);
+    Eigen::Vector3i grid_coord = grid_coordinate(coord);
     return coord_to_idx(grid_coord - bounds.col(0).matrix());
   }
 
@@ -57,7 +57,7 @@ class AIM::Grid {
 
   inline Eigen::Vector3d spatial_coord_of_box(const size_t box_id) const
   {
-    auto dr = idx_to_coord(box_id) + bounds.col(0).matrix();
+    Eigen::Vector3i dr = (idx_to_coord(box_id) + bounds.col(0).matrix());
     return dr.array().cast<double>() * spacing;
   }
   std::vector<size_t> expansion_box_indices(const Eigen::Vector3d &) const;

@@ -73,8 +73,9 @@ void AIM::AimInteraction::fill_source_table(const int step)
       // elements) and the electromagnetic source quantities. Ideally the AIM
       // code should not have knowledge of this to better encapsulate
       // "propagation," but this is good enough for now.
-      auto source_field = e.weights[D_0] * (*dots)[dot_idx].dipole() *
-                          history->array[dot_idx][step][0][RHO_01];
+      Eigen::Vector3cd source_field = e.weights[D_0] *
+                                      (*dots)[dot_idx].dipole() *
+                                      history->array[dot_idx][step][0][RHO_01];
       grid_field += source_field;
     }
   }
@@ -183,7 +184,7 @@ void AIM::AimInteraction::fill_gmatrix_table(
         if(nearfield_point) continue;
 
         const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(x, y, z));
-        const auto dr =
+        const Eigen::Vector3d dr =
             grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
 
         const double arg = dr.norm() / (c0 * dt);

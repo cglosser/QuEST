@@ -99,6 +99,13 @@ BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
                           grid, expansions, AIM::Expansions::Derivative0,
                           AIM::normalization::unit);
 
+  //for(int i = 0; i < dots->size(); ++i) {
+    //for(int j = 0; j < 8; ++j) {
+      //std::cout << expansions[i][0].weights[j] << std::endl;
+    //}
+    //std::cout << std::endl;
+  //}
+
   std::cout.precision(17);
   std::cout << std::scientific;
   for(int i = 0; i < num_steps; ++i) {
