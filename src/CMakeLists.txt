@@ -12,8 +12,6 @@ target_sources(quest
     "${CMAKE_CURRENT_LIST_DIR}/math_utils.h"
     "${CMAKE_CURRENT_LIST_DIR}/pulse.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/pulse.h"
-    #"${CMAKE_CURRENT_LIST_DIR}/quantum_dot.cpp"
-    #"${CMAKE_CURRENT_LIST_DIR}/quantum_dot.h"
     "${CMAKE_CURRENT_LIST_DIR}/magnetic_particle.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/magnetic_particle.h"
 )
