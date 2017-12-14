@@ -5,7 +5,7 @@ EulerIntegrator::EulerIntegrator(
     const double dt,
     const std::shared_ptr<Integrator::History<Eigen::Vector3d>> &history,
     std::unique_ptr<Integrator::RHS<Eigen::Vector3d>> &rhs_functions)
-    : step(step), dt(dt), history(history), rhs_functions(rhs_functions)
+    : step(step), dt(dt), history(history), rhs_functions(std::move(rhs_functions))
 {
 }
 
