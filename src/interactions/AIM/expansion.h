@@ -70,74 +70,41 @@ namespace AIM {
       return spatial::Derivative0(field, e.weights);
     };
 
-    // class Dyadic {
-    // public:
-    // Dyadic(int circulant_dimensions, double c)
-    //: order(5),
-    // circulant_dimensions(circulant_dimensions),
-    // c(c),
-    // dt_sq_coefs({3.750000000000000, -12.83333333333333,
-    // 17.83333333333333, -13.00000000000000,
-    // 5.083333333333333, -0.8333333333333333}){};
+    class TimeDerivative {
+     public:
+      TimeDerivative(int history_length)
+          : history_length(history_length),
+            dt_coefs({{1.0, 0.0, 0.0, 0.0, 0.0, 0.0}}){};
+      // dt_coefs({{137./60, -5., 5., -10./3, 5./4, -1./5}}){};
+      // dt_coefs({{1.833333333333333, -3.000000000000000, 1.500000000000000,
+      //-0.3333333333333333}}){};
 
-    // Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
-    // const std::array<int, 4> &coord,
-    // const Expansions::Expansion &e)
-    //{
-    // Eigen::Vector3cd total_field = Eigen::Vector3cd::Zero();
+      Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
+                                  const std::array<int, 4> &coord,
+                                  const Expansions::Expansion &e)
+      {
+        Eigen::Vector3cd total_field = Eigen::Vector3cd::Zero();
 
-    // for(int h = 0; h <= order; ++h) {
-    // int w = std::max(coord[0] - h, 0) % circulant_dimensions;
-    // Eigen::Map<const Eigen::Vector3cd> field(
-    //&obs[w][coord[1]][coord[2]][coord[3]][0]);
-    // total_field -= dt_sq_coefs[h] * Derivative0(field, e.weights);
-    //}
+        // for(int h = 0; h < static_cast<int>(dt_coefs.size()); ++h) {
+        for(int h = 0; h < 1; ++h) {
+          int w = wrap_index(std::max(coord[0] - h, 0));
+          Eigen::Map<const Eigen::Vector3cd> field(
+              &obs[w][coord[1]][coord[2]][coord[3]][0]);
+          total_field += dt_coefs[h] * spatial::Derivative0(field, e.weights);
+        }
 
-    // total_field +=
-    // std::pow(c, 2) *
-    // GradDiv(Eigen::Map<const Eigen::Vector3cd>(
-    //&obs[coord[0]][coord[1]][coord[2]][coord[3]][0]),
-    // e.weights);
+        return total_field;
+      }
 
-    // return total_field;
-    //}
-
-    // private:
-    // int order, circulant_dimensions;
-    // double c;
-    // std::array<double, 6> dt_sq_coefs;
-    //};
-
-    //class TimeDerivative {
-     //public:
-      //TimeDerivative(int circulant_dimensions, double c)
-          //: order(3),
-            //circulant_dimensions(circulant_dimensions),
-            //c(c),
-            //dt_coefs({1.833333333333333, -3.000000000000000, 1.500000000000000,
-                      //-0.3333333333333333}){};
-
-      //Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
-                                  //const std::array<int, 4> &coord,
-                                  //const Expansions::Expansion &e)
-      //{
-        //Eigen::Vector3cd total_field = Eigen::Vector3cd::Zero();
-
-        //for(int h = 0; h <= order; ++h) {
-          //int w = std::max(coord[0] - h, 0) % circulant_dimensions;
-          //Eigen::Map<const Eigen::Vector3cd> field(
-              //&obs[w][coord[1]][coord[2]][coord[3]][0]);
-          //total_field -= dt_coefs[h] * Derivative0(field, e.weights);
-        //}
-
-        //return total_field;
-      //}
-
-     //private:
-      //int order, circulant_dimensions;
-      //double c;
-      //std::array<double, 6> dt_coefs;
-    //};
+     private:
+      int history_length;
+      std::array<double, 6> dt_coefs;
+      int wrap_index(int t)
+      {
+        return t % (history_length + 3); // FIX ME! THIS IS IN PROGRESS!
+        // return (t % history_length + history_length) % history_length;
+      };
+    };
   }
 }
 
