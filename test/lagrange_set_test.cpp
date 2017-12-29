@@ -150,45 +150,4 @@ BOOST_AUTO_TEST_CASE(full_constructor_d2)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(ON_KNOT_VALUE_COMPARISON)
-
-BOOST_AUTO_TEST_CASE(FULL_CONSTRUCTOR_D0)
-{
-  constexpr int order = 3;
-  constexpr double eval_point = 0;
-
-  Interpolation::UniformLagrangeSet ULS(eval_point, order);
-
-  for(int d = 0; d <= 2; ++d) {
-    for(int p = 0; p <= order; ++p) {
-      std::cout << ULS.evaluations[d][p] << " ";
-    }
-    std::cout << std::endl;
-  }
-
-  //BOOST_CHECK_EQUAL(ULS.evaluations[0][0], 1);
-  //BOOST_CHECK_EQUAL(ULS.evaluations[0][1], 0);
-  //BOOST_CHECK_EQUAL(ULS.evaluations[0][2], 0);
-  //BOOST_CHECK_EQUAL(ULS.evaluations[0][3], 0);
-  //BOOST_CHECK_EQUAL(ULS.evaluations[0][4], 0);
-  //BOOST_CHECK_EQUAL(ULS.evaluations[0][5], 0);
-}
-
-BOOST_AUTO_TEST_CASE(FULL_CONSTRUCTOR_D1)
-{
-  constexpr int order = 3;
-  constexpr double eval_point = 0;
-
-  Interpolation::UniformLagrangeSet ULS(eval_point, order);
-
-  BOOST_CHECK_CLOSE(ULS.evaluations[1][0], 137./60., 1e-6);
-  BOOST_CHECK_CLOSE(ULS.evaluations[1][1], -5, 1e-6);
-  BOOST_CHECK_CLOSE(ULS.evaluations[1][2], 5, 1e-6);
-  BOOST_CHECK_CLOSE(ULS.evaluations[1][3], -10./3., 1e-6);
-  BOOST_CHECK_CLOSE(ULS.evaluations[1][4], 5./4., 1e-6);
-  BOOST_CHECK_CLOSE(ULS.evaluations[1][5], -1./5., 1e-6);
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 BOOST_AUTO_TEST_SUITE_END()
