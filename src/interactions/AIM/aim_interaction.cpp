@@ -113,6 +113,7 @@ void AIM::AimInteraction::propagate(const int step)
 void AIM::AimInteraction::fill_results_table(const int step)
 {
   results = 0;
+  const int wrapped_step = step % circulant_dimensions[0];
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
     Eigen::Vector3cd total_field = Eigen::Vector3cd::Zero();
@@ -120,7 +121,8 @@ void AIM::AimInteraction::fill_results_table(const int step)
         ++expansion_idx) {
       const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
-      total_field += expansion_function(obs_table, {step, coord(0), coord(1), coord(2)}, e);
+      total_field += expansion_function(
+          obs_table, {{wrapped_step, coord(0), coord(1), coord(2)}}, e);
     }
     results(dot_idx) += total_field.dot((*dots)[dot_idx].dipole());
   }
