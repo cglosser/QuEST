@@ -3,7 +3,7 @@
 
 #include "common.h"
 #include "fourier.h"
-#include "interactions/AIM/aim_interaction.h"
+#include "interactions/AIM/spacetime.h"
 
 BOOST_AUTO_TEST_SUITE(SPACETIME)
 
@@ -14,7 +14,7 @@ struct SHAPE {
 
 BOOST_FIXTURE_TEST_CASE(CIRCULANT_MIRROR, SHAPE)
 {
-  AIM::spacetime::vector<int> stv(dims);
+  spacetime::vector<int> stv(dims);
   std::fill(stv.data(), stv.data() + stv.num_elements(), 0);
 
   int i = 1;
@@ -28,7 +28,7 @@ BOOST_FIXTURE_TEST_CASE(CIRCULANT_MIRROR, SHAPE)
     }
   }
 
-  AIM::spacetime::fill_circulant_mirror(stv);
+  spacetime::fill_circulant_mirror(stv);
 
   // Built using substitution rules in Mathematica -- does not contain the
   // flipped temporal entries!
@@ -70,7 +70,7 @@ BOOST_FIXTURE_TEST_CASE(CIRCULANT_MIRROR, SHAPE)
 BOOST_FIXTURE_TEST_CASE(FFT_MATRIX_MULTIPLY, SHAPE)
 {
   const int num_spatial_elements = dims[1] * dims[2] * dims[3];
-  AIM::spacetime::vector<cmplx> mat(dims), vec(dims);
+  spacetime::vector<cmplx> mat(dims), vec(dims);
 
   TransformPair transforms = {
       fftw_plan_dft_3d(dims[1], dims[2], dims[3],
@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE(FFT_MATRIX_MULTIPLY, SHAPE)
     }
   }
 
-  AIM::spacetime::fill_circulant_mirror(mat);
+  spacetime::fill_circulant_mirror(mat);
 
   fftw_execute_dft(transforms.forward,
                    reinterpret_cast<fftw_complex *>(mat.data()),
@@ -107,7 +107,7 @@ BOOST_FIXTURE_TEST_CASE(FFT_MATRIX_MULTIPLY, SHAPE)
                    reinterpret_cast<fftw_complex *>(vec.data()),
                    reinterpret_cast<fftw_complex *>(vec.data()));
 
-  AIM::spacetime::vector<cmplx> result(dims);
+  spacetime::vector<cmplx> result(dims);
   Eigen::Map<Eigen::ArrayXcd> fft_mat(mat.data(), num_spatial_elements);
   Eigen::Map<Eigen::ArrayXcd> fft_vec(vec.data(), num_spatial_elements);
   Eigen::Map<Eigen::ArrayXcd> fft_result(result.data(), num_spatial_elements);
