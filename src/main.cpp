@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
     auto history = std::make_shared<Integrator::History<soltype>>(
         config.num_particles, 22, config.num_timesteps);
     history->fill(soltype(0, 0, 0));
-    history->initialize_past(soltype(100, 100, 100));
+    history->initialize_past(qds);
+
 
     // Set up Interactions
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));

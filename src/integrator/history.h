@@ -7,6 +7,8 @@
 #include <iostream>
 #include <memory>
 
+#include "../magnetic_particle.h"
+
 namespace Integrator {
   template <class soltype>
   class History;
@@ -24,7 +26,7 @@ class Integrator::History {
   soltype_array<soltype> array;
 
   void fill(const soltype &);
-  void initialize_past(const soltype &);
+  void initialize_past(const std::shared_ptr<const DotVector> &);
 
  private:
 };
@@ -46,12 +48,12 @@ void Integrator::History<soltype>::fill(const soltype &val)
 }
 
 template <class soltype>
-void Integrator::History<soltype>::initialize_past(const soltype &val)
+void Integrator::History<soltype>::initialize_past(const std::shared_ptr<
+                                                   const DotVector> &dots)
 {
-  for(int n = 0; n < static_cast<int>(array.shape()[0]); ++n) {
-    for(int t = array.index_bases()[1]; t <= 0; ++t) {
-      array[n][t][DERIV_0] = val;
-    }
+  for(int time_idx=array.index_bases()[1]; time_idx <= 0; ++time_idx) {
+    for(int i=0; i < static_cast<int>(array.shape()[0]); ++i)
+      array[i][time_idx][DERIV_0] = (*dots)[i].magnetization();
   }
 }
 
