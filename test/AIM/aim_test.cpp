@@ -13,9 +13,6 @@ struct PARAMETERS {
   Eigen::Array3i num_boxes;
   Eigen::Array3d spacing;
 
-  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
-  std::shared_ptr<DotVector> dots;
-
   PARAMETERS()
       : interpolation_order(3),
         expansion_order(0),
@@ -24,18 +21,38 @@ struct PARAMETERS {
         c(1),
         dt(1),
         total_time(dt * num_steps),
-        num_boxes(4, 4, 4),
-        spacing(Eigen::Array3d(1, 1, 1) * c * dt),
-        history(std::make_shared<Integrator::History<Eigen::Vector2cd>>(
-            num_dots, 10, num_steps))
+        num_boxes(8, 8, 8),
+        spacing(Eigen::Array3d(1, 1, 1) * c * dt){};
+};
 
+BOOST_FIXTURE_TEST_SUITE(ON_GRID, PARAMETERS)
+
+struct SPACETIME_PARAMETERS : public PARAMETERS {
+  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
+  std::shared_ptr<DotVector> dots;
+
+  Grid grid;
+  Expansions::ExpansionTable expansions;
+
+  SPACETIME_PARAMETERS()
+      : history(std::make_shared<Integrator::History<Eigen::Vector2cd>>(
+            num_dots, 10, num_steps)),
+        dots(std::make_shared<DotVector>(DotVector{
+            QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
+            QuantumDot(spacing * (num_boxes).cast<double>(),
+                       Eigen::Vector3d(0, 0, 1))})),
+        grid(spacing, dots, expansion_order),
+        expansions(Expansions::LeastSquaresExpansionSolver::get_expansions(
+            expansion_order, grid, *dots))
   {
+    BOOST_CHECK_EQUAL(dots->at(1).position(),
+                      grid.spatial_coord_of_box(grid.num_gridpoints - 1));
     history->fill(Eigen::Vector2cd::Zero());
     for(int i = -10; i < num_steps; ++i) {
       history->array[0][i][0](RHO_01) = src(i * dt);
       history->array[1][i][0](RHO_01) = 1;
     }
-  };
+  }
 
   double src(const double t) const
   {
@@ -47,123 +64,64 @@ struct PARAMETERS {
   {
     const double mu = total_time / 2.0, sigma = total_time / 6.0;
     const double arg = (t - mu) / sigma;
-    return arg * gaussian(arg) / sigma;
+    return -arg * gaussian(arg) / sigma;
   }
 };
 
-BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, PARAMETERS)
+BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, SPACETIME_PARAMETERS)
 {
-  // Place one QD *on* the most-separated grid points
-  dots = std::make_shared<DotVector>(
-      DotVector{QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
-                QuantumDot(spacing * (num_boxes).cast<double>(),
-                           Eigen::Vector3d(0, 0, 1))});
-
-  Grid grid(spacing, dots, expansion_order);
-  BOOST_CHECK_EQUAL(dots->at(1).position(),
-                    grid.spatial_coord_of_box(grid.num_gridpoints - 1));
-
-  auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
-      expansion_order, grid, *dots);
-
-  AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
-                          grid, expansions, AIM::Expansions::Retardation,
-                          AIM::normalization::unit);
-
-  const double delay =
-      (dots->at(1).position() - dots->at(0).position()).norm() / c;
-
-  double max_error = 0;
-  for(int i = 0; i < num_steps; ++i) {
-    auto x = aim.evaluate(i);
-
-    if(i > grid.max_transit_steps(c, dt) + 10) {
-      // Wait until observer is fully (i.e. has a complete interpolation) inside
-      // of light cone. The +10 is "fluff" to allow the propagation
-      // discontinuity to fade.
-      BOOST_CHECK_CLOSE(x(1).real(), src(i * dt - delay), 1e-5);
-
-      auto relative_error =
-          std::abs((src(i * dt - delay) - x(1).real()) / src(i * dt - delay));
-      max_error = std::max(max_error, relative_error);
-    }
-  }
-  BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << max_error);
-}
-
-BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION, PARAMETERS)
-{
-  // Place one QD *on* the most-separated grid points
-  dots = std::make_shared<DotVector>(
-      DotVector{QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
-                QuantumDot(spacing * (num_boxes + 3).cast<double>(),
-                           Eigen::Vector3d(0, 0, 1))});
-
-  Grid grid(spacing, dots, expansion_order);
-  BOOST_CHECK_EQUAL(dots->at(1).position(),
-                    grid.spatial_coord_of_box(grid.num_gridpoints - 1));
-
-  auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
-      expansion_order, grid, *dots);
-
   AIM::AimInteraction aim(
       dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
-      AIM::Expansions::TimeDerivative(grid.max_transit_steps(c, dt)),
+      AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
+                                   interpolation_order),
       AIM::normalization::unit);
 
   const double delay =
       (dots->at(1).position() - dots->at(0).position()).norm() / c;
 
-  std::cout.precision(17);
-  std::cout << std::scientific;
-  //double max_error = 0;
+  double max_relative_error = 0;
   for(int i = 0; i < num_steps; ++i) {
     auto x = aim.evaluate(i);
-    std::cout << i << " " << x.transpose().real() << std::endl;
 
-    //if(i > grid.max_transit_steps(c, dt) + 10) {
-      //// Wait until observer is fully (i.e. has a complete interpolation) inside
-      //// of light cone. The +10 is "fluff" to allow the propagation
-      //// discontinuity to fade.
-      //BOOST_CHECK_CLOSE(x(1).real(), dt_src(i * dt - delay), 1e-5);
+    if(i > grid.max_transit_steps(c, dt) + 2 * interpolation_order) {
+      BOOST_CHECK_CLOSE(x(1).real(), src(i * dt - delay), 1e-5);
 
-      //auto relative_error =
-          //std::abs((dt_src(i * dt - delay) - x(1).real()) / dt_src(i * dt - delay));
-      //max_error = std::max(max_error, relative_error);
-    //}
+      double delta = src(i * dt - delay) - x(1).real();
+      auto relative_error = std::abs(delta) / src(i * dt - delay);
+      max_relative_error = std::max(max_relative_error, relative_error);
+    }
   }
-  //BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << max_error);
+  BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << max_relative_error);
 }
 
-BOOST_FIXTURE_TEST_CASE(GRAD_DIV, PARAMETERS)
+BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
+                        SPACETIME_PARAMETERS)
 {
-  dots = std::make_shared<DotVector>(DotVector{
-      QuantumDot(Eigen::Vector3d(-3, -3, -3), Eigen::Vector3d(0, 0, 1)),
-      QuantumDot(Eigen::Vector3d(3, 3, 3), Eigen::Vector3d(0, 0, 1))});
+  AIM::AimInteraction aim(
+      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      AIM::Expansions::TimeDerivative(grid.max_transit_steps(c, dt) +
+                                      interpolation_order),
+      AIM::normalization::unit);
 
-  expansion_order = 1;
-  Grid grid(spacing, dots, expansion_order);
-  auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
-      expansion_order, grid, *dots);
+  const double delay =
+      (dots->at(1).position() - dots->at(0).position()).norm() / c;
 
-  AIM::AimInteraction aim(dots, history, nullptr, interpolation_order, c, dt,
-                          grid, expansions, AIM::Expansions::Retardation,
-                          AIM::normalization::unit);
-
-  // for(int i = 0; i < dots->size(); ++i) {
-  // for(int j = 0; j < 8; ++j) {
-  // std::cout << expansions[i][0].weights[j] << std::endl;
-  //}
-  // std::cout << std::endl;
-  //}
-
-  std::cout.precision(17);
-  std::cout << std::scientific;
+  double max_relative_error = 0;
   for(int i = 0; i < num_steps; ++i) {
     auto x = aim.evaluate(i);
-    std::cout << i << " " << x.transpose().real() << std::endl;
+
+    if(i > grid.max_transit_steps(c, dt) + 2 * interpolation_order) {
+      BOOST_CHECK_CLOSE(x(1).real(), dt_src(i * dt - delay), 1e-3);
+
+      double delta = dt_src(i * dt - delay) - x(1).real();
+      auto relative_error = std::abs(delta) / dt_src(i * dt - delay);
+      max_relative_error = std::max(max_relative_error, relative_error);
+    }
   }
+  BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << max_relative_error);
 }
+
+BOOST_AUTO_TEST_SUITE_END()  // ON_GRID
 
 struct DummyPropagation {
   std::shared_ptr<DotVector> dots;
@@ -196,8 +154,7 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
       expansion_order, grid, *dots);
   AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
-                          expansions, AIM::Expansions::Retardation,
-                          AIM::normalization::unit);
+                          expansions, nullptr, AIM::normalization::unit);
   auto circulant_shape = grid.circulant_shape(c0, dt);
 
   std::fill(aim.source_table.data(),
