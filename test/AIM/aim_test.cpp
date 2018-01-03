@@ -7,52 +7,30 @@
 BOOST_AUTO_TEST_SUITE(AIM)
 
 struct PARAMETERS {
-  int interpolation_order, expansion_order, num_steps, num_dots;
-  double c, dt, total_time;
+  static int interpolation_order, num_steps, num_dots;
+  static double c, dt, total_time;
 
-  Eigen::Array3i num_boxes;
-  Eigen::Array3d spacing;
+  static Eigen::Array3i num_boxes;
+  static Eigen::Array3d spacing;
 
-  PARAMETERS()
-      : interpolation_order(3),
-        expansion_order(0),
-        num_steps(256),
-        num_dots(2),
-        c(1),
-        dt(1),
-        total_time(dt * num_steps),
-        num_boxes(8, 8, 8),
-        spacing(Eigen::Array3d(1, 1, 1) * c * dt){};
-};
+  int expansion_order;  // Different orders for different test geometries
 
-BOOST_FIXTURE_TEST_SUITE(ON_GRID, PARAMETERS)
-
-struct SPACETIME_PARAMETERS : public PARAMETERS {
-  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
   std::shared_ptr<DotVector> dots;
+  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
 
   Grid grid;
   Expansions::ExpansionTable expansions;
 
-  SPACETIME_PARAMETERS()
-      : history(std::make_shared<Integrator::History<Eigen::Vector2cd>>(
+  PARAMETERS(const int expansion_order, std::shared_ptr<DotVector> dots)
+      : expansion_order(expansion_order),
+        dots(dots),
+        history(std::make_shared<Integrator::History<Eigen::Vector2cd>>(
             num_dots, 10, num_steps)),
-        dots(std::make_shared<DotVector>(DotVector{
-            QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
-            QuantumDot(spacing * (num_boxes).cast<double>(),
-                       Eigen::Vector3d(0, 0, 1))})),
         grid(spacing, dots, expansion_order),
         expansions(Expansions::LeastSquaresExpansionSolver::get_expansions(
-            expansion_order, grid, *dots))
-  {
-    BOOST_CHECK_EQUAL(dots->at(1).position(),
-                      grid.spatial_coord_of_box(grid.num_gridpoints - 1));
-    history->fill(Eigen::Vector2cd::Zero());
-    for(int i = -10; i < num_steps; ++i) {
-      history->array[0][i][0](RHO_01) = src(i * dt);
-      history->array[1][i][0](RHO_01) = 1;
-    }
-  }
+            expansion_order, grid, *dots)){};
+
+  virtual ~PARAMETERS() = 0;
 
   double src(const double t) const
   {
@@ -66,9 +44,67 @@ struct SPACETIME_PARAMETERS : public PARAMETERS {
     const double arg = (t - mu) / sigma;
     return -arg * gaussian(arg) / sigma;
   }
+
+  double test_propagation(AIM::AimInteraction &aim,
+                          const std::function<double(const double)> &sol,
+                          const double toler)
+  {
+    const double delay =
+        (dots->at(1).position() - dots->at(0).position()).norm() / c;
+
+    double max_relative_error = 0;
+    for(int i = 0; i < num_steps; ++i) {
+      auto x = aim.evaluate(i);
+
+      if(i > grid.max_transit_steps(c, dt) + 2 * interpolation_order) {
+        BOOST_CHECK_CLOSE(x(1).real(), sol(i * dt - delay), toler);
+
+        double diff = sol(i * dt - delay) - x(1).real();
+        auto relative_error = std::abs(diff) / sol(i * dt - delay);
+        max_relative_error = std::max(max_relative_error, relative_error);
+      }
+    }
+
+    return max_relative_error;
+  }
 };
 
-BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, SPACETIME_PARAMETERS)
+// These are common to a large suie of tests and some test parameters (like dot
+// positions) might depend on them. To resolve this with a minimum of code
+// duplication, these variables have been made STATIC so that they're available
+// to all subclasses of PARAMETERS when they're constructed.
+PARAMETERS::~PARAMETERS() {}
+int PARAMETERS::interpolation_order = 3;
+int PARAMETERS::num_steps = 256;
+int PARAMETERS::num_dots = 2;
+
+double PARAMETERS::c = 1;
+double PARAMETERS::dt = 1;
+double PARAMETERS::total_time = dt * num_steps;
+
+Eigen::Array3i PARAMETERS::num_boxes(8, 8, 8);
+Eigen::Array3d PARAMETERS::spacing(Eigen::Array3d(1, 1, 1) * c * dt);
+
+BOOST_AUTO_TEST_SUITE(ON_GRID)
+
+struct ON_GRID_PARAMETERS : public PARAMETERS {
+  ON_GRID_PARAMETERS()
+      : PARAMETERS(
+            0,
+            std::make_shared<DotVector>(DotVector{
+                QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
+                QuantumDot(spacing * (num_boxes).cast<double>(),
+                           Eigen::Vector3d(0, 0, 1))}))
+  {
+    history->fill(Eigen::Vector2cd::Zero());
+    for(int i = -10; i < num_steps; ++i) {
+      history->array[0][i][0](RHO_01) = src(i * dt);
+      history->array[1][i][0](RHO_01) = 1;
+    }
+  }
+};
+
+BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, ON_GRID_PARAMETERS)
 {
   AIM::AimInteraction aim(
       dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
@@ -76,26 +112,14 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, SPACETIME_PARAMETERS)
                                    interpolation_order),
       AIM::normalization::unit);
 
-  const double delay =
-      (dots->at(1).position() - dots->at(0).position()).norm() / c;
-
-  double max_relative_error = 0;
-  for(int i = 0; i < num_steps; ++i) {
-    auto x = aim.evaluate(i);
-
-    if(i > grid.max_transit_steps(c, dt) + 2 * interpolation_order) {
-      BOOST_CHECK_CLOSE(x(1).real(), src(i * dt - delay), 1e-5);
-
-      double delta = src(i * dt - delay) - x(1).real();
-      auto relative_error = std::abs(delta) / src(i * dt - delay);
-      max_relative_error = std::max(max_relative_error, relative_error);
-    }
-  }
-  BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << max_relative_error);
+  using namespace std::placeholders;
+  double err = test_propagation(
+      aim, std::bind(&ON_GRID_PARAMETERS::src, this, _1), 1e-5);
+  BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << err);
 }
 
 BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
-                        SPACETIME_PARAMETERS)
+                        ON_GRID_PARAMETERS)
 {
   AIM::AimInteraction aim(
       dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
@@ -103,25 +127,63 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
                                       interpolation_order),
       AIM::normalization::unit);
 
-  const double delay =
-      (dots->at(1).position() - dots->at(0).position()).norm() / c;
-
-  double max_relative_error = 0;
-  for(int i = 0; i < num_steps; ++i) {
-    auto x = aim.evaluate(i);
-
-    if(i > grid.max_transit_steps(c, dt) + 2 * interpolation_order) {
-      BOOST_CHECK_CLOSE(x(1).real(), dt_src(i * dt - delay), 1e-3);
-
-      double delta = dt_src(i * dt - delay) - x(1).real();
-      auto relative_error = std::abs(delta) / dt_src(i * dt - delay);
-      max_relative_error = std::max(max_relative_error, relative_error);
-    }
-  }
-  BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << max_relative_error);
+  using namespace std::placeholders;
+  double err = test_propagation(
+      aim, std::bind(&ON_GRID_PARAMETERS::dt_src, this, _1), 1e-3);
+  BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << err);
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // ON_GRID
+
+BOOST_AUTO_TEST_SUITE(OFF_GRID)
+
+struct OFF_GRID_PARAMETERS : public PARAMETERS {
+  OFF_GRID_PARAMETERS()
+      : PARAMETERS(2,
+                   std::make_shared<DotVector>(DotVector{
+                       QuantumDot(spacing * Eigen::Vector3d(0.5, 0.5, 0.5).array(),
+                                  Eigen::Vector3d(0, 0, 1)),
+                       QuantumDot(spacing * ((num_boxes).cast<double>() + 0.5),
+                                  Eigen::Vector3d(0, 0, 1))}))
+  {
+    history->fill(Eigen::Vector2cd::Zero());
+    for(int i = -10; i < num_steps; ++i) {
+      history->array[0][i][0](RHO_01) = src(i * dt);
+      history->array[1][i][0](RHO_01) = 1;
+    }
+  }
+};
+
+BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, OFF_GRID_PARAMETERS)
+{
+  AIM::AimInteraction aim(
+      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
+                                   interpolation_order),
+      AIM::normalization::unit);
+
+  using namespace std::placeholders;
+  double err = test_propagation(
+      aim, std::bind(&OFF_GRID_PARAMETERS::src, this, _1), 1e-3);
+  BOOST_TEST_MESSAGE("Maximum relative off-grid error: " << err);
+}
+
+BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
+                        OFF_GRID_PARAMETERS)
+{
+  AIM::AimInteraction aim(
+      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      AIM::Expansions::TimeDerivative(grid.max_transit_steps(c, dt) +
+                                      interpolation_order),
+      AIM::normalization::unit);
+
+  using namespace std::placeholders;
+  double err = test_propagation(
+      aim, std::bind(&OFF_GRID_PARAMETERS::dt_src, this, _1), 1e-1);
+  BOOST_TEST_MESSAGE("Maximum relative off-grid error: " << err);
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // OFF_GRID
 
 struct DummyPropagation {
   std::shared_ptr<DotVector> dots;
