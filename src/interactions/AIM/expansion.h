@@ -80,7 +80,7 @@ namespace AIM {
     class TimeDerivative {
      public:
       TimeDerivative(int history_length)
-          : dt_coefs({{25.0/12, -4.0, 3.0, -4.0/3, 1.0/4}}),
+          : dt_coefs({{25.0 / 12, -4.0, 3.0, -4.0 / 3, 1.0 / 4}}),
             history_length(history_length){};
       Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
                                   const std::array<int, 4> &coord,
@@ -100,6 +100,40 @@ namespace AIM {
      private:
       std::array<double, 5> dt_coefs;
       int history_length;
+      int wrap_index(int t) { return t % history_length; };
+    };
+
+    class EFIE {
+     public:
+      EFIE(int history_length, double c)
+          : dt2_coefs(
+                {{15.0 / 4, -77.0 / 6, 107.0 / 6, -13.0, 61.0 / 12, -5.0 / 6}}),
+            history_length(history_length),
+            c(c){};
+
+      Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
+                                  const std::array<int, 4> &coord,
+                                  const Expansions::Expansion &e)
+      {
+        Eigen::Vector3cd dt2 = Eigen::Vector3cd::Zero();
+        for(int h = 0; h < static_cast<int>(dt2_coefs.size()); ++h) {
+          int w = wrap_index(std::max(coord[0] - h, 0));
+          Eigen::Map<const Eigen::Vector3cd> field(
+              &obs[w][coord[1]][coord[2]][coord[3]][0]);
+          dt2 += dt2_coefs[h] * spatial::Derivative0(field, e.weights);
+        }
+
+        Eigen::Map<const Eigen::Vector3cd> field(
+            &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
+        Eigen::Vector3cd del_del = spatial::GradDiv(field, e.weights);
+
+        return dt2 - std::pow(c, 2) * del_del;
+      }
+
+     private:
+      std::array<double, 6> dt2_coefs;
+      int history_length;
+      double c;
       int wrap_index(int t) { return t % history_length; };
     };
   }

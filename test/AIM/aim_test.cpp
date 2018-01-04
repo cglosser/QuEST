@@ -45,22 +45,37 @@ struct PARAMETERS {
     return -arg * gaussian(arg) / sigma;
   }
 
+  double efie_src(const Eigen::Vector3d &dr, const double t)
+  {
+    // This is horrible; don't even try to pull it apart yourself.
+    // I just did it with Mathematica's symbolics and CForm.
+    const double csq = std::pow(c, 2);
+    const double r = dr.norm();
+    const double x = dr(0), y = dr(1), z = dr(2);
+    return (18 * (csq * std::pow(total_time, 2) *
+                      (2 * r + c * (total_time - 2 * t)) *
+                      (std::pow(x, 2) + std::pow(y, 2)) +
+                  8 * r * (3 * r + c * (total_time - 3 * t)) *
+                      (2 * c * total_time + 3 * r - 3 * c * t) * (r - z) *
+                      (r + z))) /
+           (csq * std::exp((9 * std::pow(2 * r + c * (total_time - 2 * t), 2)) /
+                           (2 * csq * std::pow(total_time, 2))) *
+            std::pow(total_time, 4) * std::pow(r, 3));
+  }
+
   double test_propagation(AIM::AimInteraction &aim,
                           const std::function<double(const double)> &sol,
                           const double toler)
   {
-    const double delay =
-        (dots->at(1).position() - dots->at(0).position()).norm() / c;
-
     double max_relative_error = 0;
     for(int i = 0; i < num_steps; ++i) {
       auto x = aim.evaluate(i);
 
       if(i > grid.max_transit_steps(c, dt) + 2 * interpolation_order) {
-        BOOST_CHECK_CLOSE(x(1).real(), sol(i * dt - delay), toler);
+        BOOST_CHECK_CLOSE(x(1).real(), sol(i * dt), toler);
 
-        double diff = sol(i * dt - delay) - x(1).real();
-        auto relative_error = std::abs(diff) / sol(i * dt - delay);
+        double diff = sol(i * dt) - x(1).real();
+        auto relative_error = std::abs(diff) / sol(i * dt);
         max_relative_error = std::max(max_relative_error, relative_error);
       }
     }
@@ -75,7 +90,7 @@ struct PARAMETERS {
 // to all subclasses of PARAMETERS when they're constructed.
 PARAMETERS::~PARAMETERS() {}
 int PARAMETERS::interpolation_order = 3;
-int PARAMETERS::num_steps = 256;
+int PARAMETERS::num_steps = 1024;
 int PARAMETERS::num_dots = 2;
 
 double PARAMETERS::c = 1;
@@ -90,7 +105,7 @@ BOOST_AUTO_TEST_SUITE(ON_GRID)
 struct ON_GRID_PARAMETERS : public PARAMETERS {
   ON_GRID_PARAMETERS()
       : PARAMETERS(
-            0,
+            5,
             std::make_shared<DotVector>(DotVector{
                 QuantumDot(Eigen::Vector3d::Zero(), Eigen::Vector3d(0, 0, 1)),
                 QuantumDot(spacing * (num_boxes).cast<double>(),
@@ -112,9 +127,11 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, ON_GRID_PARAMETERS)
                                    interpolation_order),
       AIM::normalization::unit);
 
-  using namespace std::placeholders;
-  double err = test_propagation(
-      aim, std::bind(&ON_GRID_PARAMETERS::src, this, _1), 1e-5);
+  const double delay =
+      (dots->at(1).position() - dots->at(0).position()).norm() / c;
+
+  const double err = test_propagation(
+      aim, [&](const double t) { return src(t - delay); }, 1e-5);
   BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << err);
 }
 
@@ -127,9 +144,26 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
                                       interpolation_order),
       AIM::normalization::unit);
 
-  using namespace std::placeholders;
+  const double delay = 
+      (dots->at(1).position() - dots->at(0).position()).norm() / c;
+
   double err = test_propagation(
-      aim, std::bind(&ON_GRID_PARAMETERS::dt_src, this, _1), 1e-3);
+      aim, [&](const double t) { return dt_src(t - delay); }, 1e-3);
+  BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << err);
+}
+
+BOOST_FIXTURE_TEST_CASE(GAUSSIAN_EFIE_PROPAGATION, ON_GRID_PARAMETERS)
+{
+  AIM::AimInteraction aim(
+      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      AIM::Expansions::EFIE(grid.max_transit_steps(c, dt) + interpolation_order,
+                            c),
+      AIM::normalization::unit);
+
+  using namespace std::placeholders;
+  const auto dr = dots->at(1).position() - dots->at(0).position();
+  double err = test_propagation(
+      aim, std::bind(&ON_GRID_PARAMETERS::efie_src, this, dr, _1), 8e-1);
   BOOST_TEST_MESSAGE("Maximum relative on-grid error: " << err);
 }
 
@@ -139,12 +173,13 @@ BOOST_AUTO_TEST_SUITE(OFF_GRID)
 
 struct OFF_GRID_PARAMETERS : public PARAMETERS {
   OFF_GRID_PARAMETERS()
-      : PARAMETERS(2,
-                   std::make_shared<DotVector>(DotVector{
-                       QuantumDot(spacing * Eigen::Vector3d(0.5, 0.5, 0.5).array(),
-                                  Eigen::Vector3d(0, 0, 1)),
-                       QuantumDot(spacing * ((num_boxes).cast<double>() + 0.5),
-                                  Eigen::Vector3d(0, 0, 1))}))
+      : PARAMETERS(
+            2,
+            std::make_shared<DotVector>(DotVector{
+                QuantumDot(spacing * Eigen::Vector3d(0.5, 0.5, 0.5).array(),
+                           Eigen::Vector3d(0, 0, 1)),
+                QuantumDot(spacing * ((num_boxes).cast<double>() + 0.5),
+                           Eigen::Vector3d(0, 0, 1))}))
   {
     history->fill(Eigen::Vector2cd::Zero());
     for(int i = -10; i < num_steps; ++i) {
@@ -162,9 +197,11 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, OFF_GRID_PARAMETERS)
                                    interpolation_order),
       AIM::normalization::unit);
 
-  using namespace std::placeholders;
+  const double delay = 
+      (dots->at(1).position() - dots->at(0).position()).norm() / c;
+
   double err = test_propagation(
-      aim, std::bind(&OFF_GRID_PARAMETERS::src, this, _1), 1e-3);
+      aim, [&](const double t) { return src(t - delay); }, 1e-3);
   BOOST_TEST_MESSAGE("Maximum relative off-grid error: " << err);
 }
 
@@ -177,9 +214,26 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
                                       interpolation_order),
       AIM::normalization::unit);
 
-  using namespace std::placeholders;
+  const double delay = 
+      (dots->at(1).position() - dots->at(0).position()).norm() / c;
+
   double err = test_propagation(
-      aim, std::bind(&OFF_GRID_PARAMETERS::dt_src, this, _1), 1e-1);
+      aim, [&](const double t) { return dt_src(t - delay); }, 1e-1);
+  BOOST_TEST_MESSAGE("Maximum relative off-grid error: " << err);
+}
+
+BOOST_FIXTURE_TEST_CASE(GAUSSIAN_EFIE_PROPAGATION, OFF_GRID_PARAMETERS)
+{
+  AIM::AimInteraction aim(
+      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      AIM::Expansions::EFIE(grid.max_transit_steps(c, dt) + interpolation_order,
+                            c),
+      AIM::normalization::unit);
+
+  using namespace std::placeholders;
+  const auto dr = dots->at(1).position() - dots->at(0).position();
+  double err = test_propagation(
+      aim, std::bind(&OFF_GRID_PARAMETERS::efie_src, this, dr, _1), 20);
   BOOST_TEST_MESSAGE("Maximum relative off-grid error: " << err);
 }
 
