@@ -41,6 +41,7 @@ target_link_libraries(quest fftw3)
 include("${CMAKE_SOURCE_DIR}/cmake/set_git_hash.cmake")
 set_git_macros(quest)
 
+include(examples/CMakeLists.txt)
 include(src/CMakeLists.txt)
 include(test/CMakeLists.txt)
 include(tools/CMakeLists.txt)
