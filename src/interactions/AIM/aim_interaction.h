@@ -35,7 +35,6 @@ class AIM::AimInteraction final : public HistoryInteraction {
   AimInteraction(
       const std::shared_ptr<const DotVector>,
       const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
-      const std::shared_ptr<Propagation::RotatingFramePropagator>,
       const int,
       const double,
       const double,

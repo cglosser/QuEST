@@ -14,22 +14,18 @@
 class HistoryInteraction : public Interaction {
  public:
   HistoryInteraction(
-      const std::shared_ptr<const DotVector> dots,
-      const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>
-          history,
-      const std::shared_ptr<Propagation::RotatingFramePropagator> propagator,
+      std::shared_ptr<const DotVector> dots,
+      std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
       const int interp_order,
       const double c0,
       const double dt)
-      : Interaction(dots, dt),
+      : Interaction(std::move(dots), dt),
         history(std::move(history)),
-        propagator(std::move(propagator)),
         interp_order(interp_order),
         c0(c0){};
 
  protected:
   std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history;
-  std::shared_ptr<Propagation::RotatingFramePropagator> propagator;
   int interp_order;
   const double c0;
 };

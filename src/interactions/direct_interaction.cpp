@@ -1,13 +1,14 @@
 #include "direct_interaction.h"
 
 DirectInteraction::DirectInteraction(
-    const std::shared_ptr<const DotVector> dots,
-    const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
-    const std::shared_ptr<Propagation::RotatingFramePropagator> propagator,
+    std::shared_ptr<const DotVector> dots,
+    std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
+    Propagation::RotatingFramePropagator propagator,
     const int interp_order,
     const double c0,
     const double dt)
-    : HistoryInteraction(dots, history, propagator, interp_order, c0, dt),
+    : HistoryInteraction(std::move(dots), std::move(history), interp_order, c0, dt),
+      propagator(std::move(propagator)),
       num_interactions(dots->size() * (dots->size() - 1) / 2),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
@@ -31,7 +32,7 @@ void DirectInteraction::build_coefficient_table()
     lagrange.evaluate_derivative_table_at_x(delay.second, dt);
 
     std::vector<Eigen::Matrix3cd> interp_dyads(
-        propagator->coefficients(dr, lagrange));
+        propagator.coefficients(dr, lagrange));
 
     for(int i = 0; i <= interp_order; ++i) {
       coefficients[pair_idx][i] =

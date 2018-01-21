@@ -122,7 +122,7 @@ struct ON_GRID_PARAMETERS : public PARAMETERS {
 BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, ON_GRID_PARAMETERS)
 {
   AIM::AimInteraction aim(
-      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      dots, history , interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
                                    interpolation_order),
       AIM::normalization::unit);
@@ -139,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
                         ON_GRID_PARAMETERS)
 {
   AIM::AimInteraction aim(
-      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      dots, history, interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::TimeDerivative(grid.max_transit_steps(c, dt) +
                                       interpolation_order),
       AIM::normalization::unit);
@@ -155,7 +155,7 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
 BOOST_FIXTURE_TEST_CASE(GAUSSIAN_EFIE_PROPAGATION, ON_GRID_PARAMETERS)
 {
   AIM::AimInteraction aim(
-      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      dots, history, interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::EFIE(grid.max_transit_steps(c, dt) + interpolation_order,
                             c),
       AIM::normalization::unit);
@@ -192,7 +192,7 @@ struct OFF_GRID_PARAMETERS : public PARAMETERS {
 BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, OFF_GRID_PARAMETERS)
 {
   AIM::AimInteraction aim(
-      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      dots, history, interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
                                    interpolation_order),
       AIM::normalization::unit);
@@ -209,7 +209,7 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
                         OFF_GRID_PARAMETERS)
 {
   AIM::AimInteraction aim(
-      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      dots, history, interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::TimeDerivative(grid.max_transit_steps(c, dt) +
                                       interpolation_order),
       AIM::normalization::unit);
@@ -225,7 +225,7 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
 BOOST_FIXTURE_TEST_CASE(GAUSSIAN_EFIE_PROPAGATION, OFF_GRID_PARAMETERS)
 {
   AIM::AimInteraction aim(
-      dots, history, nullptr, interpolation_order, c, dt, grid, expansions,
+      dots, history, interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::EFIE(grid.max_transit_steps(c, dt) + interpolation_order,
                             c),
       AIM::normalization::unit);
@@ -249,7 +249,6 @@ struct DummyPropagation {
   DummyPropagation()
       : dots(std::make_shared<DotVector>()),
         history(nullptr),
-        propagator(nullptr),
         interp_order(3),
         expansion_order(1),
         c0(1),
@@ -269,7 +268,7 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   Grid grid(unit_spacing, num_boxes);
   auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
       expansion_order, grid, *dots);
-  AIM::AimInteraction aim(dots, history, propagator, interp_order, c0, dt, grid,
+  AIM::AimInteraction aim(dots, history, interp_order, c0, dt, grid,
                           expansions, nullptr, AIM::normalization::unit);
   auto circulant_shape = grid.circulant_shape(c0, dt);
 
