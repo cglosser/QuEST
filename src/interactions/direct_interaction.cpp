@@ -7,9 +7,10 @@ DirectInteraction::DirectInteraction(
     const int interp_order,
     const double c0,
     const double dt)
-    : HistoryInteraction(std::move(dots), std::move(history), interp_order, c0, dt),
+    : HistoryInteraction(
+          std::move(dots), std::move(history), interp_order, c0, dt),
       propagator(std::move(propagator)),
-      num_interactions(dots->size() * (dots->size() - 1) / 2),
+      num_interactions((this->dots)->size() * ((this->dots)->size() - 1) / 2),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
