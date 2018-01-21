@@ -40,13 +40,13 @@ struct PARAMETERS {
 
   double gaussian_source(const double t) const
   {
-    double arg = (t - total_time / 2.0) / (total_time / 6.0);
+    double arg = (t - total_time / 2.0) / (total_time / 12.0);
     return gaussian(arg);
   }
 
   double gaussian_time_derivative(const double t) const
   {
-    const double mu = total_time / 2.0, sigma = total_time / 6.0;
+    const double mu = total_time / 2.0, sigma = total_time / 12.0;
     const double arg = (t - mu) / sigma;
     return -arg * gaussian(arg) / sigma;
   }
