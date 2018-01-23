@@ -108,6 +108,24 @@ namespace AIM {
       int wrap_index(int t) { return t % history_length; };
     };
 
+    class Del_Del {
+     public:
+      Del_Del(int history_length) : history_length(history_length) {};
+
+      Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
+                                  const std::array<int, 4> &coord,
+                                  const Expansions::Expansion &e)
+      {
+        Eigen::Map<const Eigen::Vector3cd> field(
+            &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
+        return spatial::GradDiv(field, e.weights);
+      }
+
+     private:
+      int history_length;
+      int wrap_index(int t) { return t % history_length; };
+    };
+
     class EFIE {
      public:
       EFIE(int history_length, double c, double dt)

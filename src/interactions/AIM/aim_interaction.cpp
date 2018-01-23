@@ -192,10 +192,7 @@ void AIM::AimInteraction::fill_gmatrix_table(
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
             gmatrix_table[t][x][y][z] =
-                -1 * interp.evaluations[0][polynomial_idx] / normalization(dr);
-            // This -1 is the minus sign that shows up in the 3D Green's
-            // function (D psi = -delta(r - r')); the normalization is the 1/r, 1/4pi r,
-            // etc.
+                interp.evaluations[0][polynomial_idx] / normalization(dr);
           }
         }
       }

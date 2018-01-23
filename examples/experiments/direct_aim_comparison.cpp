@@ -23,7 +23,7 @@ struct PARAMETERS {
 
   PARAMETERS()
       : interpolation_order(4),
-        expansion_order(1),
+        expansion_order(3),
         num_steps(1024),
         num_dots(2),
 
@@ -75,14 +75,17 @@ int main()
   AIM::AimInteraction aim(
       params.dots, params.history, params.interpolation_order, params.c,
       params.dt, grid, expansion_table,
-      AIM::Expansions::EFIE(grid.max_transit_steps(params.c, params.dt) +
-                                params.interpolation_order,
-                            params.c, params.dt),
-      AIM::normalization::InverseR());
+      AIM::Expansions::Del_Del(grid.max_transit_steps(params.c, params.dt) +
+                               params.interpolation_order),
+      // AIM::Expansions::EFIE(grid.max_transit_steps(params.c, params.dt) +
+      // params.interpolation_order,
+      // params.c, params.dt),
+      AIM::normalization::unit);
 
   std::cout.precision(dbl::max_digits10);
   for(int i = 0; i < params.num_steps; ++i) {
-    std::cout << i * params.dt << " " << direct.evaluate(i).transpose() << " "
+    std::cout << i * params.dt
+              << " "  // << direct.evaluate(i).transpose() << " "
               << aim.evaluate(i).transpose() << std::endl;
   }
 
