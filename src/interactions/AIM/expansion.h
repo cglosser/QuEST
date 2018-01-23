@@ -61,27 +61,34 @@ namespace AIM {
                                        const std::array<int, 4> &,
                                        const Expansions::Expansion &)>;
 
-    class Retardation {
+    class RetardationBase {
      public:
-      Retardation(int history_length) : history_length(history_length){};
+      RetardationBase(const int history_length)
+          : history_length(history_length){};
+
+     protected:
+      int history_length;
+      int wrap_index(int t) const { return t % history_length; };
+    };
+
+    class Retardation : public RetardationBase {
+     public:
+      Retardation(int history_length) : RetardationBase(history_length){};
       Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
                                   const std::array<int, 4> &coord,
                                   const Expansions::Expansion &e)
       {
         Eigen::Map<const Eigen::Vector3cd> field(
-            &obs[coord[0] % history_length][coord[1]][coord[2]][coord[3]][0]);
+            &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
         return spatial::Derivative0(field, e.weights);
       }
-
-     private:
-      int history_length;
     };
 
-    class TimeDerivative {
+    class TimeDerivative : public RetardationBase {
      public:
       TimeDerivative(const int history_length, const double dt)
-          : dt_coefs({{25.0 / 12, -4.0, 3.0, -4.0 / 3, 1.0 / 4}}),
-            history_length(history_length)
+          : RetardationBase(history_length),
+            dt_coefs({{25.0 / 12, -4.0, 3.0, -4.0 / 3, 1.0 / 4}})
       {
         for(auto &coef : dt_coefs) {
           coef /= dt;
@@ -104,13 +111,11 @@ namespace AIM {
 
      private:
       std::array<double, 5> dt_coefs;
-      int history_length;
-      int wrap_index(int t) { return t % history_length; };
     };
 
-    class Del_Del {
+    class Del_Del : public RetardationBase {
      public:
-      Del_Del(int history_length) : history_length(history_length) {};
+      Del_Del(int history_length) : RetardationBase(history_length){};
 
       Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
                                   const std::array<int, 4> &coord,
@@ -120,18 +125,14 @@ namespace AIM {
             &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
         return spatial::GradDiv(field, e.weights);
       }
-
-     private:
-      int history_length;
-      int wrap_index(int t) { return t % history_length; };
     };
 
-    class EFIE {
+    class EFIE : public RetardationBase {
      public:
       EFIE(int history_length, double c, double dt)
-          : dt2_coefs(
+          : RetardationBase(history_length),
+            dt2_coefs(
                 {{15.0 / 4, -77.0 / 6, 107.0 / 6, -13.0, 61.0 / 12, -5.0 / 6}}),
-            history_length(history_length),
             c(c)
       {
         for(auto &coef : dt2_coefs) {
@@ -160,9 +161,7 @@ namespace AIM {
 
      private:
       std::array<double, 6> dt2_coefs;
-      int history_length;
       double c;
-      int wrap_index(int t) { return t % history_length; };
     };
   }
 }
