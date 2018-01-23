@@ -17,14 +17,34 @@ namespace AIM {
   class AimInteraction;
 
   namespace normalization {
-    using SpatialNorm = std::function<double(const Eigen::Vector3d &)>;
+    using SpatialNorm = std::function<cmplx(const Eigen::Vector3d &)>;
     const SpatialNorm unit = [](__attribute__((unused))
                                 const Eigen::Vector3d &v) { return 1; };
-    const SpatialNorm distance = [](const Eigen::Vector3d &v) {
-      return v.norm();
+
+    class InverseR {
+     public:
+      InverseR(const double alpha = 1) : alpha(alpha){};
+      double operator()(const Eigen::Vector3d &dr) const
+      {
+        return alpha * dr.norm();
+      }
+
+     private:
+      double alpha;
     };
-    const SpatialNorm poisson = [](const Eigen::Vector3d &v) {
-      return 4 * M_PI * v.norm();
+
+    class RotatingWaveInverseR {
+     public:
+      RotatingWaveInverseR(const double k, const double alpha = 1)
+          : k(k), alpha(alpha){};
+      cmplx operator()(const Eigen::Vector3d &dr) const
+      {
+        const double R = dr.norm();
+        return alpha * R / std::exp(iu * k * R);
+      }
+
+     private:
+      double k, alpha;
     };
   }
 }
