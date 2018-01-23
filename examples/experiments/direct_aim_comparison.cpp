@@ -31,7 +31,7 @@ struct PARAMETERS {
         dt(1),
         total_time(num_steps * dt),
 
-        num_boxes(Eigen::Vector3i(1, 5, 5)),
+        num_boxes(Eigen::Vector3i(8, 8, 8)),
         spacing(Eigen::Array3d(1, 1, 1) * c * dt),
 
         dots(std::make_shared<DotVector>(DotVector{
@@ -64,7 +64,7 @@ int main()
 
   DirectInteraction direct(
       params.dots, params.history,
-      Propagation::RotatingFramePropagator(4 * M_PI, params.c, 1, 0),
+      Propagation::RotatingFramePropagator(4 * M_PI, params.c, 1, 20 * M_PI),
       params.interpolation_order, params.c, params.dt);
 
   AIM::Grid grid(params.spacing, params.dots, params.expansion_order);
@@ -75,15 +75,14 @@ int main()
   AIM::AimInteraction aim(
       params.dots, params.history, params.interpolation_order, params.c,
       params.dt, grid, expansion_table,
-      AIM::Expansions::EFIE(grid.max_transit_steps(params.c, params.dt) +
+      AIM::Expansions::RotatingEFIE(grid.max_transit_steps(params.c, params.dt) +
                                 params.interpolation_order,
-                            params.c, params.dt),
-      AIM::normalization::InverseR(-1));
+                            params.c, params.dt, 20 * M_PI),
+      AIM::normalization::Helmholtz(-20 * M_PI, -1));
 
   std::cout.precision(dbl::max_digits10);
   for(int i = 0; i < params.num_steps; ++i) {
-    std::cout << i * params.dt
-              << " "  // << direct.evaluate(i).transpose() << " "
+    std::cout << i * params.dt << " " << direct.evaluate(i).transpose() << " "
               << aim.evaluate(i).transpose() << std::endl;
   }
 

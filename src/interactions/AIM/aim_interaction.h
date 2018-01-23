@@ -21,9 +21,9 @@ namespace AIM {
     const SpatialNorm unit = [](__attribute__((unused))
                                 const Eigen::Vector3d &v) { return 1; };
 
-    class InverseR {
+    class Laplace {
      public:
-      InverseR(const double alpha = 1) : alpha(alpha){};
+      Laplace(const double alpha = 1) : alpha(alpha){};
       double operator()(const Eigen::Vector3d &dr) const
       {
         return alpha * dr.norm();
@@ -33,9 +33,9 @@ namespace AIM {
       double alpha;
     };
 
-    class RotatingWaveInverseR {
+    class Helmholtz {
      public:
-      RotatingWaveInverseR(const double k, const double alpha = 1)
+      Helmholtz(const double k, const double alpha = 1)
           : k(k), alpha(alpha){};
       cmplx operator()(const Eigen::Vector3d &dr) const
       {

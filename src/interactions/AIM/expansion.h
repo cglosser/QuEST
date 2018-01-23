@@ -163,6 +163,55 @@ namespace AIM {
       std::array<double, 6> dt2_coefs;
       double c;
     };
+
+    class RotatingEFIE : public RetardationBase {
+     public:
+      RotatingEFIE(int history_length, double c, double dt, double omega)
+          : RetardationBase(history_length),
+            dt1_coefs({{137.0 / 60, -5.0, 5.0, -10.0 / 3, 5.0 / 4, -1.0 / 5}}),
+            dt2_coefs(
+                {{15.0 / 4, -77.0 / 6, 107.0 / 6, -13.0, 61.0 / 12, -5.0 / 6}}),
+            c(c),
+            omega(omega)
+      {
+        for(auto &coef : dt1_coefs) coef /= dt;
+        for(auto &coef : dt2_coefs) coef /= std::pow(dt, 2);
+      }
+
+      Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
+                                  const std::array<int, 4> &coord,
+                                  const Expansions::Expansion &e)
+      {
+        Eigen::Matrix3cd deriv = Eigen::Matrix3cd::Zero();
+        Eigen::Map<const Eigen::Vector3cd> present_field(
+            &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
+
+        deriv.col(0) = spatial::Derivative0(present_field, e.weights);
+
+        for(int h = 0; h < static_cast<int>(dt2_coefs.size()); ++h) {
+          const int w = wrap_index(std::max(coord[0] - h, 0));
+          Eigen::Map<const Eigen::Vector3cd> past_field(
+              &obs[w][coord[1]][coord[2]][coord[3]][0]);
+          deriv.col(1) +=
+              dt1_coefs[h] * spatial::Derivative0(past_field, e.weights);
+          deriv.col(2) +=
+              dt2_coefs[h] * spatial::Derivative0(past_field, e.weights);
+        }
+
+        Eigen::Vector3cd del_del = spatial::GradDiv(present_field, e.weights);
+
+        // Notice that this is the derivative of E(t)exp(iwt), just without the
+        // exp(iwt); it gets suppressed in doing RWA calculations. I assume that
+        // the AIM normalization function takes care of the remnant exp(-ikr).
+        return (deriv.col(2) + 2.0 * iu * omega * deriv.col(1) -
+                std::pow(omega, 2) * deriv.col(0)) -
+               std::pow(c, 2) * del_del;
+      }
+
+     private:
+      std::array<double, 6> dt1_coefs, dt2_coefs;
+      double c, omega;
+    };
   }
 }
 
