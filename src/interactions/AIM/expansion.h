@@ -26,14 +26,11 @@ namespace AIM {
       };
     }
 
-    using DerivativeTable = std::array<double, enums::NUM_DERIVS>;
-
     struct Expansion {
       size_t index;
       double d0;
       Eigen::Vector3d del;
       Eigen::Matrix3d del_sq;
-      //DerivativeTable weights;
     };
 
     using ExpansionTable = boost::multi_array<Expansion, 2>;
@@ -157,7 +154,7 @@ namespace AIM {
             c(c),
             omega(omega)
       {
-        for(auto &coef : dt1_coefs) coef /= dt;
+        for(auto &coef : dt1_coefs) coef /= std::pow(dt, 1);
         for(auto &coef : dt2_coefs) coef /= std::pow(dt, 2);
       }
 
@@ -175,15 +172,14 @@ namespace AIM {
           const int w = wrap_index(std::max(coord[0] - h, 0));
           Eigen::Map<const Eigen::Vector3cd> past_field(
               &obs[w][coord[1]][coord[2]][coord[3]][0]);
-          deriv.col(1) +=
-              dt1_coefs[h] * e.d0 * past_field;
-          deriv.col(2) +=
-              dt2_coefs[h] * e.d0 * past_field;
+          deriv.col(1) += dt1_coefs[h] * e.d0 * past_field;
+          deriv.col(2) += dt2_coefs[h] * e.d0 * past_field;
         }
 
-        // Notice that this is the derivative of E(t)exp(iwt), just without the
-        // exp(iwt); it gets suppressed in doing RWA calculations. I assume that
-        // the AIM normalization function takes care of the remnant exp(-ikr).
+        // Notice that this is just the derivative of E(t)exp(iwt), just
+        // without the exp(iwt) because it gets suppressed in doing RWA
+        // calculations. There is no exp(-ikr) factor here as that gets
+        // taken care of in the normalization class.
         return (deriv.col(2) + 2.0 * iu * omega * deriv.col(1) -
                 std::pow(omega, 2) * deriv.col(0)) -
                std::pow(c, 2) * e.del_sq * present_field;
