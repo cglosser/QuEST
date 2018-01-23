@@ -52,8 +52,6 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 
 void AIM::AimInteraction::fill_source_table(const int step)
 {
-  using namespace Expansions::enums;
-
   const int wrapped_step = step % circulant_dimensions[0];
   const auto p = &source_table[wrapped_step][0][0][0][0];
   std::fill(p, p + 3 * 8 * grid.num_gridpoints, cmplx(0, 0));
@@ -71,8 +69,7 @@ void AIM::AimInteraction::fill_source_table(const int step)
       // elements) and the electromagnetic source quantities. Ideally the AIM
       // code should not have knowledge of this to better encapsulate
       // "propagation," but this is good enough for now.
-      Eigen::Vector3cd source_field = e.weights[D_0] *
-                                      (*dots)[dot_idx].dipole() *
+      Eigen::Vector3cd source_field = e.d0 * (*dots)[dot_idx].dipole() *
                                       history->array[dot_idx][step][0][RHO_01];
       grid_field += source_field;
     }

@@ -35,8 +35,10 @@ AIM::Expansions::LeastSquaresExpansionSolver::table(
     const auto indices = grid.expansion_box_indices(pos);
     for(auto w = 0; w < num_pts; ++w) {
       table[dot_idx][w].index = indices[w];
-      Eigen::Map<Eigen::Array<double, NUM_DERIVS, 1>>(
-          table[dot_idx][w].weights.data()) = weights.col(w);
+
+      table[dot_idx][w].d0 = weights(0, w);
+      table[dot_idx][w].del = weights.block(D_X, w, 3, 1);
+      table[dot_idx][w].del_sq = Eigen::Map<Eigen::Matrix3d>(&weights(D_XX, w));
     }
   }
 

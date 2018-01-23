@@ -30,31 +30,14 @@ namespace AIM {
 
     struct Expansion {
       size_t index;
-      DerivativeTable weights;
+      double d0;
+      Eigen::Vector3d del;
+      Eigen::Matrix3d del_sq;
+      //DerivativeTable weights;
     };
 
     using ExpansionTable = boost::multi_array<Expansion, 2>;
     class LeastSquaresExpansionSolver;
-
-    namespace spatial {
-      using ExpansionFunction = std::function<Eigen::Vector3cd(
-          const Eigen::Vector3cd &, const Expansions::DerivativeTable &)>;
-
-      const ExpansionFunction Derivative0 = [](
-          const Eigen::Vector3cd &grid_field,
-          const Expansions::DerivativeTable &derivs) -> Eigen::Vector3cd {
-        using namespace Expansions::enums;
-        return derivs[D_0] * grid_field;
-      };
-
-      const ExpansionFunction GradDiv = [](
-          const Eigen::Vector3cd &grid_field,
-          const Expansions::DerivativeTable &derivs) -> Eigen::Vector3cd {
-        using namespace Expansions::enums;
-        Eigen::Map<const Eigen::Matrix3d> del_del(&derivs[D_XX]);
-        return del_del * grid_field;
-      };
-    }
 
     using ExpansionFunction =
         std::function<Eigen::Vector3cd(const spacetime::vector3d<cmplx> &,
@@ -80,7 +63,7 @@ namespace AIM {
       {
         Eigen::Map<const Eigen::Vector3cd> field(
             &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
-        return spatial::Derivative0(field, e.weights);
+        return e.d0 * field;
       }
     };
 
@@ -104,7 +87,7 @@ namespace AIM {
           int w = wrap_index(std::max(coord[0] - h, 0));
           Eigen::Map<const Eigen::Vector3cd> field(
               &obs[w][coord[1]][coord[2]][coord[3]][0]);
-          total_field += dt_coefs[h] * spatial::Derivative0(field, e.weights);
+          total_field += dt_coefs[h] * e.d0 * field;
         }
         return total_field;
       }
@@ -123,7 +106,7 @@ namespace AIM {
       {
         Eigen::Map<const Eigen::Vector3cd> field(
             &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
-        return spatial::GradDiv(field, e.weights);
+        return e.del_sq * field;
       }
     };
 
@@ -149,14 +132,14 @@ namespace AIM {
           int w = wrap_index(std::max(coord[0] - h, 0));
           Eigen::Map<const Eigen::Vector3cd> field(
               &obs[w][coord[1]][coord[2]][coord[3]][0]);
-          dt2 += dt2_coefs[h] * spatial::Derivative0(field, e.weights);
+          dt2 += dt2_coefs[h] * e.d0 * field;
         }
 
         Eigen::Map<const Eigen::Vector3cd> field(
             &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
-        Eigen::Vector3cd del_del = spatial::GradDiv(field, e.weights);
+        Eigen::Vector3cd del_sq = e.del_sq * field;
 
-        return dt2 - std::pow(c, 2) * del_del;
+        return dt2 - std::pow(c, 2) * del_sq;
       }
 
      private:
@@ -186,26 +169,24 @@ namespace AIM {
         Eigen::Map<const Eigen::Vector3cd> present_field(
             &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
 
-        deriv.col(0) = spatial::Derivative0(present_field, e.weights);
+        deriv.col(0) = e.d0 * present_field;
 
         for(int h = 0; h < static_cast<int>(dt2_coefs.size()); ++h) {
           const int w = wrap_index(std::max(coord[0] - h, 0));
           Eigen::Map<const Eigen::Vector3cd> past_field(
               &obs[w][coord[1]][coord[2]][coord[3]][0]);
           deriv.col(1) +=
-              dt1_coefs[h] * spatial::Derivative0(past_field, e.weights);
+              dt1_coefs[h] * e.d0 * past_field;
           deriv.col(2) +=
-              dt2_coefs[h] * spatial::Derivative0(past_field, e.weights);
+              dt2_coefs[h] * e.d0 * past_field;
         }
-
-        Eigen::Vector3cd del_del = spatial::GradDiv(present_field, e.weights);
 
         // Notice that this is the derivative of E(t)exp(iwt), just without the
         // exp(iwt); it gets suppressed in doing RWA calculations. I assume that
         // the AIM normalization function takes care of the remnant exp(-ikr).
         return (deriv.col(2) + 2.0 * iu * omega * deriv.col(1) -
                 std::pow(omega, 2) * deriv.col(0)) -
-               std::pow(c, 2) * del_del;
+               std::pow(c, 2) * e.del_sq * present_field;
       }
 
      private:
