@@ -79,9 +79,14 @@ namespace AIM {
 
     class TimeDerivative {
      public:
-      TimeDerivative(int history_length)
+      TimeDerivative(const int history_length, const double dt)
           : dt_coefs({{25.0 / 12, -4.0, 3.0, -4.0 / 3, 1.0 / 4}}),
-            history_length(history_length){};
+            history_length(history_length)
+      {
+        for(auto &coef : dt_coefs) {
+          coef /= dt;
+        }
+      };
       Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
                                   const std::array<int, 4> &coord,
                                   const Expansions::Expansion &e)
@@ -105,11 +110,16 @@ namespace AIM {
 
     class EFIE {
      public:
-      EFIE(int history_length, double c)
+      EFIE(int history_length, double c, double dt)
           : dt2_coefs(
                 {{15.0 / 4, -77.0 / 6, 107.0 / 6, -13.0, 61.0 / 12, -5.0 / 6}}),
             history_length(history_length),
-            c(c){};
+            c(c)
+      {
+        for(auto &coef : dt2_coefs) {
+          coef /= std::pow(dt, 2);
+        }
+      };
 
       Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
                                   const std::array<int, 4> &coord,

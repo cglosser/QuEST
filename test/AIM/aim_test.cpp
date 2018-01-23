@@ -141,7 +141,7 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
   AIM::AimInteraction aim(
       dots, history, interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::TimeDerivative(grid.max_transit_steps(c, dt) +
-                                      interpolation_order),
+                                      interpolation_order, dt),
       AIM::normalization::unit);
 
   const double delay = 
@@ -157,7 +157,7 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_EFIE_PROPAGATION, ON_GRID_PARAMETERS)
   AIM::AimInteraction aim(
       dots, history, interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::EFIE(grid.max_transit_steps(c, dt) + interpolation_order,
-                            c),
+                            c, dt),
       AIM::normalization::unit);
 
   using namespace std::placeholders;
@@ -211,7 +211,7 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
   AIM::AimInteraction aim(
       dots, history, interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::TimeDerivative(grid.max_transit_steps(c, dt) +
-                                      interpolation_order),
+                                      interpolation_order, dt),
       AIM::normalization::unit);
 
   const double delay = 
@@ -227,7 +227,7 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_EFIE_PROPAGATION, OFF_GRID_PARAMETERS)
   AIM::AimInteraction aim(
       dots, history, interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::EFIE(grid.max_transit_steps(c, dt) + interpolation_order,
-                            c),
+                            c, dt),
       AIM::normalization::unit);
 
   using namespace std::placeholders;
