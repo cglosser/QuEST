@@ -26,7 +26,7 @@ namespace AIM {
       Laplace(const double alpha = 1) : alpha(alpha){};
       double operator()(const Eigen::Vector3d &dr) const
       {
-        return alpha * dr.norm();
+        return 1 / (alpha * dr.norm());
       }
 
      private:
@@ -35,12 +35,12 @@ namespace AIM {
 
     class Helmholtz {
      public:
-      Helmholtz(const double k, const double alpha = 1)
+      Helmholtz(const double k = 0, const double alpha = 1)
           : k(k), alpha(alpha){};
       cmplx operator()(const Eigen::Vector3d &dr) const
       {
         const double R = dr.norm();
-        return alpha * R / std::exp(iu * k * R);
+        return std::exp(-iu * k * R) / (alpha * R);
       }
 
      private:
