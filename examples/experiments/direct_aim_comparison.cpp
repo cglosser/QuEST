@@ -10,7 +10,7 @@ using dbl = std::numeric_limits<double>;
 
 struct PARAMETERS {
   int interpolation_order, expansion_order, num_steps, num_dots;
-  double c, dt, total_time;
+  double c, dt, total_time, omega;
 
   Eigen::Array3i num_boxes;
   Eigen::Array3d spacing;
@@ -30,6 +30,8 @@ struct PARAMETERS {
         c(1),
         dt(1),
         total_time(num_steps * dt),
+        omega(M_PI / 100),
+        //omega(0),
 
         num_boxes(Eigen::Vector3i(8, 8, 8)),
         spacing(Eigen::Array3d(1, 1, 1) * c * dt),
@@ -64,7 +66,7 @@ int main()
 
   DirectInteraction direct(
       params.dots, params.history,
-      Propagation::RotatingFramePropagator(4 * M_PI, params.c, 1, 20 * M_PI),
+      Propagation::RotatingFramePropagator(4 * M_PI, params.c, 1, params.omega),
       params.interpolation_order, params.c, params.dt);
 
   AIM::Grid grid(params.spacing, params.dots, params.expansion_order);
@@ -75,10 +77,12 @@ int main()
   AIM::AimInteraction aim(
       params.dots, params.history, params.interpolation_order, params.c,
       params.dt, grid, expansion_table,
-      AIM::Expansions::RotatingEFIE(grid.max_transit_steps(params.c, params.dt) +
-                                params.interpolation_order,
-                            params.c, params.dt, 20 * M_PI),
-      AIM::normalization::Helmholtz(-20 * M_PI, -1));
+      //AIM::Expansions::TimeDerivative(
+      AIM::Expansions::RotatingEFIE(
+          grid.max_transit_steps(params.c, params.dt) +
+              params.interpolation_order,
+          params.c, params.dt, params.omega),
+      AIM::normalization::Helmholtz(params.omega / params.c, -1));
 
   std::cout.precision(dbl::max_digits10);
   for(int i = 0; i < params.num_steps; ++i) {

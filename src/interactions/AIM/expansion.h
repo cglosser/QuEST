@@ -180,9 +180,12 @@ namespace AIM {
         // without the exp(iwt) because it gets suppressed in doing RWA
         // calculations. There is no exp(-ikr) factor here as that gets
         // taken care of in the normalization class.
-        return (deriv.col(2) + 2.0 * iu * omega * deriv.col(1) -
+
+        return ((deriv.col(2) + 2.0 * iu * omega * deriv.col(1) -
                 std::pow(omega, 2) * deriv.col(0)) -
-               std::pow(c, 2) * e.del_sq * present_field;
+               std::pow(c, 2) * (e.del_sq * present_field)).conjugate();
+
+        // I *do not* understand where this conjugate comes from.
       }
 
      private:
