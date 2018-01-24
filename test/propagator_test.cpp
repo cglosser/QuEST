@@ -7,7 +7,7 @@ BOOST_AUTO_TEST_SUITE(propagator)
 
 BOOST_AUTO_TEST_CASE(fixed_frame)
 {
-  Propagation::FixedFramePropagator ffp(4 * M_PI, 1, 1);
+  Propagation::FixedFramePropagator ffp(1, 1);
 
   Eigen::Vector3d dr(1, 1, 1);
   Interpolation::UniformLagrangeSet uls(0.5, 4);
@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(fixed_frame)
 
 BOOST_AUTO_TEST_CASE(rotating_frame)
 {
-  Propagation::RotatingFramePropagator rfp(4 * M_PI, 1, 1, 2.2);
+  Propagation::RotatingFramePropagator rfp(1, 1, 2.2);
 
   Eigen::Vector3d dr(1, 1, 1);
   Interpolation::UniformLagrangeSet uls(0.5, 4);

@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     // Set up Interactions
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
     Propagation::RotatingFramePropagator rotating_dyadic(
-        config.mu0, config.c0, config.hbar, config.omega);
+        config.mu0 / (4 * M_PI * config.hbar), config.c0, config.omega);
 
     std::vector<std::shared_ptr<Interaction>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
