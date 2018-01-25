@@ -20,30 +20,32 @@ void AIM::NearfieldInteraction::build_pair_list()
 {
   auto box_contents = grid.box_contents_map();
 
-  for(auto src_idx = 0u; src_idx < grid.num_gridpoints - 1; ++src_idx) {
-    Eigen::Vector3i src_coord = grid.idx_to_coord(src_idx);
-    for(auto obs_idx = src_idx + 1; obs_idx < grid.num_gridpoints; ++obs_idx) {
-      Eigen::Vector3i obs_coord = grid.idx_to_coord(obs_idx);
-      Eigen::Vector3i dr = obs_coord - src_coord;
-      bool nearfield_point = dr.minCoeff() < interp_order;
-      if(!nearfield_point)
-        continue;  // complement of condition in AimInteraction
+  for(auto i = 0u; i < box_contents.size() - 1; ++i) {
+    if(box_contents[i].first == box_contents[i].second)
+      continue;  // start iter = end iter, thus empty box
+    for(auto j = i + 1; j < box_contents.size(); ++j) {
+      if(box_contents[j].first == box_contents[j].second)
+        continue;  // start iter = end iter, thus empty box
 
-      for(auto src_dot = box_contents[src_idx].first;
-          src_dot != box_contents[src_idx].second; ++src_dot) {
+      // box_contents[i,j] have particles, so the first particle in
+      // each can be used to determine box separation/nearfieldness
+      bool is_in_nearfield = grid.is_nearfield_pair(
+          box_contents[i].first->position(), box_contents[j].first->position());
+      if(!is_in_nearfield) continue;
 
-        int p1 = std::distance<DotVector::const_iterator>(dots->begin(), src_dot);
-
-        for(auto obs_dot = box_contents[obs_idx].first;
-            obs_dot != box_contents[obs_idx].second; ++obs_dot) {
-
-          int p2 = std::distance<DotVector::const_iterator>(dots->begin(), obs_dot);
+      for(auto src_dot = box_contents[i].first;
+          src_dot != box_contents[i].second; ++src_dot) {
+        for(auto obs_dot = box_contents[j].first;
+            obs_dot != box_contents[j].second; ++obs_dot) {
+          int p1 =
+              std::distance<DotVector::const_iterator>(dots->begin(), src_dot);
+          int p2 =
+              std::distance<DotVector::const_iterator>(dots->begin(), obs_dot);
 
           Eigen::Vector3d dr(separation((*dots)[p1], (*dots)[p2]));
-          std::pair<int, double> delay(split_double(dr.norm() / (c0 * dt)));
+          auto delay = split_double(dr.norm() / (c0 * dt));
 
           interaction_pairs.push_back({p1, p2, delay});
-
         }
       }
     }
