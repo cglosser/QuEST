@@ -1,7 +1,7 @@
 #include "aim_interaction.h"
 
 AIM::AimInteraction::AimInteraction(const int interp_order,
-                                    const Grid &grid,
+                                    const Grid grid,
                                     normalization::SpatialNorm normalization)
     : AimInteraction(nullptr,
                      nullptr,
@@ -16,18 +16,18 @@ AIM::AimInteraction::AimInteraction(const int interp_order,
 }
 
 AIM::AimInteraction::AimInteraction(
-    const std::shared_ptr<const DotVector> dots,
-    const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
+    std::shared_ptr<const DotVector> dots,
+    std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
     const int interp_order,
     const double c0,
     const double dt,
-    const Grid &grid,
-    const Expansions::ExpansionTable &expansion_table,
+    Grid grid,
+    Expansions::ExpansionTable expansion_table,
     Expansions::ExpansionFunction expansion_function,
     normalization::SpatialNorm normalization)
     : HistoryInteraction(dots, history, interp_order, c0, dt),
-      grid(grid),
-      expansion_table(expansion_table),
+      grid(std::move(grid)),
+      expansion_table(std::move(expansion_table)),
       expansion_function(std::move(expansion_function)),
       normalization(std::move(normalization)),
       circulant_dimensions(grid.circulant_shape(c0, dt, interp_order)),
@@ -173,11 +173,11 @@ void AIM::AimInteraction::fill_gmatrix_table(
   for(int x = 0; x < grid.dimensions(0); ++x) {
     for(int y = 0; y < grid.dimensions(1); ++y) {
       for(int z = 0; z < grid.dimensions(2); ++z) {
-        bool nearfield_point =
-            (x <= interp_order) && (y <= interp_order) && (z <= interp_order);
+        Eigen::Vector3i box_r(x, y, z);
+        bool nearfield_point = box_r.minCoeff() < interp_order;
         if(nearfield_point) continue;
 
-        const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(x, y, z));
+        const size_t box_idx = grid.coord_to_idx(box_r);
         const Eigen::Vector3d dr =
             grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
 

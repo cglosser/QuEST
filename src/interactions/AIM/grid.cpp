@@ -15,7 +15,7 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
                      .matrix()
                      .norm();
 
-  sort_points_on_boxidx();
+  sort_points_on_boxidx(); // This DOES modify the DotVector in place!
 }
 
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
@@ -64,8 +64,7 @@ std::array<int, 4> AIM::Grid::circulant_shape(const double c,
   return shape;
 }
 
-std::vector<DotRange> AIM::Grid::box_contents_map(
-    const std::shared_ptr<DotVector> &dots) const
+std::vector<DotRange> AIM::Grid::box_contents_map() const
 {
   std::vector<DotRange> boxes(num_gridpoints);
   for(size_t box_idx = 0; box_idx < boxes.size(); ++box_idx) {

@@ -51,15 +51,15 @@ namespace AIM {
 
 class AIM::AimInteraction final : public HistoryInteraction {
  public:
-  AimInteraction(const int, const Grid &, normalization::SpatialNorm);
+  AimInteraction(const int, const Grid, normalization::SpatialNorm);
   AimInteraction(
       const std::shared_ptr<const DotVector>,
       const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
       const int,
       const double,
       const double,
-      const Grid &,
-      const Expansions::ExpansionTable &,
+      const Grid,
+      const Expansions::ExpansionTable,
       Expansions::ExpansionFunction,
       normalization::SpatialNorm);
 

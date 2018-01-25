@@ -24,8 +24,7 @@ class AIM::Grid {
   std::array<int, 4> circulant_shape(const double,
                                      const double,
                                      const int = 0) const;
-  std::vector<DotRange> box_contents_map(
-      const std::shared_ptr<DotVector> &) const;
+  std::vector<DotRange> box_contents_map() const;
 
   // Geometry routines (grid <---> space)
   inline Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &coord) const
