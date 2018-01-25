@@ -25,7 +25,7 @@ class AIM::Grid {
                                      const double,
                                      const int = 0) const;
   std::vector<DotRange> box_contents_map() const;
-
+  int expansion_order() const { return expansion_order_; }
   // Geometry routines (grid <---> space)
   inline Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &coord) const
   {
@@ -61,6 +61,30 @@ class AIM::Grid {
   }
   std::vector<size_t> expansion_box_indices(const Eigen::Vector3d &) const;
 
+  int min_distance(const Eigen::Vector3d &r1, const Eigen::Vector3d &r2) const
+  {
+    auto r1_grid_indices = expansion_box_indices(r1);
+    auto r2_grid_indices = expansion_box_indices(r2);
+
+    int min_dist =
+        (idx_to_coord(r1_grid_indices[0]) - idx_to_coord(r2_grid_indices[0]))
+            .lpNorm<Eigen::Infinity>();
+    for(const auto &r1_idx : r1_grid_indices) {
+      for(const auto &r2_idx : r2_grid_indices) {
+        Eigen::Vector3i dr = idx_to_coord(r1_idx) - idx_to_coord(r2_idx);
+        min_dist = std::min(min_dist, dr.lpNorm<Eigen::Infinity>());
+      }
+    }
+
+    return min_dist;
+  }
+
+  bool is_nearfield_pair(const Eigen::Vector3d &r1,
+                         const Eigen::Vector3d &r2) const
+  {
+    return min_distance(r1, r2) < expansion_order_;
+  }
+
   Eigen::Array3i dimensions;
   size_t num_gridpoints;
   double max_diagonal;
@@ -73,7 +97,7 @@ class AIM::Grid {
  private:
   Eigen::Array3d spacing;
   std::shared_ptr<DotVector> dots;
-  int expansion_order;
+  int expansion_order_;
   BoundsArray bounds;
 
   void sort_points_on_boxidx() const;

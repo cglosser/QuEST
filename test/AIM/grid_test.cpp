@@ -136,6 +136,38 @@ BOOST_AUTO_TEST_CASE(EXPANSION_COORDINATES)
                     dots->at(1).position());
 }
 
+BOOST_AUTO_TEST_CASE(MINIMUM_GRID_DISTANCE)
+{
+  for(int i = 0; i < 4; ++i) {
+    for(int j = 0; j < 4; ++j) {
+      dots->push_back(QuantumDot(Eigen::Vector3d(0, j + 0.5, i + 0.5)));
+    }
+  }
+
+  AIM::Grid grid(spacing, dots, expansion_order);
+
+  auto dist_i_to_0 = [&](const int i) -> int {
+    return grid.min_distance(dots->at(i).position(), dots->at(0).position());
+  };
+
+  BOOST_CHECK_EQUAL(dist_i_to_0(0), 0);
+  BOOST_CHECK_EQUAL(dist_i_to_0(1), 0);
+  BOOST_CHECK_EQUAL(dist_i_to_0(2), 1);
+  BOOST_CHECK_EQUAL(dist_i_to_0(3), 2);
+  BOOST_CHECK_EQUAL(dist_i_to_0(4), 0);
+  BOOST_CHECK_EQUAL(dist_i_to_0(5), 0);
+  BOOST_CHECK_EQUAL(dist_i_to_0(6), 1);
+  BOOST_CHECK_EQUAL(dist_i_to_0(7), 2);
+  BOOST_CHECK_EQUAL(dist_i_to_0(8), 1);
+  BOOST_CHECK_EQUAL(dist_i_to_0(9), 1);
+  BOOST_CHECK_EQUAL(dist_i_to_0(10), 1);
+  BOOST_CHECK_EQUAL(dist_i_to_0(11), 2);
+  BOOST_CHECK_EQUAL(dist_i_to_0(12), 2);
+  BOOST_CHECK_EQUAL(dist_i_to_0(13), 2);
+  BOOST_CHECK_EQUAL(dist_i_to_0(14), 2);
+  BOOST_CHECK_EQUAL(dist_i_to_0(15), 2);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE_END()  // GRID

@@ -6,7 +6,7 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
                 const int expansion_order)
     : spacing(spacing),
       dots(std::move(dots)),
-      expansion_order(expansion_order),
+      expansion_order_(expansion_order),
       bounds(calculate_bounds())
 {
   dimensions = bounds.col(1) - bounds.col(0) + 1;
@@ -24,7 +24,7 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
     : dimensions(dimensions),
       spacing(spacing),
       dots(nullptr),
-      expansion_order(0)
+      expansion_order_(0)
 {
   bounds.col(0) = 0 + shift.array();
   bounds.col(1) = dimensions + shift.array() - 1;
@@ -46,8 +46,8 @@ AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
     b.col(1) = grid_coord.array().max(b.col(1));
   }
 
-  b.col(0) -= expansion_order / 2;
-  b.col(1) += (expansion_order + 1) / 2;
+  b.col(0) -= expansion_order_ / 2;
+  b.col(1) += (expansion_order_ + 1) / 2;
 
   return b;
 }
@@ -83,12 +83,12 @@ std::vector<DotRange> AIM::Grid::box_contents_map() const
 std::vector<size_t> AIM::Grid::expansion_box_indices(const Eigen::Vector3d &pos) const
 {
   Eigen::Vector3i origin = idx_to_coord(associated_grid_index(pos));
-  std::vector<size_t> indices(std::pow(expansion_order + 1, 3));
+  std::vector<size_t> indices(std::pow(expansion_order_ + 1, 3));
 
   size_t idx = 0;
-  for(int nx = 0; nx <= expansion_order; ++nx) {
-    for(int ny = 0; ny <= expansion_order; ++ny) {
-      for(int nz = 0; nz <= expansion_order; ++nz) {
+  for(int nx = 0; nx <= expansion_order_; ++nx) {
+    for(int ny = 0; ny <= expansion_order_; ++ny) {
+      for(int nz = 0; nz <= expansion_order_; ++nz) {
         const Eigen::Vector3i delta(grid_sequence(nx), grid_sequence(ny),
                                     grid_sequence(nz));
         const size_t grid_idx = coord_to_idx(origin + delta);
