@@ -23,7 +23,7 @@ class AIM::NearfieldInteraction final : public HistoryInteraction {
     return results;
   };
 
- private:
+ //private:
   struct InteractionPair {
     int src_idx, obs_idx;
     std::pair<int, double> delay;

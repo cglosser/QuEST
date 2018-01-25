@@ -173,13 +173,14 @@ void AIM::AimInteraction::fill_gmatrix_table(
   for(int x = 0; x < grid.dimensions(0); ++x) {
     for(int y = 0; y < grid.dimensions(1); ++y) {
       for(int z = 0; z < grid.dimensions(2); ++z) {
-        Eigen::Vector3i box_r(x, y, z);
-        bool nearfield_point = box_r.minCoeff() < interp_order;
-        if(nearfield_point) continue;
+        const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(x, y, z));
+        const Eigen::Vector3d box_pos = grid.spatial_coord_of_box(box_idx);
+        bool is_nearfield_point =
+            grid.is_nearfield_pair(box_pos, grid.spatial_coord_of_box(0));
 
-        const size_t box_idx = grid.coord_to_idx(box_r);
-        const Eigen::Vector3d dr =
-            grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
+        if(is_nearfield_point) continue;
+
+        const Eigen::Vector3d dr = box_pos - grid.spatial_coord_of_box(0);
 
         const double arg = dr.norm() / (c0 * dt);
         const std::pair<int, double> split_arg = split_double(arg);
