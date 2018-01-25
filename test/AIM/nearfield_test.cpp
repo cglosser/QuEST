@@ -8,17 +8,17 @@ BOOST_AUTO_TEST_CASE(CHAIN)
 {
   auto dots = std::make_shared<DotVector>();
   for(int i = 0; i < 20; ++i) {
-    dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, i + 0.5)));
+    dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0.1 + 0.7 * i)));
   }
   Propagation::RotatingFramePropagator g(1, 1, 0);
 
-  AIM::Grid grid(Eigen::Vector3d(1, 1, 1), dots, 1);
-
+  AIM::Grid grid(Eigen::Vector3d(1, 1, 1), dots, 2);
 
   AIM::NearfieldInteraction nf(dots, nullptr, g, 4, 1, 1, grid);
 
   for(const auto &pair : nf.interaction_pairs) {
-    std::cout << pair.src_idx << " " << pair.obs_idx << " " << pair.delay.first + pair.delay.second << std::endl;
+    std::cout << pair.src_idx << " " << pair.obs_idx << " "
+              << pair.delay.first + pair.delay.second << std::endl;
   }
 
 
