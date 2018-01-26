@@ -15,12 +15,6 @@ BOOST_AUTO_TEST_CASE(CHAIN)
   AIM::Grid grid(Eigen::Vector3d(1, 1, 1), dots, 2);
 
   AIM::NearfieldInteraction nf(dots, nullptr, g, 4, 1, 1, grid);
-
-  for(const auto &pair : nf.build_pair_list()) {
-    std::cout << pair.first << " " << pair.second << std::endl;
-  }
-
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // NEARFIELD

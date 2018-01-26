@@ -23,9 +23,9 @@ std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
     const
 {
   std::vector<std::pair<int, int>> pairs;
-  auto box_contents = grid.box_contents_map();
+  const auto box_contents = grid.box_contents_map();
 
-  auto get_dot_idx = [&](const DotVector::const_iterator &d) {
+  const auto get_dot_idx = [&](const DotVector::const_iterator &d) {
     return std::distance<DotVector::const_iterator>(dots->begin(), d);
   };
 
@@ -42,12 +42,13 @@ std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
     for(auto box2 = box1 + 1; box2 < box_contents.end(); ++box2) {
       if(box2->first == box2->second) continue;
 
-      // box_contents[i] and [j] yield *pairs of DotVector iterators*
-      // corresponding to the range of particles within the box (which assumes
-      // the DotVector is sorted). If the *.first and *.second iterators are
-      // equal, then the box is empty (checked above), otherwise it contains
-      // particles that can ALL equivalently determine the box's position and
-      // thus its nearfield neighbors.
+      // box1 and box2 are *iterators over box_contents.* box_contents itself
+      // contains *pairs of iterators* denoting the range of dots that exist
+      // within that box/are associated with that gridpoint (assuming the
+      // DotVector is sorted by that criterion). If the box is not empty (i.e.
+      // *->first != *->second, checked above), then any of the particles within
+      // the box can be used to determine the box's location and it's convenient
+      // to choose the first particle)
       bool is_in_nearfield = grid.is_nearfield_pair(box1->first->position(),
                                                     box2->first->position());
       if(!is_in_nearfield) continue;
