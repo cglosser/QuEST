@@ -16,9 +16,8 @@ BOOST_AUTO_TEST_CASE(CHAIN)
 
   AIM::NearfieldInteraction nf(dots, nullptr, g, 4, 1, 1, grid);
 
-  for(const auto &pair : nf.interaction_pairs) {
-    std::cout << pair.src_idx << " " << pair.obs_idx << " "
-              << pair.delay.first + pair.delay.second << std::endl;
+  for(const auto &pair : nf.build_pair_list()) {
+    std::cout << pair.first << " " << pair.second << std::endl;
   }
 
 

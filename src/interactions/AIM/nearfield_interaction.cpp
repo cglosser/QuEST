@@ -11,13 +11,18 @@ AIM::NearfieldInteraction::NearfieldInteraction(
     : HistoryInteraction(
           std::move(dots), std::move(history), interp_order, c0, dt),
       propagator(std::move(propagator)),
-      grid(std::move(grid))
+      grid(std::move(grid)),
+      interaction_pairs(build_pair_list()),
+      floor_delays(interaction_pairs.size()),
+      coefficients(boost::extents[interaction_pairs.size()][interp_order + 1])
 {
-  build_pair_list();
+  build_coefficient_table();
 }
 
-void AIM::NearfieldInteraction::build_pair_list()
+std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
+    const
 {
+  std::vector<std::pair<int, int>> pairs;
   auto box_contents = grid.box_contents_map();
 
   for(auto i = 0u; i < box_contents.size() - 1; ++i) {
@@ -28,8 +33,12 @@ void AIM::NearfieldInteraction::build_pair_list()
       if(box_contents[j].first == box_contents[j].second)
         continue;  // start iter = end iter, thus empty box
 
-      // box_contents[i,j] have particles, so the first particle in
-      // each can be used to determine box separation/nearfieldness
+      // box_contents[i] and [j] yield *pairs of DotVector iterators*
+      // corresponding to the range of particles within the box (which assumes
+      // the DotVector is sorted). If the *.first and *.second iterators are
+      // equal, then the box is empty (checked above), otherwise it contains
+      // particles that can ALL equivalently determine the box's position and
+      // thus its nearfield neighbors.
       bool is_in_nearfield = grid.is_nearfield_pair(
           box_contents[i].first->position(), box_contents[j].first->position());
       if(!is_in_nearfield) continue;
@@ -46,11 +55,7 @@ void AIM::NearfieldInteraction::build_pair_list()
                                                               src_dot);
             int p2 = std::distance<DotVector::const_iterator>(dots->begin(),
                                                               obs_dot);
-
-            Eigen::Vector3d dr(separation((*dots)[p1], (*dots)[p2]));
-            auto delay = split_double(dr.norm() / (c0 * dt));
-
-            interaction_pairs.push_back({p1, p2, delay});
+            pairs.push_back({p1, p2});
           }
         }
 
@@ -65,14 +70,36 @@ void AIM::NearfieldInteraction::build_pair_list()
                                                               src_dot);
             int p2 = std::distance<DotVector::const_iterator>(dots->begin(),
                                                               obs_dot);
-
-            Eigen::Vector3d dr(separation((*dots)[p1], (*dots)[p2]));
-            auto delay = split_double(dr.norm() / (c0 * dt));
-
-            interaction_pairs.push_back({p1, p2, delay});
+            pairs.push_back({p1, p2});
           }
         }
       }
+    }
+  }
+
+  pairs.shrink_to_fit();
+  return pairs;
+}
+
+void AIM::NearfieldInteraction::build_coefficient_table()
+{
+  Interpolation::UniformLagrangeSet lagrange(interp_order);
+
+  for(auto pair_idx = 0u; pair_idx < interaction_pairs.size(); ++pair_idx) {
+    std::pair<int, int> &pair = interaction_pairs[pair_idx];
+
+    Eigen::Vector3d dr(separation((*dots)[pair.first], (*dots)[pair.second]));
+    auto delay = split_double(dr.norm() / (c0 * dt));
+
+    floor_delays[pair_idx] = delay.first;
+    lagrange.evaluate_derivative_table_at_x(delay.second, dt);
+
+    std::vector<Eigen::Matrix3cd> interp_dyads(
+        propagator.coefficients(dr, lagrange));
+
+    for(int i = 0; i <= interp_order; ++i) {
+      coefficients[pair_idx][i] = (*dots)[pair.second].dipole().dot(
+          interp_dyads[i] * (*dots)[pair.first].dipole());
     }
   }
 }
