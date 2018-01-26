@@ -25,6 +25,10 @@ std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
   std::vector<std::pair<int, int>> pairs;
   auto box_contents = grid.box_contents_map();
 
+  auto get_dot_idx = [&](const DotVector::const_iterator &d) {
+    return std::distance<DotVector::const_iterator>(dots->begin(), d);
+  };
+
   for(auto i = 0u; i < box_contents.size(); ++i) {
     // start iter = end iter, thus empty box
     if(box_contents[i].first == box_contents[i].second) continue;
@@ -33,10 +37,8 @@ std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
         src_dot != box_contents[i].second - 1; ++src_dot) {
       for(auto obs_dot = src_dot + 1; obs_dot != box_contents[i].second;
           ++obs_dot) {
-        int p1 =
-            std::distance<DotVector::const_iterator>(dots->begin(), src_dot);
-        int p2 =
-            std::distance<DotVector::const_iterator>(dots->begin(), obs_dot);
+        int p1 = get_dot_idx(src_dot);
+        int p2 = get_dot_idx(obs_dot);
         pairs.push_back({p1, p2});
       }
     }
@@ -59,10 +61,8 @@ std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
           src_dot != box_contents[i].second; ++src_dot) {
         for(auto obs_dot = box_contents[j].first;
             obs_dot != box_contents[j].second; ++obs_dot) {
-          int p1 =
-              std::distance<DotVector::const_iterator>(dots->begin(), src_dot);
-          int p2 =
-              std::distance<DotVector::const_iterator>(dots->begin(), obs_dot);
+          int p1 = get_dot_idx(src_dot);
+          int p2 = get_dot_idx(obs_dot);
           pairs.push_back({p1, p2});
         }
       }
