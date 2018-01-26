@@ -29,23 +29,18 @@ std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
     return std::distance<DotVector::const_iterator>(dots->begin(), d);
   };
 
-  for(auto i = 0u; i < box_contents.size(); ++i) {
+  for(auto box1 = box_contents.begin(); box1 != box_contents.end(); ++box1) {
     // start iter = end iter, thus empty box
-    if(box_contents[i].first == box_contents[i].second) continue;
+    if(box1->first == box1->second) continue;
 
-    for(auto src_dot = box_contents[i].first;
-        src_dot != box_contents[i].second - 1; ++src_dot) {
-      for(auto obs_dot = src_dot + 1; obs_dot != box_contents[i].second;
-          ++obs_dot) {
-        int p1 = get_dot_idx(src_dot);
-        int p2 = get_dot_idx(obs_dot);
-        pairs.push_back({p1, p2});
+    for(auto src_dot = box1->first; src_dot != box1->second - 1; ++src_dot) {
+      for(auto obs_dot = src_dot + 1; obs_dot != box1->second; ++obs_dot) {
+        pairs.push_back({get_dot_idx(src_dot), get_dot_idx(obs_dot)});
       }
     }
 
-    for(auto j = i + 1; j < box_contents.size(); ++j) {
-      if(box_contents[j].first == box_contents[j].second)
-        continue;  // start iter = end iter, thus empty box
+    for(auto box2 = box1 + 1; box2 < box_contents.end(); ++box2) {
+      if(box2->first == box2->second) continue;
 
       // box_contents[i] and [j] yield *pairs of DotVector iterators*
       // corresponding to the range of particles within the box (which assumes
@@ -53,17 +48,13 @@ std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
       // equal, then the box is empty (checked above), otherwise it contains
       // particles that can ALL equivalently determine the box's position and
       // thus its nearfield neighbors.
-      bool is_in_nearfield = grid.is_nearfield_pair(
-          box_contents[i].first->position(), box_contents[j].first->position());
+      bool is_in_nearfield = grid.is_nearfield_pair(box1->first->position(),
+                                                    box2->first->position());
       if(!is_in_nearfield) continue;
 
-      for(auto src_dot = box_contents[i].first;
-          src_dot != box_contents[i].second; ++src_dot) {
-        for(auto obs_dot = box_contents[j].first;
-            obs_dot != box_contents[j].second; ++obs_dot) {
-          int p1 = get_dot_idx(src_dot);
-          int p2 = get_dot_idx(obs_dot);
-          pairs.push_back({p1, p2});
+      for(auto src_dot = box1->first; src_dot != box1->second; ++src_dot) {
+        for(auto obs_dot = box2->first; obs_dot != box2->second; ++obs_dot) {
+          pairs.push_back({get_dot_idx(src_dot), get_dot_idx(obs_dot)});
         }
       }
     }
