@@ -25,11 +25,23 @@ std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
   std::vector<std::pair<int, int>> pairs;
   auto box_contents = grid.box_contents_map();
 
-  for(auto i = 0u; i < box_contents.size() - 1; ++i) {
+  for(auto i = 0u; i < box_contents.size(); ++i) {
     // start iter = end iter, thus empty box
     if(box_contents[i].first == box_contents[i].second) continue;
 
-    for(auto j = i; j < box_contents.size(); ++j) {
+    for(auto src_dot = box_contents[i].first;
+        src_dot != box_contents[i].second - 1; ++src_dot) {
+      for(auto obs_dot = src_dot + 1; obs_dot != box_contents[i].second;
+          ++obs_dot) {
+        int p1 =
+            std::distance<DotVector::const_iterator>(dots->begin(), src_dot);
+        int p2 =
+            std::distance<DotVector::const_iterator>(dots->begin(), obs_dot);
+        pairs.push_back({p1, p2});
+      }
+    }
+
+    for(auto j = i + 1; j < box_contents.size(); ++j) {
       if(box_contents[j].first == box_contents[j].second)
         continue;  // start iter = end iter, thus empty box
 
@@ -43,35 +55,15 @@ std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
           box_contents[i].first->position(), box_contents[j].first->position());
       if(!is_in_nearfield) continue;
 
-      if(i == j) {
-        // i and j point to the same box; this looping
-        // structure avoids double counting pairs
-
-        for(auto src_dot = box_contents[i].first;
-            src_dot != box_contents[i].second - 1; ++src_dot) {
-          for(auto obs_dot = src_dot + 1; obs_dot != box_contents[i].second;
-              ++obs_dot) {
-            int p1 = std::distance<DotVector::const_iterator>(dots->begin(),
-                                                              src_dot);
-            int p2 = std::distance<DotVector::const_iterator>(dots->begin(),
-                                                              obs_dot);
-            pairs.push_back({p1, p2});
-          }
-        }
-
-      } else {
-        // i and j are different boxes, ergo we need
-        // to loop over all particles in both
-        for(auto src_dot = box_contents[i].first;
-            src_dot != box_contents[i].second; ++src_dot) {
-          for(auto obs_dot = box_contents[j].first;
-              obs_dot != box_contents[j].second; ++obs_dot) {
-            int p1 = std::distance<DotVector::const_iterator>(dots->begin(),
-                                                              src_dot);
-            int p2 = std::distance<DotVector::const_iterator>(dots->begin(),
-                                                              obs_dot);
-            pairs.push_back({p1, p2});
-          }
+      for(auto src_dot = box_contents[i].first;
+          src_dot != box_contents[i].second; ++src_dot) {
+        for(auto obs_dot = box_contents[j].first;
+            obs_dot != box_contents[j].second; ++obs_dot) {
+          int p1 =
+              std::distance<DotVector::const_iterator>(dots->begin(), src_dot);
+          int p2 =
+              std::distance<DotVector::const_iterator>(dots->begin(), obs_dot);
+          pairs.push_back({p1, p2});
         }
       }
     }
