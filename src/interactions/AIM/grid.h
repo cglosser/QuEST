@@ -73,6 +73,7 @@ class AIM::Grid {
       for(const auto &r2_idx : r2_grid_indices) {
         Eigen::Vector3i dr = idx_to_coord(r1_idx) - idx_to_coord(r2_idx);
         min_dist = std::min(min_dist, dr.lpNorm<Eigen::Infinity>());
+        if(min_dist == 0) return min_dist;  // Not going to find a smaller one
       }
     }
 
