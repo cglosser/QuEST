@@ -87,3 +87,27 @@ void AIM::NearfieldInteraction::build_coefficient_table()
     }
   }
 }
+
+const Interaction::ResultArray &AIM::NearfieldInteraction::evaluate(
+    const int time_idx)
+{
+  results.setZero();
+
+  for(auto pair_idx = 0u; pair_idx < interaction_pairs.size(); ++pair_idx) {
+    const auto &pair = interaction_pairs[pair_idx];
+    const int s = time_idx - floor_delays[pair_idx];
+
+    for(int i = 0; i <= interp_order; ++i) {
+      if(s - i < history->array.index_bases()[1]) continue;
+
+      constexpr int RHO_01 = 1;
+
+      results[pair.first] += (history->array[pair.second][s - i][0])[RHO_01] *
+                             coefficients[pair_idx][i];
+      results[pair.second] += (history->array[pair.first][s - i][0])[RHO_01] *
+                              coefficients[pair_idx][i];
+    }
+  }
+
+  return results;
+}

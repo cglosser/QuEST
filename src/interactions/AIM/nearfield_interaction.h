@@ -18,13 +18,8 @@ class AIM::NearfieldInteraction final : public HistoryInteraction {
       const double,
       Grid);
 
-  const ResultArray &evaluate(const int) final
-  {
-    results.setZero();
-    return results;
-  };
-
   std::vector<std::pair<int, int>> build_pair_list() const;
+  const ResultArray &evaluate(const int) final;
 
  private:
   Propagation::RotatingFramePropagator propagator;
