@@ -13,14 +13,17 @@ namespace Integrator {
 
   template <class soltype>
   using soltype_array = boost::multi_array<soltype, 3>;
+
+  inline namespace history_enums {
+    enum DIMENSION { PARTICLES, TIMES, DERIVATIVES };
+    enum ORDER { DERIV_0, DERIV_1 };
+  }
 }
 
 template <class soltype>
 class Integrator::History {
  public:
-  static constexpr int DERIV_0 = 0, DERIV_1 = 1;
-
-  History(const int, const int, const int);
+  History(const int, const int, const int, const int = 2);
   soltype_array<soltype> array;
 
   void fill(const soltype &);
@@ -30,11 +33,13 @@ class Integrator::History {
 };
 
 template <class soltype>
-Integrator::History<soltype>::History(const int num_particles, const int window,
-                                      const int num_timesteps)
+Integrator::History<soltype>::History(const int num_particles,
+                                      const int window,
+                                      const int num_timesteps,
+                                      const int num_derivatives)
     : array(boost::extents[num_particles][
           typename soltype_array<soltype>::extent_range(-window, num_timesteps)]
-                          [2])
+                          [num_derivatives])
 
 {
 }
@@ -48,8 +53,8 @@ void Integrator::History<soltype>::fill(const soltype &val)
 template <class soltype>
 void Integrator::History<soltype>::initialize_past(const soltype &val)
 {
-  for(int n = 0; n < static_cast<int>(array.shape()[0]); ++n) {
-    for(int t = array.index_bases()[1]; t <= 0; ++t) {
+  for(int n = 0; n < static_cast<int>(array.shape()[PARTICLES]); ++n) {
+    for(int t = array.index_bases()[TIMES]; t <= 0; ++t) {
       array[n][t][DERIV_0] = val;
     }
   }

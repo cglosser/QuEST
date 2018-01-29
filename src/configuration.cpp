@@ -25,7 +25,7 @@ po::variables_map parse_configs(int argc, char *argv[]) {
     ("constants.c0",   po::value<double>(&config.c0)->required(), "speed of light in vacuum")
     ("constants.hbar", po::value<double>(&config.hbar)->required(), "reduced Planck constant")
     ("constants.mu0",  po::value<double>(&config.mu0)->required(), "vacuum permeability")
-    ("constants.laser_frequency",  po::value<double>(&config.omega)->required(), "(angular) frequency of incident pulse")
+    ("constants.laser frequency",  po::value<double>(&config.omega)->required(), "(angular) frequency of incident pulse")
   ;
 
   po::options_description parameters_description("System parameters");
@@ -41,11 +41,18 @@ po::variables_map parse_configs(int argc, char *argv[]) {
     ("parameters.timestep", po::value<double>(&config.dt)->required(), "timestep size")
     ("parameters.interpolation_order", po::value<int>(&config.interpolation_order)->required(), "order of the Lagrange interpolants");
 
+  po::options_description aim_description("AIM & Grid parameters");
+  aim_description.add_options()
+    ("AIM.grid spacing", po::value<std::vector<int>>()->required()->multitoken(), "spacing between grid nodes (distance units)")
+    ("AIM.expansion order", po::value<int>(&config.expansion_order)->required(), "spatial grid expansion order")
+  ;
+
   po::options_description cmdline_options, file_options;
   cmdline_options.add(cmd_line_description);
   file_options.add(files_description)
       .add(constants_description)
-      .add(parameters_description);
+      .add(parameters_description)
+      .add(aim_description);
 
   po::variables_map vm;
   po::store(po::command_line_parser(argc, argv).options(cmdline_options).run(), vm);

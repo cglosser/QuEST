@@ -4,54 +4,48 @@
 #include "../src/integrator/RHS/ode_rhs.h"
 #include "../src/integrator/integrator.h"
 
-BOOST_AUTO_TEST_SUITE(integrator)
+BOOST_AUTO_TEST_SUITE(INTEGRATOR)
 
-struct Shape {
+struct DIMENSIONS {
   int num_particles, window, num_timesteps;
-  Shape() : num_particles(2), window(4), num_timesteps(8){};
+  DIMENSIONS() : num_particles(2), window(4), num_timesteps(8){};
 };
 
-BOOST_FIXTURE_TEST_SUITE(history, Shape)
+BOOST_FIXTURE_TEST_SUITE(HISTORY, DIMENSIONS)
 
-BOOST_AUTO_TEST_CASE(templated_types)
+BOOST_AUTO_TEST_CASE(CONSTRUCTION)
 {
-  Integrator::History<int> int_hist(num_particles, window, num_timesteps);
-  Integrator::History<double> dbl_hist(num_particles, window, num_timesteps);
-  Integrator::History<Eigen::Vector2cd> cvec_hist(num_particles, window,
-                                                  num_timesteps);
-}
+  using namespace Integrator::history_enums;
 
-BOOST_AUTO_TEST_CASE(shape)
-{
   Integrator::History<int> hist(num_particles, window, num_timesteps);
 
-  BOOST_CHECK(hist.array.shape()[0] == static_cast<size_t>(num_particles));
-  BOOST_CHECK(hist.array.shape()[1] ==
-              static_cast<size_t>(num_timesteps + window));
-  BOOST_CHECK(hist.array.shape()[2] == 2);
+  BOOST_CHECK_EQUAL(hist.array.shape()[PARTICLES], num_particles);
+  BOOST_CHECK_EQUAL(hist.array.index_bases()[PARTICLES], 0);
 
-  BOOST_CHECK(hist.array.index_bases()[0] == 0);
-  BOOST_CHECK(hist.array.index_bases()[1] == -window);
-  BOOST_CHECK(hist.array.index_bases()[2] == 0);
+  BOOST_CHECK_EQUAL(hist.array.shape()[TIMES], num_timesteps + window);
+  BOOST_CHECK_EQUAL(hist.array.index_bases()[TIMES], -window);
+
+  BOOST_CHECK_EQUAL(hist.array.shape()[DERIVATIVES], 2);
+  BOOST_CHECK_EQUAL(hist.array.index_bases()[DERIVATIVES], 0);
+
+  BOOST_CHECK_EQUAL(hist.array.num_elements(),
+                    num_particles * (num_timesteps + window) * 2);
 }
 
-BOOST_AUTO_TEST_CASE(filling)
+BOOST_AUTO_TEST_CASE(FILLING)
 {
   const int fill_value = 4;
   Integrator::History<int> hist(num_particles, window, num_timesteps);
   hist.fill(fill_value);
 
-  for(int n = 0; n < num_particles; ++n) {
-    for(int t = -window; t < num_timesteps; ++t) {
-      BOOST_CHECK(hist.array[n][t][0] == fill_value);
-      BOOST_CHECK(hist.array[n][t][1] == fill_value);
-    }
+  for(auto i = 0u; i < hist.array.num_elements(); ++i) {
+    BOOST_CHECK_EQUAL(hist.array.data()[i], fill_value);
   }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-struct SigmoidalSystem {
+struct SIGMOIDAL_SYSTEM {
   static double rhs(double f, double t)
   {
     return 1 / (1 + std::exp(-(t - 10))) - f;
@@ -62,27 +56,82 @@ struct SigmoidalSystem {
             std::exp(10) * std::log(std::exp(10) + std::exp(t))) /
            std::exp(t);
   }
+  double max_abs_error()
+  {
+    using namespace Integrator::history_enums;
+
+    double max_error = 0;
+    for(int i = 1; i < num_steps; ++i) {
+      double relative_error =
+          (solution(i * dt) - hist->array[0][i][DERIV_0]) / solution(i * dt);
+      max_error = std::max(max_error, std::abs(relative_error));
+    }
+
+    return max_error;
+  }
+
+  const double dt;
+  const int window, num_steps;
+  std::shared_ptr<Integrator::History<double>> hist;
+
+  SIGMOIDAL_SYSTEM()
+      : dt(0.1),
+        window(22),
+        num_steps(201),
+        hist(
+            std::make_shared<Integrator::History<double>>(1, window, num_steps))
+  {
+    using namespace Integrator::history_enums;
+
+    hist->fill(0);
+    for(int i = -window; i <= 0; ++i) {
+      hist->array[0][i][DERIV_0] = solution(i * dt);
+      hist->array[0][i][DERIV_1] = rhs(hist->array[0][i][DERIV_0], i * dt);
+    }
+  };
 };
 
-BOOST_FIXTURE_TEST_CASE(ODE_ERROR, SigmoidalSystem)
+BOOST_FIXTURE_TEST_SUITE(ODE_ERROR, SIGMOIDAL_SYSTEM)
+
+BOOST_AUTO_TEST_CASE(PREDICTOR_CORRECTOR)
 {
-  const double dt = 0.1;
-  auto hist = std::make_shared<Integrator::History<double>>(1, 22, 201);
+  using namespace Integrator::history_enums;
+
   std::vector<std::function<double(double, double)>> rhs_funcs{rhs};
   std::unique_ptr<Integrator::RHS<double>> system_rhs =
       std::make_unique<Integrator::ODE_RHS>(dt, hist, rhs_funcs);
 
-  hist->fill(0);
-  for(int i = -22; i <= 0; ++i) {
-    hist->array[0][i][0] = solution(i * dt);
-    hist->array[0][i][1] = rhs(hist->array[0][i][0], i * dt);
-  }
-
-  Integrator::PredictorCorrector<double> solver(dt, 18, 22, 3.15, hist,
-                                                system_rhs);
+  Integrator::PredictorCorrector<double> solver(dt, 32, window, 3.15, hist,
+                                                std::move(system_rhs));
   solver.solve();
 
-  BOOST_CHECK_CLOSE(hist->array[0][200][0], solution(200 * dt), 1e-12);
+  BOOST_TEST_MESSAGE(
+      "Maximum relative predictor/corrector error: " << max_abs_error());
+  BOOST_CHECK_CLOSE(hist->array[0][num_steps - 1][0],
+                    solution((num_steps - 1) * dt), 1e-10);
 }
+
+BOOST_AUTO_TEST_CASE(RUNGE_KUTTA_4)
+{
+  using namespace Integrator::history_enums;
+
+  for(int i = 0; i < num_steps - 1; ++i) {
+    const double &yi = hist->array[0][i][DERIV_0];
+
+    double k1 = rhs(yi, i * dt);
+    double k2 = rhs(yi + dt * k1 / 2, (i + 0.5) * dt);
+    double k3 = rhs(yi + dt * k2 / 2, (i + 0.5) * dt);
+    double k4 = rhs(yi + dt * k3, (i + 1) * dt);
+
+    hist->array[0][i + 1][DERIV_0] = yi + dt * (k1 + 2 * (k2 + k3) + k4) / 6;
+    hist->array[0][i][DERIV_1] = k1;
+  }
+
+  BOOST_TEST_MESSAGE("Maximum relative RK4 error: " << max_abs_error());
+  BOOST_CHECK_CLOSE(hist->array[0][num_steps - 1][0],
+                    solution((num_steps - 1) * dt), 1e-6);
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // ODE_ERROR
 
 BOOST_AUTO_TEST_SUITE_END()

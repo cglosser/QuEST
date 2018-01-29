@@ -17,8 +17,8 @@ template <class soltype>
 class Integrator::PredictorCorrector {
  public:
   PredictorCorrector(const double, const int, const int, const double,
-                     const std::shared_ptr<Integrator::History<soltype>> &,
-                     std::unique_ptr<Integrator::RHS<soltype>> &);
+                     const std::shared_ptr<Integrator::History<soltype>>,
+                     std::unique_ptr<Integrator::RHS<soltype>>);
   void solve() const;
 
  private:
@@ -39,14 +39,14 @@ constexpr int NUM_CORRECTOR_STEPS = 10;
 template <class soltype>
 Integrator::PredictorCorrector<soltype>::PredictorCorrector(
     const double dt, const int n_lambda, const int n_time, const double radius,
-    const std::shared_ptr<Integrator::History<soltype>> &history,
-    std::unique_ptr<Integrator::RHS<soltype>> &rhs)
+    const std::shared_ptr<Integrator::History<soltype>> history,
+    std::unique_ptr<Integrator::RHS<soltype>> rhs)
     : num_solutions(history->array.shape()[0]),
       time_idx_ubound(history->array.index_bases()[1] +
                       history->array.shape()[1]),
       dt(dt),
       weights(n_lambda, n_time, radius),
-      history(history),
+      history(std::move(history)),
       rhs(std::move(rhs))
 {
 }

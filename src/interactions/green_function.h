@@ -19,8 +19,7 @@ namespace Propagation {
 template <class Derived>
 class Propagation::Propagator {
  public:
-  Propagator(const double mu0, const double c, const double hbar)
-      : c_(c), mu0_over_4pi_hbar_(mu0 / (4 * M_PI * hbar)){};
+  Propagator(const double k2, const double c) : k2_(k2), c_(c){};
   auto coefficients(const Eigen::Vector3d &dr,
                     const Interpolation::UniformLagrangeSet &interp) const
   {
@@ -28,7 +27,7 @@ class Propagation::Propagator {
   };
 
  protected:
-  double c_, mu0_over_4pi_hbar_;
+  double k2_, c_;
 
   std::array<Eigen::Matrix3d, 3> spatial_dyads(const Eigen::Vector3d &dr) const
   {
@@ -59,8 +58,7 @@ class Propagation::Propagator {
 class Propagation::FixedFramePropagator
     : public Propagation::Propagator<Propagation::FixedFramePropagator> {
  public:
-  FixedFramePropagator(const double mu0, const double c, const double hbar)
-      : Propagator(mu0, c, hbar){};
+  FixedFramePropagator(const double k2, const double c) : Propagator(k2, c){};
   std::vector<Eigen::Matrix3d> coefficients(
       const Eigen::Vector3d &dr,
       const Interpolation::UniformLagrangeSet &interp) const
@@ -71,9 +69,9 @@ class Propagation::FixedFramePropagator
     const auto dyads(spatial_dyads(dr));
 
     for(int i = 0; i <= interp.order(); ++i) {
-      coefs[i] += mu0_over_4pi_hbar_ * (dyads[0] * interp.evaluations[0][i] +
-                                        dyads[1] * interp.evaluations[1][i] +
-                                        dyads[2] * interp.evaluations[2][i]);
+      coefs[i] += k2_ * (dyads[0] * interp.evaluations[0][i] +
+                         dyads[1] * interp.evaluations[1][i] +
+                         dyads[2] * interp.evaluations[2][i]);
     }
 
     return coefs;
@@ -83,9 +81,8 @@ class Propagation::FixedFramePropagator
 class Propagation::RotatingFramePropagator
     : public Propagation::Propagator<Propagation::RotatingFramePropagator> {
  public:
-  RotatingFramePropagator(const double mu0, const double c, const double hbar,
-                          const double omega)
-      : Propagator(mu0, c, hbar), omega(omega){};
+  RotatingFramePropagator(const double k2, const double c, const double omega)
+      : Propagator(k2, c), omega(omega){};
   std::vector<Eigen::Matrix3cd> coefficients(
       const Eigen::Vector3d &dr,
       const Interpolation::UniformLagrangeSet &interp) const
@@ -97,12 +94,13 @@ class Propagation::RotatingFramePropagator
 
     for(int i = 0; i <= interp.order(); ++i) {
       coefs[i] =
-          -mu0_over_4pi_hbar_ * std::exp(-iu * omega * dr.norm() / c_) *
+          k2_ * std::exp(-iu * omega * dr.norm() / c_) *
           (dyads[0].cast<cmplx>() * interp.evaluations[0][i] +
-           dyads[1].cast<cmplx>() *
-               (interp.evaluations[1][i] + iu * omega * interp.evaluations[0][i]) +
+           dyads[1].cast<cmplx>() * (interp.evaluations[1][i] +
+                                     iu * omega * interp.evaluations[0][i]) +
            dyads[2].cast<cmplx>() *
-               (interp.evaluations[2][i] + 2.0 * iu * omega * interp.evaluations[1][i] -
+               (interp.evaluations[2][i] +
+                2.0 * iu * omega * interp.evaluations[1][i] -
                 std::pow(omega, 2) * interp.evaluations[0][i]));
     }
 

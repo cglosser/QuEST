@@ -1,6 +1,6 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#pragma once
 
+#include <Eigen/Dense>
 #include <boost/program_options.hpp>
 #include <cmath>
 #include <exception>
@@ -10,12 +10,19 @@
 #include <string>
 
 struct Configuration {
-  int num_particles;
-  int num_timesteps;
-  double c0, hbar, mu0, omega;
+  // Parameters
+  int num_particles, num_timesteps, interpolation_order;
   double dt, total_time;
-  int interpolation_order;
+
+  // File paths
   std::string qd_path, pulse_path;
+
+  // Constants
+  double c0, mu0, hbar, omega;
+
+  // AIM
+  int expansion_order;
+  Eigen::Vector3d grid_spacing;
 };
 
 // This Exception really just allows parse_configs to return control
@@ -28,5 +35,3 @@ struct CommandLineException : public std::exception {
 boost::program_options::variables_map parse_configs(int argc, char *argv[]);
 
 extern Configuration config;
-
-#endif

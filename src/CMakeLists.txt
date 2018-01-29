@@ -6,6 +6,7 @@ target_sources(quest
     "${CMAKE_CURRENT_LIST_DIR}/common.h"
     "${CMAKE_CURRENT_LIST_DIR}/configuration.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/configuration.h"
+    "${CMAKE_CURRENT_LIST_DIR}/fourier.h"
     "${CMAKE_CURRENT_LIST_DIR}/lagrange_set.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/lagrange_set.h"
     "${CMAKE_CURRENT_LIST_DIR}/math_utils.cpp"

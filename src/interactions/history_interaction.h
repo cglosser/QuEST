@@ -6,6 +6,7 @@
 
 #include "../integrator/history.h"
 #include "../lagrange_set.h"
+#include "../math_utils.h"
 #include "../quantum_dot.h"
 #include "green_function.h"
 #include "interaction.h"
@@ -13,27 +14,20 @@
 class HistoryInteraction : public Interaction {
  public:
   HistoryInteraction(
-      const std::shared_ptr<const DotVector> &,
-      const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> &,
-      const std::shared_ptr<Propagation::RotatingFramePropagator> &, const int,
-      const double, const double);
+      std::shared_ptr<const DotVector> dots,
+      std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
+      const int interp_order,
+      const double c0,
+      const double dt)
+      : Interaction(std::move(dots), dt),
+        history(std::move(history)),
+        interp_order(interp_order),
+        c0(c0){};
 
-  virtual const ResultArray &evaluate(const int);
-
- private:
+ protected:
   std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history;
-  std::shared_ptr<Propagation::RotatingFramePropagator> dyadic;
-  int interp_order, num_interactions;
-  std::vector<int> floor_delays;
-  boost::multi_array<cmplx, 2> coefficients;
-  const double dt;
+  int interp_order;
   const double c0;
-
-  void build_coefficient_table();
-
-  static int coord2idx(int, int);
-  static std::pair<int, int> idx2coord(const int);
-  static std::pair<int, double> split_double(const double);
 };
 
 #endif

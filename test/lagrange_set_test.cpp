@@ -1,5 +1,6 @@
 #include "../src/lagrange_set.h"
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 
 BOOST_AUTO_TEST_SUITE(lagrange_interpolation)
 
@@ -79,7 +80,7 @@ BOOST_AUTO_TEST_CASE(full_constructor_d2)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(knot_point_value_comparison)
+BOOST_AUTO_TEST_SUITE(epsilon_value_comparison)
 
 BOOST_AUTO_TEST_CASE(full_constructor_d0)
 {

@@ -9,8 +9,8 @@
 #include "integrator/RHS/bloch_rhs.h"
 #include "integrator/history.h"
 #include "integrator/integrator.h"
+#include "interactions/direct_interaction.h"
 #include "interactions/green_function.h"
-#include "interactions/history_interaction.h"
 #include "interactions/pulse_interaction.h"
 
 using namespace std;
@@ -35,14 +35,14 @@ int main(int argc, char *argv[])
 
     // Set up Interactions
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
-    auto rotating_dyadic = make_shared<Propagation::RotatingFramePropagator>(
-        config.mu0, config.c0, config.hbar, config.omega);
+    Propagation::RotatingFramePropagator rotating_dyadic(
+        config.mu0 / (4 * M_PI * config.hbar), config.c0, config.omega);
 
     std::vector<std::shared_ptr<Interaction>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
-        make_shared<HistoryInteraction>(qds, history, rotating_dyadic,
-                                        config.interpolation_order, config.dt,
-                                        config.c0)};
+        make_shared<DirectInteraction>(qds, history, rotating_dyadic,
+                                       config.interpolation_order, config.dt,
+                                       config.c0)};
 
     // Set up RHS functions
     auto rhs_funcs = rhs_functions(*qds, config.omega);
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
             config.dt, history, std::move(interactions), std::move(rhs_funcs));
 
     Integrator::PredictorCorrector<Eigen::Vector2cd> solver(
-        config.dt, 18, 22, 3.15, history, bloch_rhs);
+        config.dt, 18, 22, 3.15, history, std::move(bloch_rhs));
 
     cout << "Solving..." << endl;
     solver.solve();
