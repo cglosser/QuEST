@@ -32,7 +32,7 @@ AIM::Expansions::LeastSquaresExpansionSolver::table(
     weights.row(D_YZ) = weights.row(D_ZY) = lu.solve(q_vector({{0, 1, 1}}));
     weights.row(D_ZZ) = lu.solve(q_vector({{0, 0, 2}}));
 
-    const auto indices = grid.expansion_box_indices(pos);
+    const auto indices = grid.expansion_indices(pos);
     for(auto w = 0; w < num_pts; ++w) {
       table[dot_idx][w].index = indices[w];
       Eigen::Map<Eigen::Array<double, NUM_DERIVS, 1>>(
@@ -80,7 +80,7 @@ Eigen::MatrixXd AIM::Expansions::LeastSquaresExpansionSolver::w_matrix(
 {
   Eigen::MatrixXd w_mat = Eigen::MatrixXd::Zero(num_pts, num_pts);
 
-  auto expansion_indices = grid.expansion_box_indices(pos);
+  auto expansion_indices = grid.expansion_indices(pos);
 
   for(int col = 0; col < num_pts; ++col) {
     Eigen::Vector3d dr =
