@@ -69,7 +69,7 @@ class Propagation::FixedFramePropagator
     const auto dyads(spatial_dyads(dr));
 
     for(int i = 0; i <= interp.order(); ++i) {
-      coefs[i] += k2_ * (dyads[0] * interp.evaluations[0][i] +
+      coefs[i] = -k2_ * (dyads[0] * interp.evaluations[0][i] +
                          dyads[1] * interp.evaluations[1][i] +
                          dyads[2] * interp.evaluations[2][i]);
     }
@@ -94,7 +94,7 @@ class Propagation::RotatingFramePropagator
 
     for(int i = 0; i <= interp.order(); ++i) {
       coefs[i] =
-          k2_ * std::exp(-iu * omega * dr.norm() / c_) *
+          -k2_ * std::exp(-iu * omega * dr.norm() / c_) *
           (dyads[0].cast<cmplx>() * interp.evaluations[0][i] +
            dyads[1].cast<cmplx>() * (interp.evaluations[1][i] +
                                      iu * omega * interp.evaluations[0][i]) +
