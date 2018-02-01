@@ -10,7 +10,6 @@ if(${Boost_FOUND})
 
   target_sources(qtest-bin
     PUBLIC
-      "${CMAKE_CURRENT_LIST_DIR}/combined_field_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/integrator_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/lagrange_set_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/math_utils_test.cpp"
