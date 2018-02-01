@@ -77,16 +77,16 @@ void AIM::AimInteraction::fill_source_table(const int step)
       grid_field += source_field;
     }
   }
-
-  fftw_execute_dft(spatial_vector_transforms.forward,
-                   reinterpret_cast<fftw_complex *>(p),
-                   reinterpret_cast<fftw_complex *>(p));
 }
 
 void AIM::AimInteraction::propagate(const int step)
 {
   const auto wrapped_step = step % circulant_dimensions[0];
   const auto nb = 8 * grid.num_gridpoints;
+  const auto p = &source_table[wrapped_step][0][0][0][0];
+  fftw_execute_dft(spatial_vector_transforms.forward,
+                   reinterpret_cast<fftw_complex *>(p),
+                   reinterpret_cast<fftw_complex *>(p));
 
   std::array<int, 5> front = {{wrapped_step, 0, 0, 0, 0}};
   Eigen::Map<Eigen::Array3Xcd> observers(&obs_table(front), 3, nb);
