@@ -66,6 +66,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   const ResultArray &evaluate(const int) final;
 
   // private:
+
   Grid grid;
   Expansions::ExpansionTable expansion_table;
   Expansions::ExpansionFunction expansion_function;
@@ -87,6 +88,14 @@ class AIM::AimInteraction final : public HistoryInteraction {
   spacetime::vector<cmplx> circulant_fourier_table();
   void fill_gmatrix_table(spacetime::vector<cmplx> &) const;
   TransformPair spatial_fft_plans();
+
+  // Nearfield stuff
+  std::vector<Grid::ipair_t> nf_pairs;
+  boost::multi_array<cmplx, 4> nf_matrices;
+  Eigen::MatrixX3cd nf_source_table, nf_obs_table;
+  spacetime::vector3d<cmplx> nf_correction;
+  void fill_nearfield_matrices();
+  void evaluate_nearfield(const int);
 };
 
 #endif

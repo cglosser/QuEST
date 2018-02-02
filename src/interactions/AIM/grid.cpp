@@ -125,10 +125,11 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
     const int thresh) const
 {
   // Threshold is in grid units
-  const auto mapping = box_contents_map(dots);
 
   std::vector<ipair_t> nf;
+  if(!dots) return nf;
 
+  const auto mapping = box_contents_map(dots);
   for(auto pt1 = 0u; pt1 < num_gridpoints - 1; ++pt1) {
     if(mapping[pt1].first == mapping[pt1].second) continue;  // empty box
     auto r1 = idx_to_coord(pt1);
