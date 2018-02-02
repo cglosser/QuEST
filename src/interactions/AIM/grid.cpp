@@ -71,7 +71,7 @@ std::vector<DotRange> AIM::Grid::box_contents_map(
   std::vector<DotRange> boxes(num_gridpoints);
   for(size_t box_idx = 0; box_idx < boxes.size(); ++box_idx) {
     auto NearestGridpoint = [=](const QuantumDot &qd) {
-      return coord_to_idx(grid_coordinate(qd.position())) == box_idx;
+      return associated_grid_index(qd.position()) == box_idx;
     };
 
     auto begin = std::find_if(dots->begin(), dots->end(), NearestGridpoint);
