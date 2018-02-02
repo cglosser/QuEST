@@ -20,11 +20,12 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
 
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
                 const Eigen::Array3i &dimensions,
-                const Eigen::Vector3i &shift)
+                const Eigen::Vector3i &shift,
+                const int expansion_order)
     : dimensions(dimensions),
       spacing(spacing),
       dots(nullptr),
-      expansion_order(0)
+      expansion_order(expansion_order)
 {
   bounds.col(0) = 0 + shift.array();
   bounds.col(1) = dimensions + shift.array() - 1;
@@ -100,6 +101,24 @@ std::vector<size_t> AIM::Grid::expansion_indices(const int grid_index) const
   }
 
   return indices;
+}
+
+int AIM::Grid::expansion_distance(const int i, const int j) const
+{
+  auto pts1 = expansion_indices(i);
+  auto pts2 = expansion_indices(j);
+
+  int min_dist = (idx_to_coord(pts1.front()) - idx_to_coord(pts2.front()))
+                     .lpNorm<Eigen::Infinity>();
+  for(const auto &p1 : pts1) {
+    for(const auto &p2 : pts2) {
+      Eigen::Vector3i dr = idx_to_coord(p2) - idx_to_coord(p1);
+      min_dist = std::min(min_dist, dr.lpNorm<Eigen::Infinity>());
+      if(min_dist == 0) return 0;
+    }
+  }
+
+  return min_dist;
 }
 
 void AIM::Grid::sort_points_on_boxidx() const
