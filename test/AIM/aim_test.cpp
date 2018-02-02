@@ -119,10 +119,29 @@ struct ON_GRID_PARAMETERS : public PARAMETERS {
   }
 };
 
+BOOST_FIXTURE_TEST_CASE(NEARFIELD_CORRECTION, ON_GRID_PARAMETERS)
+{
+  dots->at(0) = QuantumDot({0.1, 0.1, 0.1}, 0, {0, 0}, {0, 0, 1});
+  dots->at(1) = QuantumDot({1.9, 0.1, 0.1}, 0, {0, 0}, {0, 0, 1});
+  AIM::Grid grid(spacing, dots, 1);
+  auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
+           1, grid, *dots);
+
+  AIM::AimInteraction aim(
+      dots, history, interpolation_order, c, dt, grid, expansions,
+      AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
+                                   interpolation_order),
+      AIM::normalization::unit);
+
+  for(int t = 0; t < num_steps; ++t) {
+    aim.evaluate(t);
+  }
+}
+
 BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, ON_GRID_PARAMETERS)
 {
   AIM::AimInteraction aim(
-      dots, history , interpolation_order, c, dt, grid, expansions,
+      dots, history, interpolation_order, c, dt, grid, expansions,
       AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
                                    interpolation_order),
       AIM::normalization::unit);
@@ -140,11 +159,11 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
 {
   AIM::AimInteraction aim(
       dots, history, interpolation_order, c, dt, grid, expansions,
-      AIM::Expansions::TimeDerivative(grid.max_transit_steps(c, dt) +
-                                      interpolation_order, dt),
+      AIM::Expansions::TimeDerivative(
+          grid.max_transit_steps(c, dt) + interpolation_order, dt),
       AIM::normalization::unit);
 
-  const double delay = 
+  const double delay =
       (dots->at(1).position() - dots->at(0).position()).norm() / c;
 
   double err = test_propagation(
@@ -197,7 +216,7 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_POINT_PROPAGATION, OFF_GRID_PARAMETERS)
                                    interpolation_order),
       AIM::normalization::unit);
 
-  const double delay = 
+  const double delay =
       (dots->at(1).position() - dots->at(0).position()).norm() / c;
 
   double err = test_propagation(
@@ -210,11 +229,11 @@ BOOST_FIXTURE_TEST_CASE(GAUSSIAN_TIME_DERIVATIVE_PROPAGATION,
 {
   AIM::AimInteraction aim(
       dots, history, interpolation_order, c, dt, grid, expansions,
-      AIM::Expansions::TimeDerivative(grid.max_transit_steps(c, dt) +
-                                      interpolation_order, dt),
+      AIM::Expansions::TimeDerivative(
+          grid.max_transit_steps(c, dt) + interpolation_order, dt),
       AIM::normalization::unit);
 
-  const double delay = 
+  const double delay =
       (dots->at(1).position() - dots->at(0).position()).norm() / c;
 
   double err = test_propagation(
@@ -268,8 +287,8 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
   Grid grid(unit_spacing, num_boxes);
   auto expansions = Expansions::LeastSquaresExpansionSolver::get_expansions(
       expansion_order, grid, *dots);
-  AIM::AimInteraction aim(dots, history, interp_order, c0, dt, grid,
-                          expansions, nullptr, AIM::normalization::unit);
+  AIM::AimInteraction aim(dots, history, interp_order, c0, dt, grid, expansions,
+                          nullptr, AIM::normalization::unit);
   auto circulant_shape = grid.circulant_shape(c0, dt);
 
   std::fill(aim.source_table.data(),
@@ -320,5 +339,6 @@ BOOST_AUTO_TEST_CASE(VectorFourierTransforms)
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM_Fourier_transforms
+
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM
