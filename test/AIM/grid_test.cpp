@@ -159,4 +159,30 @@ BOOST_AUTO_TEST_CASE(EXPANSION_DISTANCE)
   BOOST_CHECK_EQUAL(grid2.expansion_distance(31, 99), 1);
 }
 
+BOOST_AUTO_TEST_CASE(NEARFIELD_PAIRS)
+{
+  auto dots = std::make_shared<DotVector>();
+  dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), 0, {0, 0}, Eigen::Vector3d(0,0,1)));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 1.5), 0, {0, 0}, Eigen::Vector3d(0,0,1)));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 7.5), 0, {0, 0}, Eigen::Vector3d(0,0,1)));
+
+  AIM::Grid grid(Eigen::Vector3d(1, 1, 1), dots, 1);
+  const auto nf = grid.nearfield_pairs(2);
+
+  BOOST_CHECK_EQUAL(nf.at(0).first, 0);
+  BOOST_CHECK_EQUAL(nf.at(0).second, 0);
+
+  BOOST_CHECK_EQUAL(nf.at(1).first, 0);
+  BOOST_CHECK_EQUAL(nf.at(1).second, 1);
+
+  BOOST_CHECK_EQUAL(nf.at(2).first, 1);
+  BOOST_CHECK_EQUAL(nf.at(2).second, 1);
+
+  BOOST_CHECK_EQUAL(nf.at(3).first, 7);
+  BOOST_CHECK_EQUAL(nf.at(3).second, 7);
+
+  BOOST_CHECK_EQUAL(nf.size(), 4);
+
+}
+
 BOOST_AUTO_TEST_SUITE_END()  // GRID

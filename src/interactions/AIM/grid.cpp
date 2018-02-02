@@ -121,6 +121,32 @@ int AIM::Grid::expansion_distance(const int i, const int j) const
   return min_dist;
 }
 
+std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
+    const int thresh) const
+{
+  // Threshold is in grid units
+  const auto mapping = box_contents_map(dots);
+
+  std::vector<ipair_t> nf;
+
+  for(auto pt1 = 0u; pt1 < num_gridpoints - 1; ++pt1) {
+    if(mapping[pt1].first == mapping[pt1].second) continue;  // empty box
+    auto r1 = idx_to_coord(pt1);
+
+    for(auto pt2 = pt1; pt2 < num_gridpoints; ++pt2) {
+      if(mapping[pt2].first == mapping[pt2].second) continue;
+      auto r2 = idx_to_coord(pt2);
+
+      auto dist = (r2 - r1).lpNorm<Eigen::Infinity>();
+      if(dist < thresh) {
+        nf.push_back({pt1, pt2});
+      }
+    }
+  }
+
+  return nf;
+}
+
 void AIM::Grid::sort_points_on_boxidx() const
 {
   auto grid_comparitor = [&](const QuantumDot &q1, const QuantumDot &q2) {
