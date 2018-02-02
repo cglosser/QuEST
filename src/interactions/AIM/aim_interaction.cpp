@@ -311,10 +311,12 @@ void AIM::AimInteraction::evaluate_nearfield(const int step)
       dest = nf_obs_table.row(u);
     }
 
-    // Same box; need to avoid double-counting
+    // Source and observation box are coincident so we need
+    // to avoid double-counting their interactions
     if(nf_pairs[p].first == nf_pairs[p].second) continue;
 
-    // Now do the same as above; just swap src and obs
+    // Otherwise do the same thing as above, except for the reciprocal
+    // interactions (src_indices -> obs_indices and vice versa)
     nf_obs_table.setZero();
 
     for(int t = 1; t < circulant_dimensions[0]; ++t) {
@@ -330,12 +332,12 @@ void AIM::AimInteraction::evaluate_nearfield(const int step)
                                      nf_matrices.shape()[2],
                                      nf_matrices.shape()[3]);
 
-      nf_obs_table.col(0) += g * nf_source_table.col(0);
-      nf_obs_table.col(1) += g * nf_source_table.col(1);
-      nf_obs_table.col(2) += g * nf_source_table.col(2);
+      nf_obs_table.col(0) += g.transpose() * nf_source_table.col(0);
+      nf_obs_table.col(1) += g.transpose() * nf_source_table.col(1);
+      nf_obs_table.col(2) += g.transpose() * nf_source_table.col(2);
     }
 
-    for(auto u = 0u; u < obs_indices.size(); ++u) {
+    for(auto u = 0u; u < src_indices.size(); ++u) {
       Eigen::Array3i coord = grid.idx_to_coord(src_indices[u]);
       Eigen::Map<Eigen::Vector3cd> dest(
           &nf_correction[wrapped_step][coord[0]][coord[1]][coord[2]][0]);
