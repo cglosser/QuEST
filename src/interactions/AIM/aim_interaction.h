@@ -77,7 +77,8 @@ class AIM::AimInteraction final : public HistoryInteraction {
   spacetime::vector<cmplx> fourier_table;
 
   // These correspond to J and E and thus hold *vector* quantities
-  spacetime::vector3d<cmplx> source_table, obs_table;
+  spacetime::vector3d<cmplx> source_table, source_table_fft;
+  spacetime::vector3d<cmplx> obs_table, obs_table_fft;
 
   TransformPair spatial_vector_transforms;
 

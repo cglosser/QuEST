@@ -1,5 +1,6 @@
 #include "math_utils.h"
 
+int wrapmod(const int n, const int M) { return ((n % M) + M) % M; }
 std::vector<double> linspace(const double low,
                              const double high,
                              const size_t n,
