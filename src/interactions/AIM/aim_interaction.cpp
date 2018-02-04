@@ -266,7 +266,7 @@ void AIM::AimInteraction::fill_nearfield_matrices()
                              grid.spatial_coord_of_box(obs_indices[j]);
         const double arg = dr.norm() / (c0 * dt);
         const std::pair<int, double> split_arg = split_double(arg);
-        for(int t = 1; t < circulant_dimensions[0]; ++t) {
+        for(int t = 0; t < circulant_dimensions[0]; ++t) {
           const auto polynomial_idx = static_cast<int>(ceil(t - arg));
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
@@ -282,8 +282,9 @@ void AIM::AimInteraction::fill_nearfield_matrices()
 void AIM::AimInteraction::evaluate_nearfield(const int step)
 {
   const int wrapped_step = step % circulant_dimensions[0];
-  std::fill(nf_correction.data(),
-            nf_correction.data() + nf_correction.num_elements(), cmplx(0, 0));
+
+  const auto ptr = &nf_correction[wrapped_step][0][0][0][0];
+  std::fill(ptr, ptr + 3 * 8 * grid.num_gridpoints, cmplx(0,0));
 
   for(auto p = 0u; p < nf_pairs.size(); ++p) {
     const auto src_indices = grid.expansion_indices(nf_pairs[p].first);
@@ -317,7 +318,7 @@ void AIM::AimInteraction::evaluate_nearfield(const int step)
       Eigen::Array3i coord = grid.idx_to_coord(obs_indices[u]);
       Eigen::Map<Eigen::Vector3cd> dest(
           &nf_correction[wrapped_step][coord[0]][coord[1]][coord[2]][0]);
-      dest = nf_obs_table.row(u);
+      dest += nf_obs_table.row(u);
     }
 
     // Source and observation box are coincident so we need
@@ -328,7 +329,7 @@ void AIM::AimInteraction::evaluate_nearfield(const int step)
     // interactions (src_indices -> obs_indices and vice versa)
     nf_obs_table.setZero();
 
-    for(int t = 1; t < circulant_dimensions[0]; ++t) {
+    for(int t = 0; t < circulant_dimensions[0]; ++t) {
       const auto wrap = std::max(step - t, 0) % circulant_dimensions[0];
 
       for(auto s = 0u; s < obs_indices.size(); ++s) {
@@ -350,7 +351,7 @@ void AIM::AimInteraction::evaluate_nearfield(const int step)
       Eigen::Array3i coord = grid.idx_to_coord(src_indices[u]);
       Eigen::Map<Eigen::Vector3cd> dest(
           &nf_correction[wrapped_step][coord[0]][coord[1]][coord[2]][0]);
-      dest = nf_obs_table.row(u);
+      dest += nf_obs_table.row(u);
     }
   }
 }
