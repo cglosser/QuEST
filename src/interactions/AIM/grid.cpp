@@ -129,18 +129,35 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
   std::vector<ipair_t> nf;
   if(!dots) return nf;
 
+  const int bound = expansion_order + thresh + 1;
   const auto mapping = box_contents_map(dots);
-  for(auto pt1 = 0u; pt1 < num_gridpoints - 1; ++pt1) {
-    if(mapping[pt1].first == mapping[pt1].second) continue;  // empty box
-    auto r1 = idx_to_coord(pt1);
 
-    for(auto pt2 = pt1; pt2 < num_gridpoints; ++pt2) {
-      if(mapping[pt2].first == mapping[pt2].second) continue;
-      auto r2 = idx_to_coord(pt2);
+  for(auto src_idx = 0u; src_idx < num_gridpoints; ++src_idx) {
+    if(mapping[src_idx].first == mapping[src_idx].second)
+      continue;  // empty box
 
-      auto dist = (r2 - r1).lpNorm<Eigen::Infinity>();
-      if(dist < thresh) {
-        nf.push_back({pt1, pt2});
+    Eigen::Vector3i src_coord = idx_to_coord(src_idx);
+    for(int x = 0; x < bound; ++x) {
+      for(int y = 0; y < bound; ++y) {
+        for(int z = 0; z < bound; ++z) {
+          const Eigen::Vector3i delta(x, y, z);
+          const Eigen::Vector3i new_pt = src_coord + delta;
+
+          if((new_pt.array() >= dimensions).any()) continue;
+
+          const auto obs_idx = coord_to_idx(new_pt);
+
+          if(obs_idx >= num_gridpoints ||
+             mapping[obs_idx].first == mapping[obs_idx].second) {
+            // Invalid point or empty box
+            continue;
+          }
+
+          std::cout << obs_idx << " | " << (src_coord + delta).transpose()
+                    << std::endl;
+
+          nf.push_back({src_idx, obs_idx});
+        }
       }
     }
   }
