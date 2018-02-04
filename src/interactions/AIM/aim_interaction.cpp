@@ -41,7 +41,7 @@ AIM::AimInteraction::AimInteraction(
       spatial_vector_transforms(spatial_fft_plans()),
 
       // Nearfield stuff
-      nf_pairs(grid.nearfield_pairs(2)),
+      nf_pairs(grid.nearfield_pairs(1)),
       nf_matrices(boost::extents[nf_pairs.size()][circulant_dimensions[0]]
                                 [expansion_table.shape()[1]]
                                 [expansion_table.shape()[1]]),
@@ -66,6 +66,9 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
   fill_source_table(step);
   propagate(step);
   fill_results_table(step);
+
+  evaluate_nearfield(step); 
+
   return results;
 }
 
@@ -198,11 +201,10 @@ void AIM::AimInteraction::fill_gmatrix_table(
   for(int x = 0; x < grid.dimensions(0); ++x) {
     for(int y = 0; y < grid.dimensions(1); ++y) {
       for(int z = 0; z < grid.dimensions(2); ++z) {
-        bool nearfield_point =
-            (x <= interp_order) && (y <= interp_order) && (z <= interp_order);
-        if(nearfield_point) continue;
+        const size_t box_idx = grid.coord_to_idx({x, y, z});
 
-        const size_t box_idx = grid.coord_to_idx(Eigen::Vector3i(x, y, z));
+        if(box_idx == 0) continue;
+
         const Eigen::Vector3d dr =
             grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
 
@@ -262,6 +264,9 @@ void AIM::AimInteraction::fill_nearfield_matrices()
 
     for(auto i = 0u; i < src_indices.size(); ++i) {
       for(auto j = 0u; j < obs_indices.size(); ++j) {
+
+        if(src_indices[i] == obs_indices[j]) continue;
+
         Eigen::Vector3d dr = grid.spatial_coord_of_box(src_indices[i]) -
                              grid.spatial_coord_of_box(obs_indices[j]);
         const double arg = dr.norm() / (c0 * dt);
