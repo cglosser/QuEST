@@ -133,28 +133,17 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
   const auto mapping = box_contents_map(dots);
 
   for(auto src_idx = 0u; src_idx < num_gridpoints; ++src_idx) {
-    if(mapping[src_idx].first == mapping[src_idx].second)
-      continue;  // empty box
-
     Eigen::Vector3i src_coord = idx_to_coord(src_idx);
-    for(int x = 0; x < bound; ++x) {
-      for(int y = 0; y < bound; ++y) {
-        for(int z = 0; z < bound; ++z) {
+    for(int x = -bound; x < bound; ++x) {
+      for(int y = -bound; y < bound; ++y) {
+        for(int z = -bound; z < bound; ++z) {
           const Eigen::Vector3i delta(x, y, z);
           const Eigen::Vector3i new_pt = src_coord + delta;
 
-          if((new_pt.array() >= dimensions).any()) continue;
+          if((new_pt.array() < 0).any() || (new_pt.array() >= dimensions).any())
+            continue;
 
           const auto obs_idx = coord_to_idx(new_pt);
-
-          if(obs_idx >= num_gridpoints ||
-             mapping[obs_idx].first == mapping[obs_idx].second) {
-            // Invalid point or empty box
-            continue;
-          }
-
-          std::cout << obs_idx << " | " << (src_coord + delta).transpose()
-                    << std::endl;
 
           nf.push_back({src_idx, obs_idx});
         }

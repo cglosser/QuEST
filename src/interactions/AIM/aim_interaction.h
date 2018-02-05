@@ -5,6 +5,7 @@
 #include <functional>
 #include <limits>
 #include <numeric>
+#include <Eigen/Sparse>
 
 #include "common.h"
 #include "expansion.h"
@@ -97,6 +98,9 @@ class AIM::AimInteraction final : public HistoryInteraction {
   spacetime::vector3d<cmplx> nf_correction;
   void fill_nearfield_matrices();
   void evaluate_nearfield(const int);
+  std::vector<Eigen::SparseMatrix<cmplx>> generate_nearfield_mats();
+  std::vector<Eigen::SparseMatrix<cmplx>> nf_mats_sparse;
+
 };
 
 #endif
