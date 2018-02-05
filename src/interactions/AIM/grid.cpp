@@ -148,11 +148,11 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::full_nearfield_pairs(
         for(int z = -bound; z < bound; ++z) {
           const Eigen::Vector3i delta(x, y, z);
           const Eigen::Vector3i new_pt = src_coord + delta;
-
-          if((new_pt.array() < 0).any() || (new_pt.array() >= dimensions).any())
-            continue;
-
           const auto obs_idx = coord_to_idx(new_pt);
+
+          if((new_pt.array() < 0).any() ||
+             (new_pt.array() >= dimensions).any() || obs_idx < src_idx)
+            continue;
 
           nf.push_back({src_idx, obs_idx});
         }

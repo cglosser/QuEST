@@ -311,6 +311,7 @@ AIM::AimInteraction::generate_nearfield_mats()
         const auto val =
             interp.evaluations[0][polynomial_idx] / normalization(dr);
         coefficients[t].push_back(Triplet(p.first, p.second, val));
+        coefficients[t].push_back(Triplet(p.second, p.first, val));
       }
     }
   }
