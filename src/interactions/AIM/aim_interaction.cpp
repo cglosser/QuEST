@@ -61,15 +61,6 @@ AIM::AimInteraction::AimInteraction(
   clear(obs_table_fft);
 
   fill_nearfield_matrices();
-
-  std::ofstream matfile("matrices.dat");
-  matfile.precision(17);
-
-  for(const auto &m : nf_mats_sparse) {
-    Eigen::MatrixXcd d;
-    d = m;
-    matfile << d.real() << std::endl << std::endl;
-  }
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
@@ -379,7 +370,7 @@ AIM::AimInteraction::generate_nearfield_mats()
   Interpolation::UniformLagrangeSet interp(interp_order);
 
   std::vector<std::vector<Triplet>> coefficients(circulant_dimensions[0]);
-  for(const auto &p : grid.nearfield_pairs(1)) {
+  for(const auto &p : nf_pairs) {
     const Eigen::Vector3d dr = grid.spatial_coord_of_box(p.first) -
                                grid.spatial_coord_of_box(p.second);
 
@@ -390,7 +381,8 @@ AIM::AimInteraction::generate_nearfield_mats()
       const auto polynomial_idx = static_cast<int>(ceil(t - arg));
       if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
         interp.evaluate_derivative_table_at_x(split_arg.second, dt);
-        auto val = interp.evaluations[0][polynomial_idx] / normalization(dr);
+        const auto val =
+            interp.evaluations[0][polynomial_idx] / normalization(dr);
         coefficients[t].push_back(Triplet(p.first, p.second, val));
       }
     }
