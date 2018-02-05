@@ -1,11 +1,11 @@
 #ifndef AIM_INTERACTION_H
 #define AIM_INTERACTION_H
 
+#include <Eigen/Sparse>
 #include <algorithm>
 #include <functional>
 #include <limits>
 #include <numeric>
-#include <Eigen/Sparse>
 
 #include "common.h"
 #include "expansion.h"
@@ -98,7 +98,6 @@ class AIM::AimInteraction final : public HistoryInteraction {
   std::vector<Eigen::SparseMatrix<cmplx>> nf_matrices;
   std::vector<Eigen::Matrix<cmplx, Eigen::Dynamic, 3>> nf_workspaces;
   Eigen::Matrix<cmplx, Eigen::Dynamic, 3> nf_correction;
-
 };
 
 #endif
