@@ -44,8 +44,10 @@ AIM::AimInteraction::AimInteraction(
       // Nearfield stuff
       nf_pairs(grid.full_nearfield_pairs(1)),
       nf_mats_sparse(generate_nearfield_mats()),
-      nf_correction(grid.num_gridpoints, 3),
-      nf_workspace(grid.num_gridpoints, 3)
+      nf_workspaces(circulant_dimensions[0],
+                    Eigen::Matrix<cmplx, Eigen::Dynamic, 3>::Zero(
+                        grid.num_gridpoints, 3)),
+      nf_correction(grid.num_gridpoints, 3)
 {
   auto clear = [](auto &table) {
     std::fill(table.data(), table.data() + table.num_elements(), cmplx(0, 0));
@@ -251,24 +253,24 @@ TransformPair AIM::AimInteraction::spatial_fft_plans()
 
 void AIM::AimInteraction::evaluate_nearfield(const int step)
 {
-  nf_correction.setZero();
+  const int wrapped_step = step % circulant_dimensions[0];
 
-  for(int t = 1; t < circulant_dimensions[0]; ++t) {
-    const auto wrap = std::max(step - t, 0) % circulant_dimensions[0];
-
-    int i = 0;
-    for(int x = 0; x < toeplitz_dimensions[1]; ++x) {
-      for(int y = 0; y < toeplitz_dimensions[2]; ++y) {
-        for(int z = 0; z < toeplitz_dimensions[3]; ++z) {
-          nf_workspace.row(i++) =
-              Eigen::Map<Eigen::Vector3cd>(&source_table[wrap][x][y][z][0]);
-          // This is necessary to "dodge" the circulant holes of source_table
-          // so as to simplify the (sparse) matrix multiplication
-        }
+  int i = 0;
+  for(int x = 0; x < toeplitz_dimensions[1]; ++x) {
+    for(int y = 0; y < toeplitz_dimensions[2]; ++y) {
+      for(int z = 0; z < toeplitz_dimensions[3]; ++z) {
+        nf_workspaces[wrapped_step].row(i++) = Eigen::Map<Eigen::Vector3cd>(
+            &source_table[wrapped_step][x][y][z][0]);
+        // This is necessary to "dodge" the circulant holes of source_table
+        // so as to simplify the (sparse) matrix multiplication
       }
     }
+  }
 
-    nf_correction += nf_mats_sparse[t] * nf_workspace;
+  nf_correction.setZero();
+  for(int t = 1; t < circulant_dimensions[0]; ++t) {
+    const auto wrap = std::max(step - t, 0) % circulant_dimensions[0];
+    nf_correction += nf_mats_sparse[t] * nf_workspaces[wrap];
   }
 }
 
