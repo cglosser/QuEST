@@ -37,7 +37,7 @@ struct PARAMETERS {
 
   double src(const double t) const
   {
-    double arg = (t - total_time / 2.0) / (total_time / 6.0);
+    double arg = (t - total_time / 2.0) / (total_time / 12.0);
     return gaussian(arg);
   }
 };
@@ -48,7 +48,7 @@ struct ON_GRID_PARAMETERS : public PARAMETERS {
     history->fill(Eigen::Vector2cd::Zero());
     for(int i = -10; i < num_steps; ++i) {
       history->array[0][i][0](RHO_01) = src(i * dt);
-      history->array[1][i][0](RHO_01) = 0;
+      history->array[1][i][0](RHO_01) = -src(i * dt);
     }
   }
 };
@@ -56,7 +56,7 @@ struct ON_GRID_PARAMETERS : public PARAMETERS {
 BOOST_FIXTURE_TEST_CASE(TWO_PC, ON_GRID_PARAMETERS)
 {
   dots->push_back(QuantumDot({0.1, 0.1, 0.1}, 0, {0, 0}, {0, 0, 1}));
-  dots->push_back(QuantumDot({1.9, 0.1, 0.1}, 0, {0, 0}, {0, 0, 1}));
+  dots->push_back(QuantumDot({10.9, 0.1, 0.1}, 0, {0, 0}, {0, 0, 1}));
 
   AIM::Grid grid(spacing, dots, expansion_order);
   auto expansions =
@@ -68,8 +68,10 @@ BOOST_FIXTURE_TEST_CASE(TWO_PC, ON_GRID_PARAMETERS)
                                    interpolation_order),
       AIM::normalization::unit);
 
+  std::cout.precision(17);
   for(int t = 0; t < num_steps; ++t) {
-    aim.evaluate(t);
+    auto x = aim.evaluate(t);
+    std::cout << t * dt << " " << x.transpose() << std::endl;
   }
 }
 

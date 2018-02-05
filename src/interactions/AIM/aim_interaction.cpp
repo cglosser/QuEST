@@ -61,9 +61,11 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
   fill_source_table(step);
   propagate(step);
-  fill_results_table(step);
 
   evaluate_nearfield(step);
+  correct_nearfield(step);
+
+  fill_results_table(step);
 
   return results;
 }
@@ -268,14 +270,18 @@ void AIM::AimInteraction::evaluate_nearfield(const int step)
 
     nf_correction += nf_mats_sparse[t] * nf_workspace;
   }
+}
 
+void AIM::AimInteraction::correct_nearfield(const int step)
+{
   const int wrapped_step = step % circulant_dimensions[0];
   int i = 0;
   for(int x = 0; x < toeplitz_dimensions[1]; ++x) {
     for(int y = 0; y < toeplitz_dimensions[2]; ++y) {
       for(int z = 0; z < toeplitz_dimensions[3]; ++z) {
-        Eigen::Map<Eigen::Vector3cd>(&obs_table[wrapped_step][x][y][z][0]) -=
-            nf_correction.row(i++);
+        Eigen::Map<Eigen::Vector3cd> obs_table_asMat(
+            &obs_table[wrapped_step][x][y][z][0]);
+        obs_table_asMat -= nf_correction.row(i++);
       }
     }
   }

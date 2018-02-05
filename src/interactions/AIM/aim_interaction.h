@@ -94,6 +94,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   // Nearfield stuff
   std::vector<Grid::ipair_t> nf_pairs;
   void evaluate_nearfield(const int);
+  void correct_nearfield(const int);
   std::vector<Eigen::SparseMatrix<cmplx>> generate_nearfield_mats();
   std::vector<Eigen::SparseMatrix<cmplx>> nf_mats_sparse;
   Eigen::Matrix<cmplx, Eigen::Dynamic, 3> nf_correction, nf_workspace;
