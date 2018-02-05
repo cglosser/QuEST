@@ -16,30 +16,45 @@ AIM::AimInteraction::AimInteraction(const int interp_order,
 }
 
 AIM::AimInteraction::AimInteraction(
-    std::shared_ptr<const DotVector> dots,
-    std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
+    const std::shared_ptr<const DotVector> dots,
+    const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
     const int interp_order,
     const double c0,
     const double dt,
-    Grid grid,
-    Expansions::ExpansionTable expansion_table,
+    const Grid grid,
+    const Expansions::ExpansionTable &expansion_table,
     Expansions::ExpansionFunction expansion_function,
     normalization::SpatialNorm normalization)
     : HistoryInteraction(dots, history, interp_order, c0, dt),
       grid(std::move(grid)),
-      expansion_table(std::move(expansion_table)),
+      expansion_table(expansion_table),
       expansion_function(std::move(expansion_function)),
       normalization(std::move(normalization)),
+
+      // FFT stuff
+      toeplitz_dimensions(grid.toeplitz_shape(c0, dt, interp_order)),
       circulant_dimensions(grid.circulant_shape(c0, dt, interp_order)),
       fourier_table(circulant_fourier_table()),
       source_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
+      source_table_fft(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
       obs_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
-      spatial_vector_transforms(spatial_fft_plans())
+      obs_table_fft(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
+      spatial_vector_transforms(spatial_fft_plans()),
+
+      // Nearfield stuff
+      nf_pairs(grid.nearfield_pairs(1)),
+      nf_mats_sparse(generate_nearfield_mats()),
+      nf_correction(grid.num_gridpoints, 3),
+      nf_workspace(grid.num_gridpoints, 3)
 {
-  std::fill(source_table.data(),
-            source_table.data() + source_table.num_elements(), cmplx(0, 0));
-  std::fill(obs_table.data(), obs_table.data() + obs_table.num_elements(),
-            cmplx(0, 0));
+  auto clear = [](auto &table) {
+    std::fill(table.data(), table.data() + table.num_elements(), cmplx(0, 0));
+  };
+
+  clear(source_table);
+  clear(source_table_fft);
+  clear(obs_table);
+  clear(obs_table_fft);
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
@@ -47,11 +62,16 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
   fill_source_table(step);
   propagate(step);
   fill_results_table(step);
+
+  evaluate_nearfield(step);
+
   return results;
 }
 
 void AIM::AimInteraction::fill_source_table(const int step)
 {
+  using namespace Expansions::enums;
+
   const int wrapped_step = step % circulant_dimensions[0];
   const auto p = &source_table[wrapped_step][0][0][0][0];
   std::fill(p, p + 3 * 8 * grid.num_gridpoints, cmplx(0, 0));
@@ -74,19 +94,20 @@ void AIM::AimInteraction::fill_source_table(const int step)
       grid_field += source_field;
     }
   }
-
-  fftw_execute_dft(spatial_vector_transforms.forward,
-                   reinterpret_cast<fftw_complex *>(p),
-                   reinterpret_cast<fftw_complex *>(p));
 }
 
 void AIM::AimInteraction::propagate(const int step)
 {
   const auto wrapped_step = step % circulant_dimensions[0];
   const auto nb = 8 * grid.num_gridpoints;
+  const std::array<int, 5> front = {{wrapped_step, 0, 0, 0, 0}};
 
-  std::array<int, 5> front = {{wrapped_step, 0, 0, 0, 0}};
-  Eigen::Map<Eigen::Array3Xcd> observers(&obs_table(front), 3, nb);
+  const auto s_ptr = &source_table(front), s_ptr_fft = &source_table_fft(front);
+  fftw_execute_dft(spatial_vector_transforms.forward,
+                   reinterpret_cast<fftw_complex *>(s_ptr),
+                   reinterpret_cast<fftw_complex *>(s_ptr_fft));
+
+  Eigen::Map<Eigen::Array3Xcd> observers(&obs_table_fft(front), 3, nb);
   observers = 0;
 
   for(int i = 1; i < circulant_dimensions[0]; ++i) {
@@ -94,15 +115,17 @@ void AIM::AimInteraction::propagate(const int step)
     auto wrap = std::max(step - i, 0) % circulant_dimensions[0];
 
     Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
-    Eigen::Map<Eigen::Array3Xcd> src(&source_table[wrap][0][0][0][0], 3, nb);
+    Eigen::Map<Eigen::Array3Xcd> src(&source_table_fft[wrap][0][0][0][0], 3,
+                                     nb);
 
     // Use broadcasting to do the x, y, and z component propagation
     observers += src.rowwise() * prop.transpose();
   }
 
+  const auto o_ptr = &obs_table(front), o_ptr_fft = &obs_table_fft(front);
   fftw_execute_dft(spatial_vector_transforms.backward,
-                   reinterpret_cast<fftw_complex *>(observers.data()),
-                   reinterpret_cast<fftw_complex *>(observers.data()));
+                   reinterpret_cast<fftw_complex *>(o_ptr_fft),
+                   reinterpret_cast<fftw_complex *>(o_ptr));
 }
 
 void AIM::AimInteraction::fill_results_table(const int step)
@@ -173,11 +196,10 @@ void AIM::AimInteraction::fill_gmatrix_table(
   for(int x = 0; x < grid.dimensions(0); ++x) {
     for(int y = 0; y < grid.dimensions(1); ++y) {
       for(int z = 0; z < grid.dimensions(2); ++z) {
-        Eigen::Vector3i box_r(x, y, z);
-        bool nearfield_point = box_r.minCoeff() < interp_order;
-        if(nearfield_point) continue;
+        const size_t box_idx = grid.coord_to_idx({x, y, z});
 
-        const size_t box_idx = grid.coord_to_idx(box_r);
+        if(box_idx == 0) continue;
+
         const Eigen::Vector3d dr =
             grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
 
@@ -189,7 +211,7 @@ void AIM::AimInteraction::fill_gmatrix_table(
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
             gmatrix_table[t][x][y][z] =
-                interp.evaluations[0][polynomial_idx] * normalization(dr);
+                interp.evaluations[0][polynomial_idx] / normalization(dr);
           }
         }
       }
@@ -223,4 +245,76 @@ TransformPair AIM::AimInteraction::spatial_fft_plans()
   };
 
   return {make_plan(FFTW_FORWARD), make_plan(FFTW_BACKWARD)};
+}
+
+void AIM::AimInteraction::evaluate_nearfield(const int step)
+{
+  nf_correction.setZero();
+
+  for(int t = 1; t < circulant_dimensions[0]; ++t) {
+    const auto wrap = std::max(step - t, 0) % circulant_dimensions[0];
+
+    int i = 0;
+    for(int x = 0; x < toeplitz_dimensions[1]; ++x) {
+      for(int y = 0; y < toeplitz_dimensions[2]; ++y) {
+        for(int z = 0; z < toeplitz_dimensions[3]; ++z) {
+          nf_workspace.row(i++) =
+              Eigen::Map<Eigen::Vector3cd>(&source_table[wrap][x][y][z][0]);
+          // This is necessary to "dodge" the circulant holes of source_table
+          // so as to simplify the (sparse) matrix multiplication
+        }
+      }
+    }
+
+    nf_correction += nf_mats_sparse[t] * nf_workspace;
+  }
+
+  const int wrapped_step = step % circulant_dimensions[0];
+  int i = 0;
+  for(int x = 0; x < toeplitz_dimensions[1]; ++x) {
+    for(int y = 0; y < toeplitz_dimensions[2]; ++y) {
+      for(int z = 0; z < toeplitz_dimensions[3]; ++z) {
+        Eigen::Map<Eigen::Vector3cd>(&obs_table[wrapped_step][x][y][z][0]) -=
+            nf_correction.row(i++);
+      }
+    }
+  }
+}
+
+std::vector<Eigen::SparseMatrix<cmplx>>
+AIM::AimInteraction::generate_nearfield_mats()
+{
+  using Triplet = Eigen::Triplet<cmplx>;
+
+  Interpolation::UniformLagrangeSet interp(interp_order);
+
+  std::vector<std::vector<Triplet>> coefficients(circulant_dimensions[0]);
+  for(const auto &p : nf_pairs) {
+    const Eigen::Vector3d dr = grid.spatial_coord_of_box(p.first) -
+                               grid.spatial_coord_of_box(p.second);
+
+    const double arg = dr.norm() / (c0 * dt);
+    const auto split_arg = split_double(arg);
+
+    for(int t = 0; t < circulant_dimensions[0]; ++t) {
+      const auto polynomial_idx = static_cast<int>(ceil(t - arg));
+      if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
+        interp.evaluate_derivative_table_at_x(split_arg.second, dt);
+        const auto val =
+            interp.evaluations[0][polynomial_idx] / normalization(dr);
+        coefficients[t].push_back(Triplet(p.first, p.second, val));
+      }
+    }
+  }
+
+  std::vector<Eigen::SparseMatrix<cmplx>> mats(
+      circulant_dimensions[0],
+      Eigen::SparseMatrix<cmplx>(grid.num_gridpoints, grid.num_gridpoints));
+
+  for(int i = 0; i < circulant_dimensions[0]; ++i) {
+    mats.at(i).setFromTriplets(coefficients.at(i).begin(),
+                               coefficients.at(i).end());
+  }
+
+  return mats;
 }

@@ -12,57 +12,10 @@ AIM::NearfieldInteraction::NearfieldInteraction(
           std::move(dots), std::move(history), interp_order, c0, dt),
       propagator(std::move(propagator)),
       grid(std::move(grid)),
-      interaction_pairs(build_pair_list()),
       floor_delays(interaction_pairs.size()),
       coefficients(boost::extents[interaction_pairs.size()][interp_order + 1])
 {
   build_coefficient_table();
-}
-
-std::vector<std::pair<int, int>> AIM::NearfieldInteraction::build_pair_list()
-    const
-{
-  std::vector<std::pair<int, int>> pairs;
-  const auto box_contents = grid.box_contents_map();
-
-  const auto get_dot_idx = [&](const DotVector::const_iterator &d) {
-    return std::distance<DotVector::const_iterator>(dots->begin(), d);
-  };
-
-  for(auto box1 = box_contents.begin(); box1 != box_contents.end(); ++box1) {
-    // start iter = end iter, thus empty box
-    if(box1->first == box1->second) continue;
-
-    for(auto src_dot = box1->first; src_dot != box1->second - 1; ++src_dot) {
-      for(auto obs_dot = src_dot + 1; obs_dot != box1->second; ++obs_dot) {
-        pairs.push_back({get_dot_idx(src_dot), get_dot_idx(obs_dot)});
-      }
-    }
-
-    for(auto box2 = box1 + 1; box2 < box_contents.end(); ++box2) {
-      if(box2->first == box2->second) continue;
-
-      // box1 and box2 are *iterators over box_contents.* box_contents itself
-      // contains *pairs of iterators* denoting the range of dots that exist
-      // within that box/are associated with that gridpoint (assuming the
-      // DotVector is sorted by that criterion). If the box is not empty (i.e.
-      // *->first != *->second, checked above), then any of the particles within
-      // the box can be used to determine the box's location and it's convenient
-      // to choose the first particle)
-      bool is_in_nearfield = grid.is_nearfield_pair(box1->first->position(),
-                                                    box2->first->position());
-      if(!is_in_nearfield) continue;
-
-      for(auto src_dot = box1->first; src_dot != box1->second; ++src_dot) {
-        for(auto obs_dot = box2->first; obs_dot != box2->second; ++obs_dot) {
-          pairs.push_back({get_dot_idx(src_dot), get_dot_idx(obs_dot)});
-        }
-      }
-    }
-  }
-
-  pairs.shrink_to_fit();
-  return pairs;
 }
 
 void AIM::NearfieldInteraction::build_coefficient_table()

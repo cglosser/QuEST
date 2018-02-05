@@ -5,6 +5,7 @@
 #include <functional>
 #include <limits>
 #include <numeric>
+#include <Eigen/Sparse>
 
 #include "common.h"
 #include "expansion.h"
@@ -59,24 +60,26 @@ class AIM::AimInteraction final : public HistoryInteraction {
       const double,
       const double,
       const Grid,
-      const Expansions::ExpansionTable,
+      const Expansions::ExpansionTable &,
       Expansions::ExpansionFunction,
       normalization::SpatialNorm);
 
   const ResultArray &evaluate(const int) final;
 
   // private:
+
   Grid grid;
   Expansions::ExpansionTable expansion_table;
   Expansions::ExpansionFunction expansion_function;
   normalization::SpatialNorm normalization;
-  std::array<int, 4> circulant_dimensions;
+  std::array<int, 4> toeplitz_dimensions, circulant_dimensions;
 
   // This corresponds to delta(t - R/c)/R and thus holds *scalar* quantities
   spacetime::vector<cmplx> fourier_table;
 
   // These correspond to J and E and thus hold *vector* quantities
-  spacetime::vector3d<cmplx> source_table, obs_table;
+  spacetime::vector3d<cmplx> source_table, source_table_fft;
+  spacetime::vector3d<cmplx> obs_table, obs_table_fft;
 
   TransformPair spatial_vector_transforms;
 
@@ -87,6 +90,14 @@ class AIM::AimInteraction final : public HistoryInteraction {
   spacetime::vector<cmplx> circulant_fourier_table();
   void fill_gmatrix_table(spacetime::vector<cmplx> &) const;
   TransformPair spatial_fft_plans();
+
+  // Nearfield stuff
+  std::vector<Grid::ipair_t> nf_pairs;
+  void evaluate_nearfield(const int);
+  std::vector<Eigen::SparseMatrix<cmplx>> generate_nearfield_mats();
+  std::vector<Eigen::SparseMatrix<cmplx>> nf_mats_sparse;
+  Eigen::Matrix<cmplx, Eigen::Dynamic, 3> nf_correction, nf_workspace;
+
 };
 
 #endif

@@ -18,7 +18,6 @@ class AIM::NearfieldInteraction final : public HistoryInteraction {
       const double,
       Grid);
 
-  std::vector<std::pair<int, int>> build_pair_list() const;
   const ResultArray &evaluate(const int) final;
 
  private:
