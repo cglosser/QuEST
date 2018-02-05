@@ -72,7 +72,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
   Expansions::ExpansionTable expansion_table;
   Expansions::ExpansionFunction expansion_function;
   normalization::SpatialNorm normalization;
-  std::array<int, 4> circulant_dimensions;
+  std::array<int, 4> toeplitz_dimensions, circulant_dimensions;
 
   // This corresponds to delta(t - R/c)/R and thus holds *scalar* quantities
   spacetime::vector<cmplx> fourier_table;
@@ -93,13 +93,10 @@ class AIM::AimInteraction final : public HistoryInteraction {
 
   // Nearfield stuff
   std::vector<Grid::ipair_t> nf_pairs;
-  boost::multi_array<cmplx, 4> nf_matrices;
-  Eigen::MatrixX3cd nf_source_table, nf_obs_table;
-  spacetime::vector3d<cmplx> nf_correction;
-  void fill_nearfield_matrices();
   void evaluate_nearfield(const int);
   std::vector<Eigen::SparseMatrix<cmplx>> generate_nearfield_mats();
   std::vector<Eigen::SparseMatrix<cmplx>> nf_mats_sparse;
+  Eigen::Matrix<cmplx, Eigen::Dynamic, 3> nf_correction, nf_workspace;
 
 };
 

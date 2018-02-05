@@ -32,6 +32,7 @@ AIM::AimInteraction::AimInteraction(
       normalization(std::move(normalization)),
 
       // FFT stuff
+      toeplitz_dimensions(grid.toeplitz_shape(c0, dt, interp_order)),
       circulant_dimensions(grid.circulant_shape(c0, dt, interp_order)),
       fourier_table(circulant_fourier_table()),
       source_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
@@ -42,14 +43,9 @@ AIM::AimInteraction::AimInteraction(
 
       // Nearfield stuff
       nf_pairs(grid.nearfield_pairs(1)),
-      nf_matrices(boost::extents[nf_pairs.size()][circulant_dimensions[0]]
-                                [expansion_table.shape()[1]]
-                                [expansion_table.shape()[1]]),
-      nf_source_table(expansion_table.shape()[1], 3),
-      nf_obs_table(expansion_table.shape()[1], 3),
-      nf_correction(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
-
-      nf_mats_sparse(generate_nearfield_mats())
+      nf_mats_sparse(generate_nearfield_mats()),
+      nf_correction(grid.num_gridpoints, 3),
+      nf_workspace(grid.num_gridpoints, 3)
 {
   auto clear = [](auto &table) {
     std::fill(table.data(), table.data() + table.num_elements(), cmplx(0, 0));
@@ -59,8 +55,6 @@ AIM::AimInteraction::AimInteraction(
   clear(source_table_fft);
   clear(obs_table);
   clear(obs_table_fft);
-
-  fill_nearfield_matrices();
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
@@ -254,110 +248,36 @@ TransformPair AIM::AimInteraction::spatial_fft_plans()
   return {make_plan(FFTW_FORWARD), make_plan(FFTW_BACKWARD)};
 }
 
-void AIM::AimInteraction::fill_nearfield_matrices()
+void AIM::AimInteraction::evaluate_nearfield(const int step)
 {
-  std::fill(nf_matrices.data(), nf_matrices.data() + nf_matrices.num_elements(),
-            0.0);
-  Interpolation::UniformLagrangeSet interp(interp_order);
+  nf_correction.setZero();
 
-  for(auto p = 0u; p < nf_pairs.size(); ++p) {
-    const auto src_indices = grid.expansion_indices(nf_pairs[p].first);
-    const auto obs_indices = grid.expansion_indices(nf_pairs[p].second);
+  for(int t = 1; t < circulant_dimensions[0]; ++t) {
+    const auto wrap = std::max(step - t, 0) % circulant_dimensions[0];
 
-    for(auto i = 0u; i < src_indices.size(); ++i) {
-      for(auto j = 0u; j < obs_indices.size(); ++j) {
-        if(src_indices[i] == obs_indices[j]) continue;
-
-        Eigen::Vector3d dr = grid.spatial_coord_of_box(src_indices[i]) -
-                             grid.spatial_coord_of_box(obs_indices[j]);
-        const double arg = dr.norm() / (c0 * dt);
-        const std::pair<int, double> split_arg = split_double(arg);
-        for(int t = 0; t < circulant_dimensions[0]; ++t) {
-          const auto polynomial_idx = static_cast<int>(ceil(t - arg));
-          if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
-            interp.evaluate_derivative_table_at_x(split_arg.second, dt);
-            nf_matrices[p][t][i][j] =
-                interp.evaluations[0][polynomial_idx] / normalization(dr);
-          }
+    int i = 0;
+    for(int x = 0; x < toeplitz_dimensions[1]; ++x) {
+      for(int y = 0; y < toeplitz_dimensions[2]; ++y) {
+        for(int z = 0; z < toeplitz_dimensions[3]; ++z) {
+          nf_workspace.row(i++) =
+              Eigen::Map<Eigen::Vector3cd>(&source_table[wrap][x][y][z][0]);
+          // This is necessary to "dodge" the circulant holes of source_table
+          // so as to simplify the (sparse) matrix multiplication
         }
       }
     }
+
+    nf_correction += nf_mats_sparse[t] * nf_workspace;
   }
-}
 
-void AIM::AimInteraction::evaluate_nearfield(const int step)
-{
   const int wrapped_step = step % circulant_dimensions[0];
-
-  const auto ptr = &nf_correction[wrapped_step][0][0][0][0];
-  std::fill(ptr, ptr + 3 * 8 * grid.num_gridpoints, cmplx(0, 0));
-
-  for(auto p = 0u; p < nf_pairs.size(); ++p) {
-    const auto src_indices = grid.expansion_indices(nf_pairs[p].first);
-    const auto obs_indices = grid.expansion_indices(nf_pairs[p].second);
-
-    nf_obs_table.setZero();
-
-    for(int t = 1; t < circulant_dimensions[0]; ++t) {
-      const auto wrap = std::max(step - t, 0) % circulant_dimensions[0];
-
-      // Grab the grid values for the source box and condense them into a "dense
-      // vector"...
-      for(auto s = 0u; s < src_indices.size(); ++s) {
-        Eigen::Array3i coord = grid.idx_to_coord(src_indices[s]);
-        nf_source_table.row(s) = Eigen::Map<Eigen::Vector3cd>(
-            &source_table[wrap][coord[0]][coord[1]][coord[2]][0]);
+  int i = 0;
+  for(int x = 0; x < toeplitz_dimensions[1]; ++x) {
+    for(int y = 0; y < toeplitz_dimensions[2]; ++y) {
+      for(int z = 0; z < toeplitz_dimensions[3]; ++z) {
+        Eigen::Map<Eigen::Vector3cd>(&obs_table[wrapped_step][x][y][z][0]) -=
+            nf_correction.row(i++);
       }
-
-      Eigen::Map<Eigen::MatrixXcd> g(&nf_matrices[p][t][0][0],
-                                     nf_matrices.shape()[2],
-                                     nf_matrices.shape()[3]);
-
-      // ...propagate them with a small, dense propagator...
-      nf_obs_table.col(0) += g * nf_source_table.col(0);
-      nf_obs_table.col(1) += g * nf_source_table.col(1);
-      nf_obs_table.col(2) += g * nf_source_table.col(2);
-    }
-
-    //...and put them back in a global-sized table.
-    for(auto u = 0u; u < obs_indices.size(); ++u) {
-      Eigen::Array3i coord = grid.idx_to_coord(obs_indices[u]);
-      Eigen::Map<Eigen::Vector3cd> dest(
-          &nf_correction[wrapped_step][coord[0]][coord[1]][coord[2]][0]);
-      dest += nf_obs_table.row(u);
-    }
-
-    // Source and observation box are coincident so we need
-    // to avoid double-counting their interactions
-    if(nf_pairs[p].first == nf_pairs[p].second) continue;
-
-    // Otherwise do the same thing as above, except for the reciprocal
-    // interactions (src_indices -> obs_indices and vice versa)
-    nf_obs_table.setZero();
-
-    for(int t = 0; t < circulant_dimensions[0]; ++t) {
-      const auto wrap = std::max(step - t, 0) % circulant_dimensions[0];
-
-      for(auto s = 0u; s < obs_indices.size(); ++s) {
-        Eigen::Array3i coord = grid.idx_to_coord(obs_indices[s]);
-        nf_source_table.row(s) = Eigen::Map<Eigen::Vector3cd>(
-            &source_table[wrap][coord[0]][coord[1]][coord[2]][0]);
-      }
-
-      Eigen::Map<Eigen::MatrixXcd> g(&nf_matrices[p][t][0][0],
-                                     nf_matrices.shape()[2],
-                                     nf_matrices.shape()[3]);
-
-      nf_obs_table.col(0) += g.transpose() * nf_source_table.col(0);
-      nf_obs_table.col(1) += g.transpose() * nf_source_table.col(1);
-      nf_obs_table.col(2) += g.transpose() * nf_source_table.col(2);
-    }
-
-    for(auto u = 0u; u < src_indices.size(); ++u) {
-      Eigen::Array3i coord = grid.idx_to_coord(src_indices[u]);
-      Eigen::Map<Eigen::Vector3cd> dest(
-          &nf_correction[wrapped_step][coord[0]][coord[1]][coord[2]][0]);
-      dest += nf_obs_table.row(u);
     }
   }
 }
