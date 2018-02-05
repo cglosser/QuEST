@@ -42,8 +42,7 @@ AIM::AimInteraction::AimInteraction(
       spatial_vector_transforms(spatial_fft_plans()),
 
       // Nearfield stuff
-      nf_pairs(grid.full_nearfield_pairs(1)),
-      nf_mats_sparse(generate_nearfield_mats()),
+      nf_matrices(nearfield_matrices()),
       nf_workspaces(circulant_dimensions[0],
                     Eigen::Matrix<cmplx, Eigen::Dynamic, 3>::Zero(
                         grid.num_gridpoints, 3)),
@@ -270,7 +269,7 @@ void AIM::AimInteraction::evaluate_nearfield(const int step)
   nf_correction.setZero();
   for(int t = 1; t < circulant_dimensions[0]; ++t) {
     const auto wrap = std::max(step - t, 0) % circulant_dimensions[0];
-    nf_correction += nf_mats_sparse[t] * nf_workspaces[wrap];
+    nf_correction += nf_matrices[t] * nf_workspaces[wrap];
   }
 }
 
@@ -290,14 +289,14 @@ void AIM::AimInteraction::correct_nearfield(const int step)
 }
 
 std::vector<Eigen::SparseMatrix<cmplx>>
-AIM::AimInteraction::generate_nearfield_mats()
+AIM::AimInteraction::nearfield_matrices() const
 {
   using Triplet = Eigen::Triplet<cmplx>;
 
   Interpolation::UniformLagrangeSet interp(interp_order);
 
   std::vector<std::vector<Triplet>> coefficients(circulant_dimensions[0]);
-  for(const auto &p : nf_pairs) {
+  for(const auto &p : grid.full_nearfield_pairs(1)) {
     const Eigen::Vector3d dr = grid.spatial_coord_of_box(p.first) -
                                grid.spatial_coord_of_box(p.second);
 
