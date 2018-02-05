@@ -48,7 +48,7 @@ struct ON_GRID_PARAMETERS : public PARAMETERS {
     history->fill(Eigen::Vector2cd::Zero());
     for(int i = -10; i < num_steps; ++i) {
       history->array[0][i][0](RHO_01) = src(i * dt);
-      history->array[1][i][0](RHO_01) = 1;
+      history->array[1][i][0](RHO_01) = 0;
     }
   }
 };
