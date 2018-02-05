@@ -48,7 +48,8 @@ class AIM::Grid {
 
   int expansion_distance(const int, const int) const;
 
-  std::vector<ipair_t> nearfield_pairs(const int) const;
+  std::vector<ipair_t> full_nearfield_pairs(const int) const;
+  std::vector<ipair_t> compressed_nearfield_pairs(const int) const;
 
   // == Geometry routines (grid <---> space) ==================================
 

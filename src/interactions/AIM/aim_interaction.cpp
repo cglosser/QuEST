@@ -42,7 +42,7 @@ AIM::AimInteraction::AimInteraction(
       spatial_vector_transforms(spatial_fft_plans()),
 
       // Nearfield stuff
-      nf_pairs(grid.nearfield_pairs(1)),
+      nf_pairs(grid.full_nearfield_pairs(1)),
       nf_mats_sparse(generate_nearfield_mats()),
       nf_correction(grid.num_gridpoints, 3),
       nf_workspace(grid.num_gridpoints, 3)
