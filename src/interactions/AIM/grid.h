@@ -2,6 +2,7 @@
 #define GRID_H
 
 #include <Eigen/Dense>
+#include <set>
 #include "math_utils.h"
 #include "quantum_dot.h"
 
@@ -35,6 +36,7 @@ class AIM::Grid {
 
   std::vector<DotRange> box_contents_map() const;
 
+  std::set<size_t> active_nodes() const;
   std::vector<size_t> expansion_indices(const int) const;
   std::vector<size_t> expansion_indices(const Eigen::Vector3d &pos) const
   {

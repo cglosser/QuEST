@@ -130,6 +130,21 @@ int AIM::Grid::expansion_distance(const int i, const int j) const
   return min_dist;
 }
 
+std::set<size_t> AIM::Grid::active_nodes() const
+{
+  std::set<size_t> active;
+
+  const auto mapping = box_contents_map();
+  for(int i = 0; i < static_cast<int>(mapping.size()); ++i) {
+    if(mapping[i].first == mapping[i].second) continue;
+
+    const auto expansion_pts = expansion_indices(i);
+    active.insert(expansion_pts.begin(), expansion_pts.end());
+  }
+
+  return active;
+}
+
 std::vector<AIM::Grid::ipair_t> AIM::Grid::full_nearfield_pairs(
     const int thresh) const
 {

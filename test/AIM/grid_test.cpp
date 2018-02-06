@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(EXPANSION_DISTANCE)
   BOOST_CHECK_EQUAL(grid2.expansion_distance(31, 99), 1);
 }
 
-BOOST_AUTO_TEST_SUITE(PAIR_LISTS)
+BOOST_AUTO_TEST_SUITE(COMPRESSED_PAIR_LISTS)
 
 BOOST_AUTO_TEST_CASE(THRESH_1)
 {
@@ -275,5 +275,93 @@ BOOST_AUTO_TEST_CASE(ALL_FAR)
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // PAIR_LISTS
+
+BOOST_AUTO_TEST_SUITE(ACTIVE_NODES)
+
+BOOST_AUTO_TEST_CASE(ONE_POINT)
+{
+  auto dots = std::make_shared<DotVector>();
+
+  dots->push_back(QuantumDot({0.5, 0.5, 0.5}));
+
+  AIM::Grid grid(Eigen::Vector3d(1, 1, 1), dots, 1);
+  auto active = grid.active_nodes();
+
+  BOOST_CHECK(active.count(0));
+  BOOST_CHECK(active.count(1));
+  BOOST_CHECK(active.count(2));
+  BOOST_CHECK(active.count(3));
+  BOOST_CHECK(active.count(4));
+  BOOST_CHECK(active.count(5));
+  BOOST_CHECK(active.count(6));
+  BOOST_CHECK(active.count(7));
+
+  BOOST_CHECK_EQUAL(active.size(), 8);
+}
+
+BOOST_AUTO_TEST_CASE(TWO_POINTS)
+{
+  auto dots = std::make_shared<DotVector>();
+
+  dots->push_back(QuantumDot({-0.5, -0.5, -0.5}));
+  dots->push_back(QuantumDot({0.5, 0.5, 0.5}));
+
+  AIM::Grid grid(Eigen::Vector3d(1, 1, 1), dots, 1);
+  auto active = grid.active_nodes();
+
+  // First box
+  BOOST_CHECK(active.count(0));
+  BOOST_CHECK(active.count(1));
+  BOOST_CHECK(active.count(3));
+  BOOST_CHECK(active.count(4));
+  BOOST_CHECK(active.count(9));
+  BOOST_CHECK(active.count(10));
+  BOOST_CHECK(active.count(12));
+
+  // Shared point
+  BOOST_CHECK(active.count(13));
+
+  // Second box
+  BOOST_CHECK(active.count(14));
+  BOOST_CHECK(active.count(16));
+  BOOST_CHECK(active.count(17));
+  BOOST_CHECK(active.count(22));
+  BOOST_CHECK(active.count(23));
+  BOOST_CHECK(active.count(25));
+  BOOST_CHECK(active.count(26));
+
+  BOOST_CHECK_EQUAL(active.size(), 15);
+}
+
+BOOST_AUTO_TEST_CASE(LARGE_EXPANSION)
+{
+  auto dots = std::make_shared<DotVector>();
+
+  dots->push_back(QuantumDot({0.5, 0.5, 0.5}));
+  dots->push_back(QuantumDot({10.5, 20.5, 30.5}));
+
+  AIM::Grid grid(Eigen::Vector3d(1, 1, 1), dots, 3);
+  auto active = grid.active_nodes();
+
+  for(int x = 0; x <= 3; ++x) {
+    for(int y = 0; y <= 3; ++y) {
+      for(int z = 0; z <= 3; ++z) {
+        BOOST_CHECK(active.count(grid.coord_to_idx({x, y, z})));
+      }
+    }
+  }
+
+  for(int x = 10; x <= 13; ++x) {
+    for(int y = 20; y <= 23; ++y) {
+      for(int z = 30; z <= 33; ++z) {
+        BOOST_CHECK(active.count(grid.coord_to_idx({x, y, z})));
+      }
+    }
+  }
+
+  BOOST_CHECK_EQUAL(active.size(), 128);
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // ACTIVE_NODES
 
 BOOST_AUTO_TEST_SUITE_END()  // GRID
