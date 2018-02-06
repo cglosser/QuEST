@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(NONINTEGER_SHIFT)
   // Opposite orthant
   BOOST_CHECK_EQUAL(
       grid.grid_coordinate(Eigen::Vector3d(-2.3, -3.7, -1.4)).cast<double>(),
-      Eigen::Vector3d(-11, -18, -6));
+      Eigen::Vector3d(-12, -19, -7));
 
   BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(0),
                     (shift.cast<double>() * spacing.array()).matrix());

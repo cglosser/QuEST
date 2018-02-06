@@ -55,7 +55,7 @@ class AIM::Grid {
 
   inline Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &coord) const
   {
-    return (coord.array() / spacing).cast<int>();
+    return (coord.array() / spacing).floor().cast<int>();
   }
 
   inline size_t associated_grid_index(const Eigen::Vector3d &coord) const
