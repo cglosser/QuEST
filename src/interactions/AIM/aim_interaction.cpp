@@ -36,9 +36,7 @@ AIM::AimInteraction::AimInteraction(
       circulant_dimensions(grid.circulant_shape(c0, dt, interp_order)),
       fourier_table(circulant_fourier_table()),
       source_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
-      source_table_fft(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
       obs_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
-      obs_table_fft(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
       spatial_vector_transforms(spatial_fft_plans()),
 
       // Nearfield stuff
@@ -53,17 +51,17 @@ AIM::AimInteraction::AimInteraction(
   };
 
   clear(source_table);
-  clear(source_table_fft);
   clear(obs_table);
-  clear(obs_table_fft);
 }
 
 const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
 {
   fill_source_table(step);
-  propagate(step);
 
   evaluate_nearfield(step);
+
+  propagate(step);
+
   correct_nearfield(step);
 
   fill_results_table(step);
@@ -105,29 +103,29 @@ void AIM::AimInteraction::propagate(const int step)
   const auto nb = 8 * grid.num_gridpoints;
   const std::array<int, 5> front = {{wrapped_step, 0, 0, 0, 0}};
 
-  const auto s_ptr = &source_table(front), s_ptr_fft = &source_table_fft(front);
+  const auto s_ptr = &source_table(front);
   fftw_execute_dft(spatial_vector_transforms.forward,
                    reinterpret_cast<fftw_complex *>(s_ptr),
-                   reinterpret_cast<fftw_complex *>(s_ptr_fft));
+                   reinterpret_cast<fftw_complex *>(s_ptr));
 
-  Eigen::Map<Eigen::Array3Xcd> observers(&obs_table_fft(front), 3, nb);
-  observers = 0;
+  Eigen::Map<Eigen::Array3Xcd> observers(&obs_table(front), 3, nb);
+  observers.setZero();
 
   for(int i = 1; i < circulant_dimensions[0]; ++i) {
     // If (step - i) runs "off the end", just propagate src[0][...]
     auto wrap = std::max(step - i, 0) % circulant_dimensions[0];
 
     Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
-    Eigen::Map<Eigen::Array3Xcd> src(&source_table_fft[wrap][0][0][0][0], 3,
+    Eigen::Map<Eigen::Array3Xcd> src(&source_table[wrap][0][0][0][0], 3,
                                      nb);
 
     // Use broadcasting to do the x, y, and z component propagation
     observers += src.rowwise() * prop.transpose();
   }
 
-  const auto o_ptr = &obs_table(front), o_ptr_fft = &obs_table_fft(front);
+  const auto o_ptr = &obs_table(front);
   fftw_execute_dft(spatial_vector_transforms.backward,
-                   reinterpret_cast<fftw_complex *>(o_ptr_fft),
+                   reinterpret_cast<fftw_complex *>(o_ptr),
                    reinterpret_cast<fftw_complex *>(o_ptr));
 }
 
