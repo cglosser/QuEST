@@ -34,9 +34,6 @@ class AIM::Grid {
                                      const double,
                                      const int = 0) const;
 
-  std::vector<DotRange> box_contents_map() const;
-
-  std::set<size_t> active_nodes() const;
   std::vector<size_t> expansion_indices(const int) const;
   std::vector<size_t> expansion_indices(const Eigen::Vector3d &pos) const
   {
@@ -50,6 +47,8 @@ class AIM::Grid {
 
   int expansion_distance(const int, const int) const;
 
+  std::vector<DotRange> box_contents_map() const;
+  std::set<size_t> active_nodes() const;
   std::vector<ipair_t> full_nearfield_pairs(const int) const;
   std::vector<ipair_t> compressed_nearfield_pairs(const int) const;
 

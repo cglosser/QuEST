@@ -75,22 +75,6 @@ std::array<int, 4> AIM::Grid::circulant_shape(const double c,
   return shape;
 }
 
-std::vector<DotRange> AIM::Grid::box_contents_map() const
-{
-  std::vector<DotRange> boxes(num_gridpoints);
-  for(size_t box_idx = 0; box_idx < boxes.size(); ++box_idx) {
-    auto NearestGridpoint = [=](const QuantumDot &qd) {
-      return associated_grid_index(qd.position()) == box_idx;
-    };
-
-    auto begin = std::find_if(dots->begin(), dots->end(), NearestGridpoint);
-    auto end = std::find_if_not(begin, dots->end(), NearestGridpoint);
-    boxes.at(box_idx) = std::make_pair(begin, end);
-  }
-
-  return boxes;
-}
-
 std::vector<size_t> AIM::Grid::expansion_indices(const int grid_index) const
 {
   Eigen::Vector3i origin = idx_to_coord(grid_index);
@@ -112,22 +96,20 @@ std::vector<size_t> AIM::Grid::expansion_indices(const int grid_index) const
   return indices;
 }
 
-int AIM::Grid::expansion_distance(const int i, const int j) const
+std::vector<DotRange> AIM::Grid::box_contents_map() const
 {
-  auto pts1 = expansion_indices(i);
-  auto pts2 = expansion_indices(j);
+  std::vector<DotRange> boxes(num_gridpoints);
+  for(size_t box_idx = 0; box_idx < boxes.size(); ++box_idx) {
+    auto NearestGridpoint = [=](const QuantumDot &qd) {
+      return associated_grid_index(qd.position()) == box_idx;
+    };
 
-  int min_dist = (idx_to_coord(pts1.front()) - idx_to_coord(pts2.front()))
-                     .lpNorm<Eigen::Infinity>();
-  for(const auto &p1 : pts1) {
-    for(const auto &p2 : pts2) {
-      Eigen::Vector3i dr = idx_to_coord(p2) - idx_to_coord(p1);
-      min_dist = std::min(min_dist, dr.lpNorm<Eigen::Infinity>());
-      if(min_dist == 0) return 0;
-    }
+    auto begin = std::find_if(dots->begin(), dots->end(), NearestGridpoint);
+    auto end = std::find_if_not(begin, dots->end(), NearestGridpoint);
+    boxes.at(box_idx) = std::make_pair(begin, end);
   }
 
-  return min_dist;
+  return boxes;
 }
 
 std::set<size_t> AIM::Grid::active_nodes() const
