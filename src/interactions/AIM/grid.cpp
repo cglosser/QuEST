@@ -155,8 +155,9 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::full_nearfield_pairs(
 
   const int bound = expansion_order + thresh + 1;
   const auto mapping = box_contents_map();
+  const auto active = active_nodes();
 
-  for(auto src_idx = 0u; src_idx < num_gridpoints; ++src_idx) {
+  for(const auto &src_idx : active) {
     Eigen::Vector3i src_coord = idx_to_coord(src_idx);
     for(int x = -bound; x < bound; ++x) {
       for(int y = -bound; y < bound; ++y) {
@@ -166,7 +167,8 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::full_nearfield_pairs(
           const auto obs_idx = coord_to_idx(new_pt);
 
           if((new_pt.array() < 0).any() ||
-             (new_pt.array() >= dimensions).any() || obs_idx < src_idx)
+             (new_pt.array() >= dimensions).any() || obs_idx < src_idx ||
+             (!active.count(obs_idx)))
             continue;
 
           nf.push_back({src_idx, obs_idx});
@@ -175,6 +177,7 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::full_nearfield_pairs(
     }
   }
 
+  nf.shrink_to_fit();
   return nf;
 }
 
