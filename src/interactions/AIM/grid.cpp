@@ -148,30 +148,33 @@ std::set<size_t> AIM::Grid::active_nodes() const
 std::vector<AIM::Grid::ipair_t> AIM::Grid::full_nearfield_pairs(
     const int thresh) const
 {
-  // Threshold is in grid units
+  // List of gridpoints...
+  //    ...that have an expansion...
+  //        within thresh of each other. Thresh is in grid units.
 
   std::vector<ipair_t> nf;
   if(!dots) return nf;
 
-  const int bound = expansion_order + thresh + 1;
+  const int ubound = expansion_order + thresh;
+  const int lbound = -ubound;
   const auto mapping = box_contents_map();
   const auto active = active_nodes();
 
   for(const auto &src_idx : active) {
     Eigen::Vector3i src_coord = idx_to_coord(src_idx);
-    for(int x = -bound; x < bound; ++x) {
-      for(int y = -bound; y < bound; ++y) {
-        for(int z = -bound; z < bound; ++z) {
+    for(int x = lbound; x <= ubound; ++x) {
+      for(int y = lbound; y <= ubound; ++y) {
+        for(int z = lbound; z <= ubound; ++z) {
           const Eigen::Vector3i delta(x, y, z);
           const Eigen::Vector3i new_pt = src_coord + delta;
           const auto obs_idx = coord_to_idx(new_pt);
 
           if((new_pt.array() < 0).any() ||
-             (new_pt.array() >= dimensions).any() || obs_idx < src_idx ||
+             (new_pt.array() >= dimensions).any() || obs_idx <= src_idx ||
              (!active.count(obs_idx)))
             continue;
 
-          nf.push_back({src_idx, obs_idx});
+          nf.emplace_back(src_idx, obs_idx);
         }
       }
     }
@@ -184,21 +187,23 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::full_nearfield_pairs(
 std::vector<AIM::Grid::ipair_t> AIM::Grid::compressed_nearfield_pairs(
     const int thresh) const
 {
-  // Threshold is in grid units
+  // Same as full_nearfield_pairs except both gridpoints must also be
+  // "active" (have associated particles).
 
   std::vector<ipair_t> nf;
   if(!dots) return nf;
 
-  const int bound = expansion_order + thresh + 1;
+  const int ubound = expansion_order + thresh;
+  const int lbound = -ubound;
   const auto mapping = box_contents_map();
 
   for(auto src_idx = 0u; src_idx < num_gridpoints; ++src_idx) {
     if(mapping[src_idx].first == mapping[src_idx].second) continue;
 
     Eigen::Vector3i src_coord = idx_to_coord(src_idx);
-    for(int x = -bound; x < bound; ++x) {
-      for(int y = -bound; y < bound; ++y) {
-        for(int z = -bound; z < bound; ++z) {
+    for(int x = lbound; x <= ubound; ++x) {
+      for(int y = lbound; y <= ubound; ++y) {
+        for(int z = lbound; z <= ubound; ++z) {
           const Eigen::Vector3i delta(x, y, z);
           const Eigen::Vector3i new_pt = src_coord + delta;
           const auto obs_idx = coord_to_idx(new_pt);
@@ -211,7 +216,7 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::compressed_nearfield_pairs(
 
           if(invalid_point || empty_obs || obs_idx < src_idx) continue;
 
-          nf.push_back({src_idx, obs_idx});
+          nf.emplace_back(src_idx, obs_idx);
         }
       }
     }
