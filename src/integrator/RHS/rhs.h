@@ -12,7 +12,7 @@ namespace Integrator {
 template <class soltype>
 class Integrator::RHS {
  public:
-  RHS(const double dt, const std::shared_ptr<History<soltype>> history)
+  RHS(const double dt, const std::shared_ptr<History<soltype>> &history)
       : dt(dt), history(std::move(history)){};
   virtual void evaluate(const int) const = 0;
 

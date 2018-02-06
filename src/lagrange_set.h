@@ -13,7 +13,7 @@ class Interpolation::UniformLagrangeSet {
  public:
   InterpolationTable evaluations;
 
-  UniformLagrangeSet(const int);
+  explicit UniformLagrangeSet(const int);
   UniformLagrangeSet(const double, const int, const double = 1);
 
   void evaluate_derivative_table_at_x(const double, const double = 1);

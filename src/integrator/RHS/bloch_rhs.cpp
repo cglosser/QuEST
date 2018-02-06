@@ -2,7 +2,7 @@
 
 Integrator::BlochRHS::BlochRHS(
     const double dt,
-    const std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history,
+    std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history,
     std::vector<std::shared_ptr<Interaction>> interactions,
     std::vector<BlochFunctionType> rhs_functions)
     : Integrator::RHS<Eigen::Vector2cd>(dt, history),
@@ -14,11 +14,10 @@ Integrator::BlochRHS::BlochRHS(
 
 void Integrator::BlochRHS::evaluate(const int step) const
 {
-  auto eval_and_sum =
-      [step](const Interaction::ResultArray &r,
-             const std::shared_ptr<Interaction> &interaction) {
-        return r + interaction->evaluate(step);
-      };
+  auto eval_and_sum = [step](const Interaction::ResultArray &r,
+                             const std::shared_ptr<Interaction> &interaction) {
+    return r + interaction->evaluate(step);
+  };
   auto nil = Interaction::ResultArray::Zero(num_solutions, 1).eval();
 
   auto projected_efields = std::accumulate(
@@ -28,5 +27,4 @@ void Integrator::BlochRHS::evaluate(const int step) const
     history->array[solution][step][1] = rhs_functions[solution](
         history->array[solution][step][0], projected_efields[solution]);
   }
-
 }

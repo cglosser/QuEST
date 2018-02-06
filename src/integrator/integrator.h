@@ -9,6 +9,8 @@
 #include "weights.h"
 
 namespace Integrator {
+  constexpr int NUM_CORRECTOR_STEPS = 10;
+
   template <class soltype>
   class PredictorCorrector;
 }
@@ -16,9 +18,22 @@ namespace Integrator {
 template <class soltype>
 class Integrator::PredictorCorrector {
  public:
-  PredictorCorrector(const double, const int, const int, const double,
-                     const std::shared_ptr<Integrator::History<soltype>>,
-                     std::unique_ptr<Integrator::RHS<soltype>>);
+  PredictorCorrector(const double dt,
+                     const int n_lambda,
+                     const int n_time,
+                     const double radius,
+                     std::shared_ptr<Integrator::History<soltype>> history,
+                     std::unique_ptr<Integrator::RHS<soltype>> rhs)
+      : num_solutions(history->array.shape()[0]),
+        time_idx_ubound(history->array.index_bases()[1] +
+                        history->array.shape()[1]),
+        dt(dt),
+        weights(n_lambda, n_time, radius),
+        history(std::move(history)),
+        rhs(std::move(rhs))
+  {
+  }
+
   void solve() const;
 
  private:
@@ -34,22 +49,6 @@ class Integrator::PredictorCorrector {
 
   void log_percentage_complete(const int) const;
 };
-
-constexpr int NUM_CORRECTOR_STEPS = 10;
-template <class soltype>
-Integrator::PredictorCorrector<soltype>::PredictorCorrector(
-    const double dt, const int n_lambda, const int n_time, const double radius,
-    const std::shared_ptr<Integrator::History<soltype>> history,
-    std::unique_ptr<Integrator::RHS<soltype>> rhs)
-    : num_solutions(history->array.shape()[0]),
-      time_idx_ubound(history->array.index_bases()[1] +
-                      history->array.shape()[1]),
-      dt(dt),
-      weights(n_lambda, n_time, radius),
-      history(std::move(history)),
-      rhs(std::move(rhs))
-{
-}
 
 template <class soltype>
 void Integrator::PredictorCorrector<soltype>::solve() const

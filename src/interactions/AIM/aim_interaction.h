@@ -24,7 +24,7 @@ namespace AIM {
 
     class Laplace {
      public:
-      Laplace(const double alpha = 1) : alpha(alpha){};
+      explicit Laplace(const double alpha = 1) : alpha(alpha){};
       double operator()(const Eigen::Vector3d &dr) const
       {
         return 1 / (alpha * dr.norm());

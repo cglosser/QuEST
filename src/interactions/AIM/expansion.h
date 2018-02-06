@@ -43,7 +43,7 @@ namespace AIM {
 
     class RetardationBase {
      public:
-      RetardationBase(const int history_length)
+      explicit RetardationBase(const int history_length)
           : history_length(history_length){};
 
      protected:
@@ -53,7 +53,8 @@ namespace AIM {
 
     class Retardation : public RetardationBase {
      public:
-      Retardation(int history_length) : RetardationBase(history_length){};
+      explicit Retardation(int history_length)
+          : RetardationBase(history_length){};
       Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
                                   const std::array<int, 4> &coord,
                                   const Expansions::Expansion &e)
@@ -95,7 +96,7 @@ namespace AIM {
 
     class Del_Del : public RetardationBase {
      public:
-      Del_Del(int history_length) : RetardationBase(history_length){};
+      explicit Del_Del(int history_length) : RetardationBase(history_length){};
 
       Eigen::Vector3cd operator()(const spacetime::vector3d<cmplx> &obs,
                                   const std::array<int, 4> &coord,
@@ -182,8 +183,9 @@ namespace AIM {
         // taken care of in the normalization class.
 
         return -((deriv.col(2) + 2.0 * iu * omega * deriv.col(1) -
-                std::pow(omega, 2) * deriv.col(0)) -
-               std::pow(c, 2) * (e.del_sq * present_field)).conjugate();
+                  std::pow(omega, 2) * deriv.col(0)) -
+                 std::pow(c, 2) * (e.del_sq * present_field))
+                    .conjugate();
 
         // I *do not* understand where this conjugate comes from.
       }

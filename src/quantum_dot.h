@@ -28,7 +28,7 @@ enum MatrixElement { RHO_00, RHO_01 };
 class QuantumDot {
  public:
   QuantumDot() = default;
-  QuantumDot(const Eigen::Vector3d &pos)
+  explicit QuantumDot(const Eigen::Vector3d &pos)
       : QuantumDot(pos, 0, {0.0, 0.0}, Eigen::Vector3d::Zero()){};
   QuantumDot(const Eigen::Vector3d &pos, const Eigen::Vector3d &dip)
       : QuantumDot(pos, 0, {0.0, 0.0}, dip){};
