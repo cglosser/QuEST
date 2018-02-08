@@ -1,4 +1,4 @@
-#include "aim_interaction.h"
+#include "aim_fft.h"
 
 AIM::AimInteraction::AimInteraction(const int interp_order,
                                     const Grid grid,

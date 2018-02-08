@@ -1,5 +1,5 @@
-#ifndef AIM_INTERACTION_H
-#define AIM_INTERACTION_H
+#ifndef AIM_FFT_H
+#define AIM_FFT_H
 
 #include <Eigen/Sparse>
 #include <algorithm>

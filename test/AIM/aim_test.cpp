@@ -2,7 +2,7 @@
 #include <cmath>
 #include <iomanip>
 
-#include "interactions/AIM/aim_interaction.h"
+#include "interactions/AIM/aim_fft.h"
 
 BOOST_AUTO_TEST_SUITE(AIM)
 
