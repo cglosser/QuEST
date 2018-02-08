@@ -53,24 +53,13 @@ AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
   return b;
 }
 
-std::array<int, 4> AIM::Grid::toeplitz_shape(const double c,
-                                             const double dt,
-                                             const int pad /* = 0 */) const
-{
-  std::array<int, 4> shape;
-
-  shape[0] = max_transit_steps(c, dt) + pad;
-  for(int i = 1; i < 4; ++i) shape[i] = dimensions(i - 1);
-
-  return shape;
-}
-
 std::array<int, 4> AIM::Grid::circulant_shape(const double c,
                                               const double dt,
                                               const int pad /* = 0 */) const
 {
-  std::array<int, 4> shape(toeplitz_shape(c, dt, pad));
-  for(int i = 1; i < 4; ++i) shape[i] *= 2;
+  std::array<int, 4> shape;
+  shape[0] = max_transit_steps(c, dt) + pad;
+  for(int i = 1; i < 4; ++i) shape[i] = 2 * dimensions(i - 1);
 
   return shape;
 }

@@ -27,7 +27,7 @@ class AIM::Farfield final : public HistoryInteraction {
   Expansions::ExpansionTable expansion_table;
   Expansions::ExpansionFunction expansion_function;
   normalization::SpatialNorm normalization;
-  std::array<int, 4> toeplitz_dimensions, circulant_dimensions;
+  std::array<int, 4> circulant_dimensions;
 
   // This corresponds to delta(t - R/c)/R and thus holds *scalar* quantities
   spacetime::vector<cmplx> fourier_table;

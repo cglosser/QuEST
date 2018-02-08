@@ -17,7 +17,6 @@ AIM::Farfield::Farfield(
       normalization(std::move(normalization)),
 
       // FFT stuff
-      toeplitz_dimensions(grid.toeplitz_shape(c0, dt, interp_order)),
       circulant_dimensions(grid.circulant_shape(c0, dt, interp_order)),
       fourier_table(circulant_fourier_table()),
       source_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
