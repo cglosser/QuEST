@@ -39,13 +39,7 @@ AIM::AimInteraction::AimInteraction(
       source_table_fft(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
       obs_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
       obs_table_fft(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
-      spatial_vector_transforms(spatial_fft_plans()),
-
-      // Nearfield stuff
-      nf_pairs(grid.nearfield_pairs(1)),
-      nf_mats_sparse(generate_nearfield_mats()),
-      nf_correction(grid.num_gridpoints, 3),
-      nf_workspace(grid.num_gridpoints, 3)
+      spatial_vector_transforms(spatial_fft_plans())
 {
   auto clear = [](auto &table) {
     std::fill(table.data(), table.data() + table.num_elements(), cmplx(0, 0));
@@ -62,8 +56,6 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
   fill_source_table(step);
   propagate(step);
   fill_results_table(step);
-
-  evaluate_nearfield(step);
 
   return results;
 }
@@ -245,76 +237,4 @@ TransformPair AIM::AimInteraction::spatial_fft_plans()
   };
 
   return {make_plan(FFTW_FORWARD), make_plan(FFTW_BACKWARD)};
-}
-
-void AIM::AimInteraction::evaluate_nearfield(const int step)
-{
-  nf_correction.setZero();
-
-  for(int t = 1; t < circulant_dimensions[0]; ++t) {
-    const auto wrap = std::max(step - t, 0) % circulant_dimensions[0];
-
-    int i = 0;
-    for(int x = 0; x < toeplitz_dimensions[1]; ++x) {
-      for(int y = 0; y < toeplitz_dimensions[2]; ++y) {
-        for(int z = 0; z < toeplitz_dimensions[3]; ++z) {
-          nf_workspace.row(i++) =
-              Eigen::Map<Eigen::Vector3cd>(&source_table[wrap][x][y][z][0]);
-          // This is necessary to "dodge" the circulant holes of source_table
-          // so as to simplify the (sparse) matrix multiplication
-        }
-      }
-    }
-
-    nf_correction += nf_mats_sparse[t] * nf_workspace;
-  }
-
-  const int wrapped_step = step % circulant_dimensions[0];
-  int i = 0;
-  for(int x = 0; x < toeplitz_dimensions[1]; ++x) {
-    for(int y = 0; y < toeplitz_dimensions[2]; ++y) {
-      for(int z = 0; z < toeplitz_dimensions[3]; ++z) {
-        Eigen::Map<Eigen::Vector3cd>(&obs_table[wrapped_step][x][y][z][0]) -=
-            nf_correction.row(i++);
-      }
-    }
-  }
-}
-
-std::vector<Eigen::SparseMatrix<cmplx>>
-AIM::AimInteraction::generate_nearfield_mats()
-{
-  using Triplet = Eigen::Triplet<cmplx>;
-
-  Interpolation::UniformLagrangeSet interp(interp_order);
-
-  std::vector<std::vector<Triplet>> coefficients(circulant_dimensions[0]);
-  for(const auto &p : nf_pairs) {
-    const Eigen::Vector3d dr = grid.spatial_coord_of_box(p.first) -
-                               grid.spatial_coord_of_box(p.second);
-
-    const double arg = dr.norm() / (c0 * dt);
-    const auto split_arg = split_double(arg);
-
-    for(int t = 0; t < circulant_dimensions[0]; ++t) {
-      const auto polynomial_idx = static_cast<int>(ceil(t - arg));
-      if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
-        interp.evaluate_derivative_table_at_x(split_arg.second, dt);
-        const auto val =
-            interp.evaluations[0][polynomial_idx] / normalization(dr);
-        coefficients[t].push_back(Triplet(p.first, p.second, val));
-      }
-    }
-  }
-
-  std::vector<Eigen::SparseMatrix<cmplx>> mats(
-      circulant_dimensions[0],
-      Eigen::SparseMatrix<cmplx>(grid.num_gridpoints, grid.num_gridpoints));
-
-  for(int i = 0; i < circulant_dimensions[0]; ++i) {
-    mats.at(i).setFromTriplets(coefficients.at(i).begin(),
-                               coefficients.at(i).end());
-  }
-
-  return mats;
 }

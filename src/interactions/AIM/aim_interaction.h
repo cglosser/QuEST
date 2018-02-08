@@ -1,11 +1,11 @@
 #ifndef AIM_INTERACTION_H
 #define AIM_INTERACTION_H
 
+#include <Eigen/Sparse>
 #include <algorithm>
 #include <functional>
 #include <limits>
 #include <numeric>
-#include <Eigen/Sparse>
 
 #include "common.h"
 #include "expansion.h"
@@ -66,8 +66,7 @@ class AIM::AimInteraction final : public HistoryInteraction {
 
   const ResultArray &evaluate(const int) final;
 
-  // private:
-
+ private:
   Grid grid;
   Expansions::ExpansionTable expansion_table;
   Expansions::ExpansionFunction expansion_function;
@@ -90,14 +89,6 @@ class AIM::AimInteraction final : public HistoryInteraction {
   spacetime::vector<cmplx> circulant_fourier_table();
   void fill_gmatrix_table(spacetime::vector<cmplx> &) const;
   TransformPair spatial_fft_plans();
-
-  // Nearfield stuff
-  std::vector<Grid::ipair_t> nf_pairs;
-  void evaluate_nearfield(const int);
-  std::vector<Eigen::SparseMatrix<cmplx>> generate_nearfield_mats();
-  std::vector<Eigen::SparseMatrix<cmplx>> nf_mats_sparse;
-  Eigen::Matrix<cmplx, Eigen::Dynamic, 3> nf_correction, nf_workspace;
-
 };
 
 #endif

@@ -56,7 +56,7 @@ void Integrator::PredictorCorrector<soltype>::solve() const
 {
   for(int step = 0; step < time_idx_ubound; ++step) {
     solve_step(step);
-    log_percentage_complete(step);
+    //log_percentage_complete(step);
   }
 }
 

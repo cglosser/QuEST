@@ -3,7 +3,5 @@ target_sources(qtest-bin
     "${CMAKE_CURRENT_LIST_DIR}/aim_test.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/expansion_test.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/grid_test.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/nearfield_test.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/spacetime_test.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/nearfield_test.cpp"
 )
