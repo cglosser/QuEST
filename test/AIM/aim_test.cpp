@@ -2,7 +2,7 @@
 #include <cmath>
 #include <iomanip>
 
-#include "interactions/AIM/aim_fft.h"
+#include "interactions/AIM/farfield.h"
 
 BOOST_AUTO_TEST_SUITE(AIM)
 
@@ -61,26 +61,6 @@ struct PARAMETERS {
            (csq * std::exp((9 * std::pow(2 * r + c * (total_time - 2 * t), 2)) /
                            (2 * csq * std::pow(total_time, 2))) *
             std::pow(total_time, 4) * std::pow(r, 3));
-  }
-
-  double test_propagation(AIM::AimInteraction &aim,
-                          const std::function<double(const double)> &sol,
-                          const double toler)
-  {
-    double max_relative_error = 0;
-    for(int i = 0; i < num_steps; ++i) {
-      auto x = aim.evaluate(i);
-
-      if(i > grid.max_transit_steps(c, dt) + 2 * interpolation_order) {
-        BOOST_CHECK_CLOSE(x(1).real(), sol(i * dt), toler);
-
-        double diff = sol(i * dt) - x(1).real();
-        auto relative_error = std::abs(diff) / sol(i * dt);
-        max_relative_error = std::max(max_relative_error, relative_error);
-      }
-    }
-
-    return max_relative_error;
   }
 };
 

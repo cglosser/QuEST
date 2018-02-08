@@ -1,21 +1,6 @@
-#include "aim_fft.h"
+#include "farfield.h"
 
-AIM::AimInteraction::AimInteraction(const int interp_order,
-                                    const Grid grid,
-                                    normalization::SpatialNorm normalization)
-    : AimInteraction(nullptr,
-                     nullptr,
-                     interp_order,
-                     1,
-                     1,
-                     grid,
-                     Expansions::ExpansionTable(),
-                     nullptr,
-                     normalization)
-{
-}
-
-AIM::AimInteraction::AimInteraction(
+AIM::Farfield::Farfield(
     const std::shared_ptr<const DotVector> dots,
     const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
     const int interp_order,
@@ -51,7 +36,7 @@ AIM::AimInteraction::AimInteraction(
   clear(obs_table_fft);
 }
 
-const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
+const Interaction::ResultArray &AIM::Farfield::evaluate(const int step)
 {
   fill_source_table(step);
   propagate(step);
@@ -60,7 +45,7 @@ const Interaction::ResultArray &AIM::AimInteraction::evaluate(const int step)
   return results;
 }
 
-void AIM::AimInteraction::fill_source_table(const int step)
+void AIM::Farfield::fill_source_table(const int step)
 {
   using namespace Expansions::enums;
 
@@ -88,7 +73,7 @@ void AIM::AimInteraction::fill_source_table(const int step)
   }
 }
 
-void AIM::AimInteraction::propagate(const int step)
+void AIM::Farfield::propagate(const int step)
 {
   const auto wrapped_step = step % circulant_dimensions[0];
   const auto nb = 8 * grid.num_gridpoints;
@@ -120,7 +105,7 @@ void AIM::AimInteraction::propagate(const int step)
                    reinterpret_cast<fftw_complex *>(o_ptr));
 }
 
-void AIM::AimInteraction::fill_results_table(const int step)
+void AIM::Farfield::fill_results_table(const int step)
 {
   results = 0;
 
@@ -140,7 +125,7 @@ void AIM::AimInteraction::fill_results_table(const int step)
   }
 }
 
-spacetime::vector<cmplx> AIM::AimInteraction::circulant_fourier_table()
+spacetime::vector<cmplx> AIM::Farfield::circulant_fourier_table()
 {
   spacetime::vector<cmplx> g_mat(circulant_dimensions);
 
@@ -170,7 +155,7 @@ spacetime::vector<cmplx> AIM::AimInteraction::circulant_fourier_table()
   return g_mat;
 }
 
-void AIM::AimInteraction::fill_gmatrix_table(
+void AIM::Farfield::fill_gmatrix_table(
     spacetime::vector<cmplx> &gmatrix_table) const
 {  // Build the circulant vectors that define the G "matrices." Since the G
   // matrices are Toeplitz (and symmetric), they're uniquely determined by
@@ -213,7 +198,7 @@ void AIM::AimInteraction::fill_gmatrix_table(
   spacetime::fill_circulant_mirror(gmatrix_table);
 }
 
-TransformPair AIM::AimInteraction::spatial_fft_plans()
+TransformPair AIM::Farfield::spatial_fft_plans()
 {
   // Set up FFTW plans to transform projected source distributions. Due to the
   // requirements of the circulant extension, these plans perform transforms of

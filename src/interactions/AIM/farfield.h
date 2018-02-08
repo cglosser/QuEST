@@ -1,30 +1,24 @@
-#ifndef AIM_FFT_H
-#define AIM_FFT_H
+#ifndef FARFIELD_H
+#define FARFIELD_H
 
-#include "expansion.h"
+#include "aim_base.h"
 #include "fourier.h"
-#include "grid.h"
-#include "interactions/history_interaction.h"
-#include "normalization.h"
-#include "spacetime.h"
 
 namespace AIM {
-  class AimInteraction;
+  class Farfield;
 }
 
-class AIM::AimInteraction final : public HistoryInteraction {
+class AIM::Farfield final : public HistoryInteraction {
  public:
-  AimInteraction(const int, const Grid, normalization::SpatialNorm);
-  AimInteraction(
-      const std::shared_ptr<const DotVector>,
-      const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
-      const int,
-      const double,
-      const double,
-      const Grid,
-      const Expansions::ExpansionTable &,
-      Expansions::ExpansionFunction,
-      normalization::SpatialNorm);
+  Farfield(const std::shared_ptr<const DotVector>,
+           const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
+           const int,
+           const double,
+           const double,
+           const Grid,
+           const Expansions::ExpansionTable &,
+           Expansions::ExpansionFunction,
+           normalization::SpatialNorm);
 
   const ResultArray &evaluate(const int) final;
 
