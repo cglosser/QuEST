@@ -1,13 +1,6 @@
 #ifndef AIM_FFT_H
 #define AIM_FFT_H
 
-#include <Eigen/Sparse>
-#include <algorithm>
-#include <functional>
-#include <limits>
-#include <numeric>
-
-#include "common.h"
 #include "expansion.h"
 #include "fourier.h"
 #include "grid.h"
