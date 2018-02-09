@@ -23,12 +23,12 @@ BOOST_AUTO_TEST_CASE(COORDINATE_TRANSFORMATIONS_2D)
 
   // Check that "upper right" gridpt maps to last valid index
   BOOST_CHECK_EQUAL(
-      grid.spatial_coord_of_box(grid.num_gridpoints - 1),
+      grid.spatial_coord_of_box(grid.size() - 1),
       grid.spatial_coord_of_box(0) +
           (spacing.array() * (shape.cast<double>() - 1)).matrix());
 
   // Check that coord_to_idx and idx_to_coord are inverses
-  for(size_t i = 0; i < grid.num_gridpoints; ++i) {
+  for(size_t i = 0; i < grid.size(); ++i) {
     BOOST_CHECK_EQUAL(grid.coord_to_idx(grid.idx_to_coord(i)), i);
   }
 }
@@ -47,12 +47,12 @@ BOOST_AUTO_TEST_CASE(COORDINATE_TRANSFORMATIONS_3D)
 
   // Check that "upper right" gridpt maps to last valid index
   BOOST_CHECK_EQUAL(
-      grid.spatial_coord_of_box(grid.num_gridpoints - 1),
+      grid.spatial_coord_of_box(grid.size() - 1),
       grid.spatial_coord_of_box(0) +
           (spacing.array() * (shape.cast<double>() - 1)).matrix());
 
   // Check that coord_to_idx and idx_to_coord are inverses
-  for(size_t i = 0; i < grid.num_gridpoints; ++i) {
+  for(size_t i = 0; i < grid.size(); ++i) {
     BOOST_CHECK_EQUAL(grid.coord_to_idx(grid.idx_to_coord(i)), i);
   }
 }
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(EXPANSION_COORDINATES)
 
   BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(0), Eigen::Vector3d(0, -3, -3));
   BOOST_CHECK_EQUAL(
-      grid.spatial_coord_of_box(grid.num_gridpoints - 1),
+      grid.spatial_coord_of_box(grid.size() - 1),
       Eigen::Vector3d(1, 4, 4));  // <1, 4, 4> due to the expansion order
 
   BOOST_CHECK_EQUAL(grid.spatial_coord_of_box(
@@ -138,25 +138,39 @@ BOOST_AUTO_TEST_CASE(EXPANSION_COORDINATES)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_CASE(EXPANSION_DISTANCE)
+BOOST_AUTO_TEST_CASE(NEARFIELD_PAIRS)
 {
-  AIM::Grid grid1(Eigen::Vector3d(1, 1, 1), Eigen::Array3i(10, 10, 10), Eigen::Vector3i::Zero(), 1);
+  AIM::Grid grid(Eigen::Array3d(1, 1, 1), Eigen::Array3i(2, 2, 4),
+                 Eigen::Vector3i::Zero(), 1);
 
-  BOOST_CHECK_EQUAL(grid1.expansion_distance(0, 0), 0);
-  BOOST_CHECK_EQUAL(grid1.expansion_distance(0, 1), 0);
-  BOOST_CHECK_EQUAL(grid1.expansion_distance(0, 2), 1);
-  BOOST_CHECK_EQUAL(grid1.expansion_distance(0, 8), 7);
-  BOOST_CHECK_EQUAL(grid1.expansion_distance(0, 10), 0);
-  BOOST_CHECK_EQUAL(grid1.expansion_distance(0, 80), 7);
-  BOOST_CHECK_EQUAL(grid1.expansion_distance(0, 88), 7);
-  BOOST_CHECK_EQUAL(grid1.expansion_distance(0, 888), 7);
+  const auto nf = grid.nearfield_pairs(1);
 
-  AIM::Grid grid2(Eigen::Vector3d(1, 1, 1), Eigen::Array3i(5, 5, 5), Eigen::Vector3i(-1, -1, -1), 2);
+  BOOST_CHECK_EQUAL(nf.size(), 120);
+  BOOST_CHECK(nf.at(0) == std::make_pair(0, 0));
+  BOOST_CHECK(nf.at(1) == std::make_pair(0, 1));
+  BOOST_CHECK(nf.at(2) == std::make_pair(0, 2));
+  BOOST_CHECK(nf.at(3) == std::make_pair(0, 4));
+  BOOST_CHECK(nf.at(4) == std::make_pair(0, 5));
+  BOOST_CHECK(nf.at(5) == std::make_pair(0, 6));
+  BOOST_CHECK(nf.at(6) == std::make_pair(0, 8));
+  BOOST_CHECK(nf.at(7) == std::make_pair(0, 9));
+  BOOST_CHECK(nf.at(8) == std::make_pair(0, 10));
+  BOOST_CHECK(nf.at(9) == std::make_pair(0, 12));
+  BOOST_CHECK(nf.at(10) == std::make_pair(0, 13));
+  BOOST_CHECK(nf.at(11) == std::make_pair(0, 14));
 
-  BOOST_CHECK_EQUAL(grid2.expansion_distance(31, 31), 0);
-  BOOST_CHECK_EQUAL(grid2.expansion_distance(31, 32), 0);
-  BOOST_CHECK_EQUAL(grid2.expansion_distance(31, 33), 0);
-  BOOST_CHECK_EQUAL(grid2.expansion_distance(31, 99), 1);
+  BOOST_CHECK(nf.at(108) == std::make_pair(11, 13));
+  BOOST_CHECK(nf.at(109) == std::make_pair(11, 14));
+  BOOST_CHECK(nf.at(110) == std::make_pair(11, 15));
+  BOOST_CHECK(nf.at(111) == std::make_pair(12, 12));
+  BOOST_CHECK(nf.at(112) == std::make_pair(12, 13));
+  BOOST_CHECK(nf.at(113) == std::make_pair(12, 14));
+  BOOST_CHECK(nf.at(114) == std::make_pair(13, 13));
+  BOOST_CHECK(nf.at(115) == std::make_pair(13, 14));
+  BOOST_CHECK(nf.at(116) == std::make_pair(13, 15));
+  BOOST_CHECK(nf.at(117) == std::make_pair(14, 14));
+  BOOST_CHECK(nf.at(118) == std::make_pair(14, 15));
+  BOOST_CHECK(nf.at(119) == std::make_pair(15, 15));
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // GRID

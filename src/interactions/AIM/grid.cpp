@@ -11,10 +11,6 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
 {
   dimensions = bounds.col(1) - bounds.col(0) + 1;
   num_gridpoints = dimensions.prod();
-  max_diagonal = ((bounds.col(1) - bounds.col(0)).cast<double>() * spacing)
-                     .matrix()
-                     .norm();
-
   sort_points_on_boxidx();
 }
 
@@ -31,7 +27,6 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
   bounds.col(1) = dimensions + shift.array() - 1;
 
   num_gridpoints = dimensions.prod();
-  max_diagonal = (dimensions.cast<double>() * spacing).matrix().norm();
 }
 
 AIM::Grid::BoundsArray AIM::Grid::calculate_bounds() const
@@ -101,54 +96,31 @@ std::vector<size_t> AIM::Grid::expansion_indices(const int grid_index) const
   return indices;
 }
 
-int AIM::Grid::expansion_distance(const int i, const int j) const
-{
-  auto pts1 = expansion_indices(i);
-  auto pts2 = expansion_indices(j);
-
-  int min_dist = (idx_to_coord(pts1.front()) - idx_to_coord(pts2.front()))
-                     .lpNorm<Eigen::Infinity>();
-  for(const auto &p1 : pts1) {
-    for(const auto &p2 : pts2) {
-      Eigen::Vector3i dr = idx_to_coord(p2) - idx_to_coord(p1);
-      min_dist = std::min(min_dist, dr.lpNorm<Eigen::Infinity>());
-      if(min_dist == 0) return 0;
-    }
-  }
-
-  return min_dist;
-}
-
 std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
     const int thresh) const
 {
-  // Threshold is in grid units
-
   std::vector<ipair_t> nf;
-  if(!dots) return nf;
 
-  const int bound = expansion_order + thresh + 1;
-  const auto mapping = box_contents_map();
+  const int bound = expansion_order + thresh;
 
   for(auto src_idx = 0u; src_idx < num_gridpoints; ++src_idx) {
-    Eigen::Vector3i src_coord = idx_to_coord(src_idx);
-    for(int x = -bound; x < bound; ++x) {
-      for(int y = -bound; y < bound; ++y) {
-        for(int z = -bound; z < bound; ++z) {
-          const Eigen::Vector3i delta(x, y, z);
-          const Eigen::Vector3i new_pt = src_coord + delta;
-
-          if((new_pt.array() < 0).any() || (new_pt.array() >= dimensions).any())
-            continue;
-
-          const auto obs_idx = coord_to_idx(new_pt);
-
-          nf.push_back({src_idx, obs_idx});
+    Eigen::Vector3i s = idx_to_coord(src_idx);
+    for(int x = std::max(0, s(0) - bound);
+        x <= std::min(dimensions(0) - 1, s(0) + bound); ++x) {
+      for(int y = std::max(0, s(1) - bound);
+          y <= std::min(dimensions(1) - 1, s(1) + bound); ++y) {
+        for(int z = std::max(0, s(2) - bound);
+            z <= std::min(dimensions(2) - 1, s(2) + bound); ++z) {
+          const auto obs_idx = coord_to_idx({x, y, z});
+          if(obs_idx >= src_idx) {
+            nf.emplace_back(src_idx, obs_idx);
+          }
         }
       }
     }
   }
 
+  nf.shrink_to_fit();
   return nf;
 }
 

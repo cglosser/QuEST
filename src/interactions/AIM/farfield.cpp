@@ -31,7 +31,7 @@ void AIM::Farfield::fill_source_table(const int step)
 
   const int wrapped_step = step % table_dimensions[0];
   const auto p = &source_table[wrapped_step][0][0][0][0];
-  std::fill(p, p + 3 * 8 * grid.num_gridpoints, cmplx(0, 0));
+  std::fill(p, p + 3 * 8 * grid.size(), cmplx(0, 0));
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[2];
@@ -56,7 +56,7 @@ void AIM::Farfield::fill_source_table(const int step)
 void AIM::Farfield::propagate(const int step)
 {
   const auto wrapped_step = step % table_dimensions[0];
-  const auto nb = 8 * grid.num_gridpoints;
+  const auto nb = 8 * grid.size();
   const std::array<int, 5> front = {{wrapped_step, 0, 0, 0, 0}};
 
   const auto s_ptr = &source_table(front);
@@ -149,9 +149,9 @@ void AIM::Farfield::fill_gmatrix_table(
 
   Interpolation::UniformLagrangeSet interp(interp_order);
 
-  for(int x = 0; x < grid.dimensions(0); ++x) {
-    for(int y = 0; y < grid.dimensions(1); ++y) {
-      for(int z = 0; z < grid.dimensions(2); ++z) {
+  for(int x = 0; x < grid.shape()[0]; ++x) {
+    for(int y = 0; y < grid.shape()[1]; ++y) {
+      for(int z = 0; z < grid.shape()[2]; ++z) {
         const size_t box_idx = grid.coord_to_idx({x, y, z});
 
         if(box_idx == 0) continue;

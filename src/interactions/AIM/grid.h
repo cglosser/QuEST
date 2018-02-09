@@ -14,10 +14,6 @@ class AIM::Grid {
   using BoundsArray = Eigen::Array<int, 3, 2>;
   using ipair_t = std::pair<int, int>;
 
-  Eigen::Array3i dimensions;
-  size_t num_gridpoints;
-  double max_diagonal;
-
   Grid();
   Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector>, const int);
   Grid(const Eigen::Array3d &,
@@ -30,8 +26,6 @@ class AIM::Grid {
                                      const double,
                                      const int = 0) const;
 
-  std::vector<DotRange> box_contents_map() const;
-
   std::vector<size_t> expansion_indices(const int) const;
   std::vector<size_t> expansion_indices(const Eigen::Vector3d &pos) const
   {
@@ -40,13 +34,15 @@ class AIM::Grid {
 
   int max_transit_steps(double c, double dt) const
   {
+    double max_diagonal = (dimensions.cast<double>() * spacing).matrix().norm();
     return static_cast<int>(ceil(max_diagonal / (c * dt)));
   };
 
-  int expansion_distance(const int, const int) const;
-
+  std::vector<DotRange> box_contents_map() const;
   std::vector<ipair_t> nearfield_pairs(const int) const;
 
+  inline const auto size() const { return num_gridpoints; }
+  inline const auto &shape() const { return dimensions; }
   // == Geometry routines (grid <---> space) ==================================
 
   inline Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &coord) const
@@ -83,10 +79,12 @@ class AIM::Grid {
   }
 
  private:
+  Eigen::Array3i dimensions;
   Eigen::Array3d spacing;
   std::shared_ptr<DotVector> dots;
   int expansion_order;
   BoundsArray bounds;
+  size_t num_gridpoints;
 
   void sort_points_on_boxidx() const;
 };
