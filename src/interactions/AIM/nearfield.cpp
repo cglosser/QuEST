@@ -44,7 +44,7 @@ void AIM::Nearfield::fill_source_table(const int step)
   using namespace Expansions::enums;
 
   const int wrapped_step = step % table_dimensions[0];
-  clear_table_timestep(source_table, wrapped_step);
+  spacetime::clear_time_slice(source_table, wrapped_step);
 
   for(size_t p = 0; p < neighbors.size(); ++p) {
     size_t box1, box2;
@@ -80,8 +80,9 @@ void AIM::Nearfield::fill_source_table(const int step)
 void AIM::Nearfield::propagate(const int step)
 {
   using Mat3d = Eigen::Matrix<cmplx, Eigen::Dynamic, 3, Eigen::RowMajor>;
+
   const auto wrapped_step = step % table_dimensions[0];
-  clear_table_timestep(obs_table, wrapped_step);
+  spacetime::clear_time_slice(obs_table, wrapped_step);
 
   for(int t = 0; t < table_dimensions[0]; ++t) {
     const int wrap = std::max(step - t, 0) % table_dimensions[0];
@@ -178,13 +179,4 @@ spacetime::vector<cmplx> AIM::Nearfield::make_propagation_table() const
   }
 
   return prop;
-}
-
-void AIM::Nearfield::clear_table_timestep(spacetime::vector3d<cmplx> &table,
-                                          const int wrapped_step) const
-{
-  const auto ptr = &table[wrapped_step][0][0][0][0];
-  const auto n_elem = std::accumulate(table.shape() + 1, table.shape() + 5, 1,
-                                      std::multiplies<int>());
-  std::fill(ptr, ptr + n_elem, cmplx(0, 0));
 }

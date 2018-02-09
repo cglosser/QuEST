@@ -18,6 +18,9 @@ namespace spacetime {
 
   template <class T>
   void fill_circulant_mirror(spacetime::vector<T> &);
+
+  template <class T>
+  void clear_time_slice(spacetime::vector3d<T> &, const int);
 }
 
 template <class T>
@@ -53,6 +56,15 @@ void spacetime::fill_circulant_mirror(spacetime::vector<T> &stv)
     MapArray xhole(&stv[t][nx + 1][0][0], x_stride, nx - 1);
     xhole = xflip.rowwise().reverse();
   }
+}
+
+template <class T>
+void spacetime::clear_time_slice(spacetime::vector3d<T> &table, const int s)
+{
+  const auto ptr = &table[s][0][0][0][0];
+  const auto n_elem = std::accumulate(table.shape() + 1, table.shape() + 5, 1,
+                                      std::multiplies<int>());
+  std::fill(ptr, ptr + n_elem, cmplx(0, 0));
 }
 
 #endif
