@@ -52,14 +52,14 @@ const Interaction::ResultArray &DirectInteraction::evaluate(const int time_idx)
     const int s = time_idx - floor_delays[pair_idx];
 
     for(int i = 0; i <= interp_order; ++i) {
-      if(s - i < history->array.index_bases()[1]) continue;
+      if(s - i < history->array_.index_bases()[1]) continue;
 
       constexpr int RHO_01 = 1;
 
       results[src] +=
-          (history->array[obs][s - i][0])[RHO_01] * coefficients[pair_idx][i];
+          (history->array_[obs][s - i][0])[RHO_01] * coefficients[pair_idx][i];
       results[obs] +=
-          (history->array[src][s - i][0])[RHO_01] * coefficients[pair_idx][i];
+          (history->array_[src][s - i][0])[RHO_01] * coefficients[pair_idx][i];
     }
   }
 

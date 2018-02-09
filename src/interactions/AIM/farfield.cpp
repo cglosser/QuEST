@@ -47,7 +47,7 @@ void AIM::Farfield::fill_source_table(const int step)
       // code should not have knowledge of this to better encapsulate
       // "propagation," but this is good enough for now.
       Eigen::Vector3cd source_field = e.d0 * (*dots)[dot_idx].dipole() *
-                                      history->array[dot_idx][step][0][RHO_01];
+                                      history->array_[dot_idx][step][0][RHO_01];
       grid_field += source_field;
     }
   }

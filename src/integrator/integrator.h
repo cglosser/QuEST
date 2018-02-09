@@ -41,9 +41,9 @@ Integrator::PredictorCorrector<soltype>::PredictorCorrector(
     const double dt, const int n_lambda, const int n_time, const double radius,
     const std::shared_ptr<Integrator::History<soltype>> history,
     std::unique_ptr<Integrator::RHS<soltype>> rhs)
-    : num_solutions(history->array.shape()[0]),
-      time_idx_ubound(history->array.index_bases()[1] +
-                      history->array.shape()[1]),
+    : num_solutions(history->array_.shape()[0]),
+      time_idx_ubound(history->array_.index_bases()[1] +
+                      history->array_.shape()[1]),
       dt(dt),
       weights(n_lambda, n_time, radius),
       history(std::move(history)),
@@ -81,9 +81,9 @@ void Integrator::PredictorCorrector<soltype>::predictor(const int step) const
 
   for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
     for(int h = 0; h < static_cast<int>(weights.width()); ++h) {
-      history->array[sol_idx][step][0] +=
-          history->array[sol_idx][start + h][0] * weights.ps(0, h) +
-          history->array[sol_idx][start + h][1] * weights.ps(1, h) * dt;
+      history->array_[sol_idx][step][0] +=
+          history->array_[sol_idx][start + h][0] * weights.ps(0, h) +
+          history->array_[sol_idx][start + h][1] * weights.ps(1, h) * dt;
     }
   }
 }
@@ -94,12 +94,12 @@ void Integrator::PredictorCorrector<soltype>::corrector(const int step) const
   const int start = step - weights.width();
 
   for(int sol_idx = 0; sol_idx < num_solutions; ++sol_idx) {
-    history->array[sol_idx][step][0] =
-        weights.future_coef * history->array[sol_idx][step][1] * dt;
+    history->array_[sol_idx][step][0] =
+        weights.future_coef * history->array_[sol_idx][step][1] * dt;
     for(int h = 0; h < static_cast<int>(weights.width()); ++h) {
-      history->array[sol_idx][step][0] +=
-          history->array[sol_idx][start + h][0] * weights.cs(0, h) +
-          history->array[sol_idx][start + h][1] * weights.cs(1, h) * dt;
+      history->array_[sol_idx][step][0] +=
+          history->array_[sol_idx][start + h][0] * weights.cs(0, h) +
+          history->array_[sol_idx][start + h][1] * weights.cs(1, h) * dt;
     }
   }
 }

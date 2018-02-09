@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     outfile << scientific << setprecision(15);
     for(int t = 0; t < config.num_timesteps; ++t) {
       for(int n = 0; n < config.num_particles; ++n) {
-        outfile << history->array[n][t][0].transpose() << " ";
+        outfile << history->array_[n][t][0].transpose() << " ";
       }
       outfile << "\n";
     }

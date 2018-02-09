@@ -53,7 +53,7 @@ void AIM::Nearfield::fill_source_table(const int step)
           const auto dot_idx = std::distance(dots->begin(), d);
           grid_field1 += expansion_table[dot_idx][e].d0 *
                          (*dots)[dot_idx].dipole() *
-                         history->array[dot_idx][step][0][RHO_01];
+                         history->array_[dot_idx][step][0][RHO_01];
         }
 
         Eigen::Map<Eigen::Vector3cd> grid_field2(
@@ -64,7 +64,7 @@ void AIM::Nearfield::fill_source_table(const int step)
           const auto dot_idx = std::distance(dots->begin(), d);
           grid_field1 += expansion_table[dot_idx][e].d0 *
                          (*dots)[dot_idx].dipole() *
-                         history->array[dot_idx][step][0][RHO_01];
+                         history->array_[dot_idx][step][0][RHO_01];
         }
       }
     }

@@ -19,16 +19,16 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
 
   Integrator::History<int> hist(num_particles, window, num_timesteps);
 
-  BOOST_CHECK_EQUAL(hist.array.shape()[PARTICLES], num_particles);
-  BOOST_CHECK_EQUAL(hist.array.index_bases()[PARTICLES], 0);
+  BOOST_CHECK_EQUAL(hist.array_.shape()[PARTICLES], num_particles);
+  BOOST_CHECK_EQUAL(hist.array_.index_bases()[PARTICLES], 0);
 
-  BOOST_CHECK_EQUAL(hist.array.shape()[TIMES], num_timesteps + window);
-  BOOST_CHECK_EQUAL(hist.array.index_bases()[TIMES], -window);
+  BOOST_CHECK_EQUAL(hist.array_.shape()[TIMES], num_timesteps + window);
+  BOOST_CHECK_EQUAL(hist.array_.index_bases()[TIMES], -window);
 
-  BOOST_CHECK_EQUAL(hist.array.shape()[DERIVATIVES], 2);
-  BOOST_CHECK_EQUAL(hist.array.index_bases()[DERIVATIVES], 0);
+  BOOST_CHECK_EQUAL(hist.array_.shape()[DERIVATIVES], 2);
+  BOOST_CHECK_EQUAL(hist.array_.index_bases()[DERIVATIVES], 0);
 
-  BOOST_CHECK_EQUAL(hist.array.num_elements(),
+  BOOST_CHECK_EQUAL(hist.array_.num_elements(),
                     num_particles * (num_timesteps + window) * 2);
 }
 
@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_CASE(FILLING)
   Integrator::History<int> hist(num_particles, window, num_timesteps);
   hist.fill(fill_value);
 
-  for(auto i = 0u; i < hist.array.num_elements(); ++i) {
-    BOOST_CHECK_EQUAL(hist.array.data()[i], fill_value);
+  for(auto i = 0u; i < hist.array_.num_elements(); ++i) {
+    BOOST_CHECK_EQUAL(hist.array_.data()[i], fill_value);
   }
 }
 
@@ -63,7 +63,7 @@ struct SIGMOIDAL_SYSTEM {
     double max_error = 0;
     for(int i = 1; i < num_steps; ++i) {
       double relative_error =
-          (solution(i * dt) - hist->array[0][i][DERIV_0]) / solution(i * dt);
+          (solution(i * dt) - hist->array_[0][i][DERIV_0]) / solution(i * dt);
       max_error = std::max(max_error, std::abs(relative_error));
     }
 
@@ -85,8 +85,8 @@ struct SIGMOIDAL_SYSTEM {
 
     hist->fill(0);
     for(int i = -window; i <= 0; ++i) {
-      hist->array[0][i][DERIV_0] = solution(i * dt);
-      hist->array[0][i][DERIV_1] = rhs(hist->array[0][i][DERIV_0], i * dt);
+      hist->array_[0][i][DERIV_0] = solution(i * dt);
+      hist->array_[0][i][DERIV_1] = rhs(hist->array_[0][i][DERIV_0], i * dt);
     }
   };
 };
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(PREDICTOR_CORRECTOR)
 
   BOOST_TEST_MESSAGE(
       "Maximum relative predictor/corrector error: " << max_abs_error());
-  BOOST_CHECK_CLOSE(hist->array[0][num_steps - 1][0],
+  BOOST_CHECK_CLOSE(hist->array_[0][num_steps - 1][0],
                     solution((num_steps - 1) * dt), 1e-10);
 }
 
@@ -116,19 +116,19 @@ BOOST_AUTO_TEST_CASE(RUNGE_KUTTA_4)
   using namespace Integrator::history_enums;
 
   for(int i = 0; i < num_steps - 1; ++i) {
-    const double &yi = hist->array[0][i][DERIV_0];
+    const double &yi = hist->array_[0][i][DERIV_0];
 
     double k1 = rhs(yi, i * dt);
     double k2 = rhs(yi + dt * k1 / 2, (i + 0.5) * dt);
     double k3 = rhs(yi + dt * k2 / 2, (i + 0.5) * dt);
     double k4 = rhs(yi + dt * k3, (i + 1) * dt);
 
-    hist->array[0][i + 1][DERIV_0] = yi + dt * (k1 + 2 * (k2 + k3) + k4) / 6;
-    hist->array[0][i][DERIV_1] = k1;
+    hist->array_[0][i + 1][DERIV_0] = yi + dt * (k1 + 2 * (k2 + k3) + k4) / 6;
+    hist->array_[0][i][DERIV_1] = k1;
   }
 
   BOOST_TEST_MESSAGE("Maximum relative RK4 error: " << max_abs_error());
-  BOOST_CHECK_CLOSE(hist->array[0][num_steps - 1][0],
+  BOOST_CHECK_CLOSE(hist->array_[0][num_steps - 1][0],
                     solution((num_steps - 1) * dt), 1e-6);
 }
 
