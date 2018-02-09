@@ -30,6 +30,8 @@ class AIM::Nearfield final : public AimBase {
   void fill_source_table(const int) override;
   void propagate(const int) override;
   void fill_results_table(const int) override;
+
+  void clear_table_timestep(spacetime::vector3d<cmplx> &, const int) const;
 };
 
 #endif
