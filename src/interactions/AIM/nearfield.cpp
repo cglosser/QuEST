@@ -73,7 +73,7 @@ void AIM::Nearfield::fill_source_table(const int step)
 
 void AIM::Nearfield::propagate(const int step)
 {
-  using Mat3d = Eigen::Matrix<cmplx, Eigen::Dynamic, 3>;
+  using Mat3d = Eigen::Matrix<cmplx, Eigen::Dynamic, 3, Eigen::RowMajor>;
   const auto wrapped_step = step % table_dimensions[0];
 
   for(int t = 0; t < table_dimensions[0]; ++t) {
