@@ -52,11 +52,25 @@ std::array<int, 4> AIM::Grid::circulant_shape(const double c,
                                               const double dt,
                                               const int pad /* = 0 */) const
 {
-  std::array<int, 4> shape;
-  shape[0] = max_transit_steps(c, dt) + pad;
-  for(int i = 1; i < 4; ++i) shape[i] = 2 * dimensions(i - 1);
+  std::array<int, 4> dims;
+  dims[0] = max_transit_steps(c, dt) + pad;
+  for(int i = 1; i < 4; ++i) dims[i] = 2 * dimensions(i - 1);
 
-  return shape;
+  return dims;
+}
+
+std::array<int, 4> AIM::Grid::nearfield_shape(const double c,
+                                              const double dt,
+                                              const int pad,
+                                              const int border) const
+{
+  std::array<int, 4> dims;
+  dims[0] = nearfield_pairs(border).size();
+  dims[1] = max_transit_steps(c, dt) + pad;
+  dims[2] = std::pow(expansion_order + 1, 3);
+  dims[3] = std::pow(expansion_order + 1, 3);
+
+  return dims;
 }
 
 std::vector<DotRange> AIM::Grid::box_contents_map() const
@@ -97,11 +111,11 @@ std::vector<size_t> AIM::Grid::expansion_indices(const int grid_index) const
 }
 
 std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
-    const int thresh) const
+    const int border) const
 {
   std::vector<ipair_t> nf;
 
-  const int bound = expansion_order + thresh;
+  const int bound = expansion_order + border;
 
   for(auto src_idx = 0u; src_idx < num_gridpoints; ++src_idx) {
     Eigen::Vector3i s = idx_to_coord(src_idx);

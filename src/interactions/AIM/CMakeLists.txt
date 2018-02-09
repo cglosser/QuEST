@@ -6,5 +6,7 @@ target_sources(quest
     "${CMAKE_CURRENT_LIST_DIR}/farfield.h"
     "${CMAKE_CURRENT_LIST_DIR}/grid.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/grid.h"
+    "${CMAKE_CURRENT_LIST_DIR}/nearfield.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/nearfield.h"
     "${CMAKE_CURRENT_LIST_DIR}/spacetime.h"
 )

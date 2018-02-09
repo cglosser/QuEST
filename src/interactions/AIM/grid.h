@@ -25,6 +25,10 @@ class AIM::Grid {
   std::array<int, 4> circulant_shape(const double,
                                      const double,
                                      const int = 0) const;
+  std::array<int, 4> nearfield_shape(const double,
+                                     const double,
+                                     const int = 0,
+                                     const int = 1) const;
 
   std::vector<size_t> expansion_indices(const int) const;
   std::vector<size_t> expansion_indices(const Eigen::Vector3d &pos) const
