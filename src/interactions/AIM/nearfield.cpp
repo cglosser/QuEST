@@ -184,6 +184,7 @@ void AIM::Nearfield::clear_table_timestep(spacetime::vector3d<cmplx> &table,
                                           const int wrapped_step) const
 {
   const auto ptr = &table[wrapped_step][0][0][0][0];
-  const auto n_elem = table_dimensions[1] * 2 * table_dimensions[2] * 3;
+  const auto n_elem = std::accumulate(table.shape() + 1, table.shape() + 5, 1,
+                                      std::multiplies<int>());
   std::fill(ptr, ptr + n_elem, cmplx(0, 0));
 }
