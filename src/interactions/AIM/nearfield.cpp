@@ -24,7 +24,6 @@ AIM::Nearfield::Nearfield(
       mapping(grid.box_contents_map()),
       neighbors(grid.nearfield_pairs(border))
 {
-  // Forget about last dimension; not needed in this scheme
   std::array<int, 5> extents = {table_dimensions[0], table_dimensions[1], 2,
                                 table_dimensions[2], 3};
   source_table.resize(extents);
@@ -37,6 +36,9 @@ void AIM::Nearfield::fill_source_table(const int step)
   using namespace Expansions::enums;
 
   const int wrapped_step = step % table_dimensions[0];
+  const auto ptr = &source_table[wrapped_step][0][0][0][0];
+  const auto n_elem = table_dimensions[1] * 2 * table_dimensions[2] * 3;
+  std::fill(ptr, ptr + n_elem, cmplx(0, 0));
 
   for(int t = 0; t < table_dimensions[0]; ++t) {
     for(size_t p = 0; p < neighbors.size(); ++p) {
@@ -97,7 +99,7 @@ void AIM::Nearfield::propagate(const int step)
       Eigen::Map<Mat3d> obs2(&obs_table[wrapped_step][p][0][0][0],
                              table_dimensions[2], 3);
 
-      obs2 += mat * src2;
+      obs2 += mat.transpose() * src2;
     }
   }
 }
