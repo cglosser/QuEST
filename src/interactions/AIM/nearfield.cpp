@@ -63,7 +63,7 @@ void AIM::Nearfield::fill_source_table(const int step)
       std::tie(start, end) = mapping[box2];
       for(auto d = start; d != end; ++d) {
         const auto dot_idx = std::distance(dots->begin(), d);
-        grid_field1 += expansion_table[dot_idx][e].d0 *
+        grid_field2 += expansion_table[dot_idx][e].d0 *
                        (*dots)[dot_idx].dipole() *
                        history->array_[dot_idx][step][0][RHO_01];
       }
@@ -76,7 +76,7 @@ void AIM::Nearfield::propagate(const int step)
   using Mat3d = Eigen::Matrix<cmplx, Eigen::Dynamic, 3>;
   const auto wrapped_step = step % table_dimensions[0];
 
-  for(int t = 1; t < table_dimensions[0]; ++t) {
+  for(int t = 0; t < table_dimensions[0]; ++t) {
     const int wrap = std::max(step - t, 0) % table_dimensions[0];
     for(size_t p = 0; p < neighbors.size(); ++p) {
       Eigen::Map<Eigen::MatrixXcd> mat(&propagation_table[t][p][0][0],
@@ -85,14 +85,14 @@ void AIM::Nearfield::propagate(const int step)
 
       Eigen::Map<Mat3d> src1(&source_table[wrap][p][0][0][0],
                              table_dimensions[2], 3);
-      Eigen::Map<Mat3d> obs1(&obs_table[wrapped_step][p][0][0][0],
+      Eigen::Map<Mat3d> obs1(&obs_table[wrapped_step][p][1][0][0],
                              table_dimensions[2], 3);
 
       obs1 += mat * src1;
 
       if(neighbors[p].first == neighbors[p].second) continue;
 
-      Eigen::Map<Mat3d> src2(&source_table[wrap][p][0][0][0],
+      Eigen::Map<Mat3d> src2(&source_table[wrap][p][1][0][0],
                              table_dimensions[2], 3);
       Eigen::Map<Mat3d> obs2(&obs_table[wrapped_step][p][0][0][0],
                              table_dimensions[2], 3);
@@ -158,7 +158,7 @@ spacetime::vector<cmplx> AIM::Nearfield::make_propagation_table() const
         const double arg = dr.norm() / (c0 * dt);
         const std::pair<int, double> split_arg = split_double(arg);
 
-        for(int t = 1; t < table_dimensions[0]; ++t) {
+        for(int t = 0; t < table_dimensions[0]; ++t) {
           const auto polynomial_idx = static_cast<int>(ceil(t - arg));
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
