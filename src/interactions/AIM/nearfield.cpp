@@ -40,34 +40,32 @@ void AIM::Nearfield::fill_source_table(const int step)
   const auto n_elem = table_dimensions[1] * 2 * table_dimensions[2] * 3;
   std::fill(ptr, ptr + n_elem, cmplx(0, 0));
 
-  for(int t = 0; t < table_dimensions[0]; ++t) {
-    for(size_t p = 0; p < neighbors.size(); ++p) {
-      size_t box1, box2;
-      std::tie(box1, box2) = neighbors[p];
+  for(size_t p = 0; p < neighbors.size(); ++p) {
+    size_t box1, box2;
+    std::tie(box1, box2) = neighbors[p];
 
-      for(size_t e = 0; e < expansion_table.shape()[1]; ++e) {
-        Eigen::Map<Eigen::Vector3cd> grid_field1(
-            &source_table[wrapped_step][p][0][e][0]);
+    for(size_t e = 0; e < expansion_table.shape()[1]; ++e) {
+      Eigen::Map<Eigen::Vector3cd> grid_field1(
+          &source_table[wrapped_step][p][0][e][0]);
 
-        DotVector::const_iterator start, end;
-        std::tie(start, end) = mapping[box1];
-        for(auto d = start; d != end; ++d) {
-          const auto dot_idx = std::distance(dots->begin(), d);
-          grid_field1 += expansion_table[dot_idx][e].d0 *
-                         (*dots)[dot_idx].dipole() *
-                         history->array_[dot_idx][step][0][RHO_01];
-        }
+      DotVector::const_iterator start, end;
+      std::tie(start, end) = mapping[box1];
+      for(auto d = start; d != end; ++d) {
+        const auto dot_idx = std::distance(dots->begin(), d);
+        grid_field1 += expansion_table[dot_idx][e].d0 *
+                       (*dots)[dot_idx].dipole() *
+                       history->array_[dot_idx][step][0][RHO_01];
+      }
 
-        Eigen::Map<Eigen::Vector3cd> grid_field2(
-            &source_table[wrapped_step][p][1][e][0]);
+      Eigen::Map<Eigen::Vector3cd> grid_field2(
+          &source_table[wrapped_step][p][1][e][0]);
 
-        std::tie(start, end) = mapping[box2];
-        for(auto d = start; d != end; ++d) {
-          const auto dot_idx = std::distance(dots->begin(), d);
-          grid_field1 += expansion_table[dot_idx][e].d0 *
-                         (*dots)[dot_idx].dipole() *
-                         history->array_[dot_idx][step][0][RHO_01];
-        }
+      std::tie(start, end) = mapping[box2];
+      for(auto d = start; d != end; ++d) {
+        const auto dot_idx = std::distance(dots->begin(), d);
+        grid_field1 += expansion_table[dot_idx][e].d0 *
+                       (*dots)[dot_idx].dipole() *
+                       history->array_[dot_idx][step][0][RHO_01];
       }
     }
   }
