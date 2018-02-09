@@ -40,6 +40,7 @@ class AIM::AimBase : public HistoryInteraction {
       std::fill(table.data(), table.data() + table.num_elements(), cmplx(0, 0));
     };
 
+    clear(propagation_table);
     clear(source_table);
     clear(obs_table);
   }
@@ -67,7 +68,7 @@ class AIM::AimBase : public HistoryInteraction {
   // These correspond to J and E and thus hold *vector* quantities
   spacetime::vector3d<cmplx> source_table, obs_table;
 
-  virtual spacetime::vector<cmplx> make_propagation_table() = 0;
+  virtual spacetime::vector<cmplx> make_propagation_table() const = 0;
   virtual void fill_source_table(const int) = 0;
   virtual void propagate(const int) = 0;
   virtual void fill_results_table(const int) = 0;

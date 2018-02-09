@@ -65,8 +65,8 @@ std::array<int, 4> AIM::Grid::nearfield_shape(const double c,
                                               const int border) const
 {
   std::array<int, 4> dims;
-  dims[0] = nearfield_pairs(border).size();
-  dims[1] = max_transit_steps(c, dt) + pad;
+  dims[0] = max_transit_steps(c, dt) + pad;
+  dims[1] = nearfield_pairs(border).size();
   dims[2] = std::pow(expansion_order + 1, 3);
   dims[3] = std::pow(expansion_order + 1, 3);
 
@@ -114,6 +114,7 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
     const int border) const
 {
   std::vector<ipair_t> nf;
+  std::vector<DotRange> mapping = box_contents_map();
 
   const int bound = expansion_order + border;
 
@@ -126,7 +127,8 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
         for(int z = std::max(0, s(2) - bound);
             z <= std::min(dimensions(2) - 1, s(2) + bound); ++z) {
           const auto obs_idx = coord_to_idx({x, y, z});
-          if(obs_idx >= src_idx) {
+          if(obs_idx >= src_idx &&
+             mapping[obs_idx].first != mapping[obs_idx].second) {
             nf.emplace_back(src_idx, obs_idx);
           }
         }

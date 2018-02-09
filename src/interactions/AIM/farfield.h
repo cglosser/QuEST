@@ -28,7 +28,7 @@ class AIM::Farfield final : public AimBase {
   void fill_gmatrix_table(spacetime::vector<cmplx> &) const;
   TransformPair spatial_fft_plans();
 
-  spacetime::vector<cmplx> make_propagation_table() override;
+  spacetime::vector<cmplx> make_propagation_table() const override;
   void fill_source_table(const int) override;
   void propagate(const int) override;
   void fill_results_table(const int) override;

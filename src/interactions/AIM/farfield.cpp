@@ -34,7 +34,7 @@ void AIM::Farfield::fill_source_table(const int step)
   std::fill(p, p + 3 * 8 * grid.size(), cmplx(0, 0));
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
-    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[2];
+    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
         ++expansion_idx) {
       const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
@@ -104,7 +104,7 @@ void AIM::Farfield::fill_results_table(const int step)
   }
 }
 
-spacetime::vector<cmplx> AIM::Farfield::make_propagation_table()
+spacetime::vector<cmplx> AIM::Farfield::make_propagation_table() const
 {
   spacetime::vector<cmplx> g_mat(table_dimensions);
 

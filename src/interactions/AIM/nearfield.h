@@ -23,9 +23,10 @@ class AIM::Nearfield final : public AimBase {
   ~Nearfield() = default;
 
  private:
+  std::vector<DotRange> mapping;
   std::vector<Grid::ipair_t> neighbors;
 
-  spacetime::vector<cmplx> make_propagation_table() override;
+  spacetime::vector<cmplx> make_propagation_table() const override;
   void fill_source_table(const int) override;
   void propagate(const int) override;
   void fill_results_table(const int) override;
