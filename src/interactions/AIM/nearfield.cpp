@@ -117,30 +117,24 @@ void AIM::Nearfield::fill_results_table(const int step)
   const int wrapped_step = step % table_dimensions[0];
   results = 0;
 
-  for(size_t p = 0; p < neighbors.size(); ++p) {
+  for(size_t p = 0; p < static_cast<int>(neighbors.size()); ++p) {
     size_t box1, box2;
     std::tie(box1, box2) = neighbors[p];
 
-    for(size_t e = 0; e < expansion_table.shape()[1]; ++e) {
-      Eigen::Map<Eigen::Vector3cd> grid_field1(
-          &obs_table[wrapped_step][p][0][e][0]);
-
+    for(size_t e = 0; e < static_cast<int>(expansion_table.shape()[1]); ++e) {
       DotVector::const_iterator start, end;
       std::tie(start, end) = mapping[box1];
       for(auto d = start; d != end; ++d) {
         const auto dot_idx = std::distance(dots->begin(), d);
-        results(dot_idx) += expansion_table[dot_idx][e].d0 *
-                            grid_field1.dot((*dots)[dot_idx].dipole());
+        results(dot_idx) += (*dots)[dot_idx].dipole().dot(expansion_function(
+            obs_table, {{step, p, 0, e}}, expansion_table[dot_idx][e]));
       }
-
-      Eigen::Map<Eigen::Vector3cd> grid_field2(
-          &obs_table[wrapped_step][p][1][e][0]);
 
       std::tie(start, end) = mapping[box2];
       for(auto d = start; d != end; ++d) {
         const auto dot_idx = std::distance(dots->begin(), d);
-        results(dot_idx) += expansion_table[dot_idx][e].d0 *
-                            grid_field2.dot((*dots)[dot_idx].dipole());
+        results(dot_idx) += (*dots)[dot_idx].dipole().dot(expansion_function(
+            obs_table, {{step, p, 1, e}}, expansion_table[dot_idx][e]));
       }
     }
   }

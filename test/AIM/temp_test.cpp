@@ -87,11 +87,11 @@ BOOST_FIXTURE_TEST_CASE(NEARFIELD, PARAMETERS)
           expansion_order, grid, *dots);
 
   AIM::Nearfield nf(dots, history, interpolation_order, 1, c, dt, grid,
-                    expansions, AIM::Expansions::Retardation(len),
+                    expansions, AIM::Expansions::TimeDerivative(len, dt),
                     AIM::normalization::unit);
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid,
-                    expansions, AIM::Expansions::Retardation(len),
+                    expansions, AIM::Expansions::TimeDerivative(len, dt),
                     AIM::normalization::unit);
 
   std::cout.precision(17);
