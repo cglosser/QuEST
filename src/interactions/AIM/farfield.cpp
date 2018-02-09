@@ -10,41 +10,26 @@ AIM::Farfield::Farfield(
     const Expansions::ExpansionTable &expansion_table,
     Expansions::ExpansionFunction expansion_function,
     normalization::SpatialNorm normalization)
-    : HistoryInteraction(dots, history, interp_order, c0, dt),
-      grid(std::move(grid)),
-      expansion_table(expansion_table),
-      expansion_function(std::move(expansion_function)),
-      normalization(std::move(normalization)),
-
-      // FFT stuff
-      circulant_dimensions(grid.circulant_shape(c0, dt, interp_order)),
-      fourier_table(circulant_fourier_table()),
-      source_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
-      obs_table(spacetime::make_vector3d<cmplx>(circulant_dimensions)),
+    : AimBase(dots,
+              history,
+              interp_order,
+              c0,
+              dt,
+              grid,
+              expansion_table,
+              expansion_function,
+              normalization,
+              grid.circulant_shape(c0, dt, interp_order)),
       spatial_vector_transforms(spatial_fft_plans())
 {
-  auto clear = [](auto &table) {
-    std::fill(table.data(), table.data() + table.num_elements(), cmplx(0, 0));
-  };
-
-  clear(source_table);
-  clear(obs_table);
-}
-
-const Interaction::ResultArray &AIM::Farfield::evaluate(const int step)
-{
-  fill_source_table(step);
-  propagate(step);
-  fill_results_table(step);
-
-  return results;
+  propagation_table = make_propagation_table();
 }
 
 void AIM::Farfield::fill_source_table(const int step)
 {
   using namespace Expansions::enums;
 
-  const int wrapped_step = step % circulant_dimensions[0];
+  const int wrapped_step = step % table_dimensions[0];
   const auto p = &source_table[wrapped_step][0][0][0][0];
   std::fill(p, p + 3 * 8 * grid.num_gridpoints, cmplx(0, 0));
 
@@ -70,7 +55,7 @@ void AIM::Farfield::fill_source_table(const int step)
 
 void AIM::Farfield::propagate(const int step)
 {
-  const auto wrapped_step = step % circulant_dimensions[0];
+  const auto wrapped_step = step % table_dimensions[0];
   const auto nb = 8 * grid.num_gridpoints;
   const std::array<int, 5> front = {{wrapped_step, 0, 0, 0, 0}};
 
@@ -82,11 +67,11 @@ void AIM::Farfield::propagate(const int step)
   Eigen::Map<Eigen::Array3Xcd> observers(&obs_table(front), 3, nb);
   observers = 0;
 
-  for(int i = 1; i < circulant_dimensions[0]; ++i) {
+  for(int i = 1; i < table_dimensions[0]; ++i) {
     // If (step - i) runs "off the end", just propagate src[0][...]
-    auto wrap = std::max(step - i, 0) % circulant_dimensions[0];
+    auto wrap = std::max(step - i, 0) % table_dimensions[0];
 
-    Eigen::Map<Eigen::ArrayXcd> prop(&fourier_table[i][0][0][0], nb);
+    Eigen::Map<Eigen::ArrayXcd> prop(&propagation_table[i][0][0][0], nb);
     Eigen::Map<Eigen::Array3Xcd> src(&source_table[wrap][0][0][0][0], 3, nb);
 
     // Use broadcasting to do the x, y, and z component propagation
@@ -119,14 +104,14 @@ void AIM::Farfield::fill_results_table(const int step)
   }
 }
 
-spacetime::vector<cmplx> AIM::Farfield::circulant_fourier_table()
+spacetime::vector<cmplx> AIM::Farfield::make_propagation_table()
 {
-  spacetime::vector<cmplx> g_mat(circulant_dimensions);
+  spacetime::vector<cmplx> g_mat(table_dimensions);
 
-  const int num_gridpts = circulant_dimensions[1] * circulant_dimensions[2] *
-                          circulant_dimensions[3];
+  const int num_gridpts =
+      table_dimensions[1] * table_dimensions[2] * table_dimensions[3];
   TransformPair circulant_plan = {
-      fftw_plan_many_dft(3, &circulant_dimensions[1], circulant_dimensions[0],
+      fftw_plan_many_dft(3, &table_dimensions[1], table_dimensions[0],
                          reinterpret_cast<fftw_complex *>(g_mat.data()),
                          nullptr, 1, num_gridpts,
                          reinterpret_cast<fftw_complex *>(g_mat.data()),
@@ -177,7 +162,7 @@ void AIM::Farfield::fill_gmatrix_table(
         const double arg = dr.norm() / (c0 * dt);
         const std::pair<int, double> split_arg = split_double(arg);
 
-        for(int t = 1; t < circulant_dimensions[0]; ++t) {
+        for(int t = 1; t < table_dimensions[0]; ++t) {
           const auto polynomial_idx = static_cast<int>(ceil(t - arg));
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
@@ -208,7 +193,7 @@ TransformPair AIM::Farfield::spatial_fft_plans()
 
   auto make_plan = [&](const int sign) {
     return fftw_plan_many_dft(
-        transform_rank, &circulant_dimensions[1], num_transforms,
+        transform_rank, &table_dimensions[1], num_transforms,
         reinterpret_cast<fftw_complex *>(source_table.data()), nullptr,
         dist_between_elements, dist_between_transforms,
         reinterpret_cast<fftw_complex *>(source_table.data()), nullptr,
