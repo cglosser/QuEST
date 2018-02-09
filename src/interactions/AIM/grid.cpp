@@ -120,6 +120,8 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
 
   for(auto src_idx = 0u; src_idx < num_gridpoints; ++src_idx) {
     Eigen::Vector3i s = idx_to_coord(src_idx);
+    if(mapping[src_idx].first == mapping[src_idx].second) continue;
+
     for(int x = std::max(0, s(0) - bound);
         x <= std::min(dimensions(0) - 1, s(0) + bound); ++x) {
       for(int y = std::max(0, s(1) - bound);
