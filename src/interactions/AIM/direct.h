@@ -11,23 +11,20 @@ class AIM::Direct final : public HistoryInteraction {
  public:
   Direct(std::shared_ptr<const DotVector>,
          std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
-         Propagation::RotatingFramePropagator,
+         Propagation::Kernel<cmplx> &,
          const int,
          const double,
          const double,
-         Grid);
+         const AIM::Grid &);
 
   const ResultArray &evaluate(const int) final;
+  std::vector<std::pair<int, int>> make_pair_list(const Grid &) const;
 
  private:
-  Propagation::RotatingFramePropagator propagator;
-  int num_interactions;
-  Grid grid;
   std::vector<std::pair<int, int>> interaction_pairs;
+  std::array<int, 2> shape;
   std::vector<int> floor_delays;
   boost::multi_array<cmplx, 2> coefficients;
 
-  // boost multiarrays don't implement move constructors,
-  // otherwise this would totally be up with build_pair_list.
-  void build_coefficient_table();
+  void build_coefficient_table(Propagation::Kernel<cmplx> &);
 };
