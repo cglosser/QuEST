@@ -14,21 +14,16 @@ class AIM::Grid {
   using BoundsArray = Eigen::Array<int, 3, 2>;
   using ipair_t = std::pair<int, int>;
 
-  Grid();
-  Grid(const Eigen::Array3d &, const std::shared_ptr<DotVector>, const int);
   Grid(const Eigen::Array3d &,
+       const int,
        const Eigen::Array3i &,
-       const Eigen::Vector3i & = Eigen::Vector3i::Zero(),
-       const int = 0);
+       const Eigen::Vector3i & = Eigen::Vector3i::Zero());
+  Grid(const Eigen::Array3d &, const int, DotVector &);
 
-  BoundsArray calculate_bounds() const;
+  BoundsArray calculate_bounds(const DotVector &) const;
   std::array<int, 4> circulant_shape(const double,
                                      const double,
                                      const int = 0) const;
-  std::array<int, 4> nearfield_shape(const double,
-                                     const double,
-                                     const int = 0,
-                                     const int = 1) const;
 
   std::vector<size_t> expansion_indices(const int) const;
   std::vector<size_t> expansion_indices(const Eigen::Vector3d &pos) const
@@ -42,8 +37,8 @@ class AIM::Grid {
     return static_cast<int>(ceil(max_diagonal / (c * dt)));
   };
 
-  std::vector<DotRange> box_contents_map() const;
-  std::vector<ipair_t> nearfield_pairs(const int) const;
+  std::vector<const_DotRange> box_contents_map(const DotVector &) const;
+  std::vector<ipair_t> nearfield_pairs(const int, const DotVector &) const;
 
   inline const auto size() const { return num_gridpoints; }
   inline const auto &shape() const { return dimensions; }
@@ -83,14 +78,13 @@ class AIM::Grid {
   }
 
  private:
-  Eigen::Array3i dimensions;
   Eigen::Array3d spacing;
-  std::shared_ptr<DotVector> dots;
   int expansion_order;
   BoundsArray bounds;
+  Eigen::Array3i dimensions;
   size_t num_gridpoints;
 
-  void sort_points_on_boxidx() const;
+  void sort_points_on_boxidx(DotVector &) const;
 };
 
 #endif
