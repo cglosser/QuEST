@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(QuEST VERSION 0.1 LANGUAGES CXX)
+project(QuEST VERSION 0.2.0 LANGUAGES CXX)
 
 # Location of custom detection scripts
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
