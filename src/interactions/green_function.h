@@ -17,7 +17,7 @@ namespace Propagation {
   class Kernel;
 
   template <class T>
-  class Default;
+  class Identity;
 
   template <class T>
   class EFIE;
@@ -38,11 +38,11 @@ class Propagation::Kernel {
 };
 
 template <class T>
-class Propagation::Default : public Propagation::Kernel<T> {
+class Propagation::Identity : public Propagation::Kernel<T> {
  public:
-  Default() = default;
+  Identity() = default;
   const std::vector<Mat3D<T>> &coefficients(
-      const Eigen::Vector3d &dr,
+      __attribute__((unused)) const Eigen::Vector3d &dr,
       const Interpolation::UniformLagrangeSet &interp)
   {
     this->coefs_.resize(interp.order() + 1);
