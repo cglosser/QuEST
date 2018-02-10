@@ -2,82 +2,107 @@
 #include <cmath>
 #include <iomanip>
 
-#include "interactions/AIM/farfield.h"
+#include "interactions/AIM/AIM"
 
 BOOST_AUTO_TEST_SUITE(AIM)
 
+template <int num_dots>
 struct PARAMETERS {
-  static int interpolation_order, num_steps, num_dots;
-  static double c, dt, total_time;
+  int interpolation_order, expansion_order, num_steps;
+  double c, dt, total_time;
 
-  static Eigen::Array3i num_boxes;
-  static Eigen::Array3d spacing;
-
-  int expansion_order;  // Different orders for different test geometries
+  Eigen::Array3d spacing;
 
   std::shared_ptr<DotVector> dots;
   std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
 
-  Grid grid;
-  Expansions::ExpansionTable expansions;
+  PARAMETERS()
+      : interpolation_order(4),
+        expansion_order(1),
+        num_steps(1024),
 
-  PARAMETERS(const int expansion_order, std::shared_ptr<DotVector> dots)
-      : expansion_order(expansion_order),
-        dots(dots),
+        c(1),
+        dt(1),
+        total_time(1024),
+
+        spacing(Eigen::Array3d(1, 1, 1) * c * dt),
+
+        dots(std::make_shared<DotVector>(num_dots)),
         history(std::make_shared<Integrator::History<Eigen::Vector2cd>>(
-            num_dots, 10, num_steps)),
-        grid(spacing, dots, expansion_order),
-        expansions(Expansions::LeastSquaresExpansionSolver::get_expansions(
-            expansion_order, grid, *dots)){};
+            num_dots, 10, num_steps))
+  {
+    std::cout.precision(17);
 
-  virtual ~PARAMETERS() = 0;
+    history->fill(Eigen::Vector2cd::Zero());
+    for(int t = -10; t < num_steps; ++t) {
+      history->array_[0][t][0](RHO_01) = src(t * dt);
+    }
+  };
 
   double src(const double t) const
   {
     double arg = (t - total_time / 2.0) / (total_time / 6.0);
     return gaussian(arg);
   }
-
-  double dt_src(const double t) const
-  {
-    const double mu = total_time / 2.0, sigma = total_time / 6.0;
-    const double arg = (t - mu) / sigma;
-    return -arg * gaussian(arg) / sigma;
-  }
-
-  double efie_src(const Eigen::Vector3d &dr, const double t)
-  {
-    // This is horrible; don't even try to pull it apart yourself.
-    // I just did it with Mathematica's symbolics and CForm.
-    const double csq = std::pow(c, 2);
-    const double r = dr.norm();
-    const double x = dr(0), y = dr(1), z = dr(2);
-    return (18 * (csq * std::pow(total_time, 2) *
-                      (2 * r + c * (total_time - 2 * t)) *
-                      (std::pow(x, 2) + std::pow(y, 2)) +
-                  8 * r * (3 * r + c * (total_time - 3 * t)) *
-                      (2 * c * total_time + 3 * r - 3 * c * t) * (r - z) *
-                      (r + z))) /
-           (csq * std::exp((9 * std::pow(2 * r + c * (total_time - 2 * t), 2)) /
-                           (2 * csq * std::pow(total_time, 2))) *
-            std::pow(total_time, 4) * std::pow(r, 3));
-  }
 };
 
-// These are common to a large suie of tests and some test parameters (like dot
-// positions) might depend on them. To resolve this with a minimum of code
-// duplication, these variables have been made STATIC so that they're available
-// to all subclasses of PARAMETERS when they're constructed.
-PARAMETERS::~PARAMETERS() {}
-int PARAMETERS::interpolation_order = 3;
-int PARAMETERS::num_steps = 1024;
-int PARAMETERS::num_dots = 2;
+BOOST_AUTO_TEST_SUITE(IDENTITY_KERNEL)
 
-double PARAMETERS::c = 1;
-double PARAMETERS::dt = 1;
-double PARAMETERS::total_time = dt * num_steps;
+BOOST_FIXTURE_TEST_CASE(DIRECT_1, PARAMETERS<2>)
+{
+  dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
+  dots->at(1) = QuantumDot({0.5, 0.5, 1.5}, {0, 0, 1});
+  AIM::Grid grid(spacing, dots, expansion_order);
 
-Eigen::Array3i PARAMETERS::num_boxes(8, 8, 8);
-Eigen::Array3d PARAMETERS::spacing(Eigen::Array3d(1, 1, 1) * c * dt);
+  Eigen::Vector3d dr = dots->at(1).position() - dots->at(0).position();
+
+  Propagation::Identity<cmplx> gf;
+  AIM::DirectInteraction direct1(dots, history, gf, interpolation_order, c, dt,
+                                 grid);
+
+  for(int t = 0; t < num_steps; ++t) {
+    const auto prop = direct1.evaluate(t);
+    BOOST_CHECK_EQUAL(std::norm(prop(0)), 0);
+    BOOST_CHECK_SMALL(std::norm(prop(1) - src(t * dt - dr.norm() / c)), 1e-14);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(DIRECT_2, PARAMETERS<2>)
+{
+  dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
+  dots->at(1) = QuantumDot({0.5, 0.5, 2.5}, {0, 0, 1});
+  AIM::Grid grid(spacing, dots, expansion_order);
+
+  Eigen::Vector3d dr = dots->at(1).position() - dots->at(0).position();
+
+  Propagation::Identity<cmplx> gf;
+  AIM::DirectInteraction direct1(dots, history, gf, interpolation_order, c, dt,
+                                 grid);
+
+  for(int t = 0; t < num_steps; ++t) {
+    const auto prop = direct1.evaluate(t);
+    BOOST_CHECK_EQUAL(std::norm(prop(0)), 0);
+    BOOST_CHECK_SMALL(std::norm(prop(1) - src(t * dt - dr.norm() / c)), 1e-14);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(DIRECT_NIL, PARAMETERS<2>)
+{
+  dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
+  dots->at(1) = QuantumDot({0.5, 0.5, 3.5}, {0, 0, 1});
+  AIM::Grid grid(spacing, dots, expansion_order);
+
+  Propagation::Identity<cmplx> gf;
+  AIM::DirectInteraction direct1(dots, history, gf, interpolation_order, c, dt,
+                                 grid);
+
+  for(int t = 0; t < num_steps; ++t) {
+    const auto prop = direct1.evaluate(t);
+    BOOST_CHECK_EQUAL(std::norm(prop(0)), 0);
+    BOOST_CHECK_SMALL(std::norm(prop(1)), 1e-14);
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // IDENTITY_KERNEL
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM
