@@ -15,7 +15,7 @@ BOOST_FIXTURE_TEST_CASE(ONE_POINT_ON_GRID, PARAMETERS)
 {
   std::shared_ptr<DotVector> dots = std::make_shared<DotVector>(
       DotVector{QuantumDot(Eigen::Array3d::Zero())});
-  AIM::Grid grid(grid_spacing, dots, expansion_order);
+  AIM::Grid grid(grid_spacing, expansion_order, *dots);
 
   auto expansions =
       AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
@@ -30,7 +30,7 @@ BOOST_FIXTURE_TEST_CASE(ONE_POINT_EXPANSION_OFF_GRID, PARAMETERS)
 {
   std::shared_ptr<DotVector> dots =
       std::make_shared<DotVector>(DotVector{QuantumDot(grid_spacing / 2.0)});
-  AIM::Grid grid(grid_spacing, dots, expansion_order);
+  AIM::Grid grid(grid_spacing, expansion_order, *dots);
   auto expansions =
       AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
           expansion_order, grid, *dots);
@@ -45,7 +45,7 @@ BOOST_FIXTURE_TEST_CASE(TWO_POINTS_ON_GRID, PARAMETERS)
   std::shared_ptr<DotVector> dots = std::make_shared<DotVector>(
       DotVector{QuantumDot(grid_spacing * Eigen::Array3d::Zero()),
                 QuantumDot(grid_spacing * Eigen::Array3d(10, 1, 1))});
-  AIM::Grid grid(grid_spacing, dots, expansion_order);
+  AIM::Grid grid(grid_spacing, expansion_order, *dots);
   auto expansions =
       AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
           expansion_order, grid, *dots);
@@ -65,7 +65,7 @@ BOOST_FIXTURE_TEST_CASE(TWO_POINTS_OFF_GRID, PARAMETERS)
   std::shared_ptr<DotVector> dots = std::make_shared<DotVector>(
       DotVector{QuantumDot(grid_spacing / 2.0),
                 QuantumDot(grid_spacing * Eigen::Array3d(10.5, 0.5, 0.5))});
-  AIM::Grid grid(grid_spacing, dots, expansion_order);
+  AIM::Grid grid(grid_spacing, expansion_order, *dots);
   auto expansions =
       AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
           expansion_order, grid, *dots);
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(GRADIENT)
   dots->push_back(QuantumDot(Eigen::Vector3d(0.0, 0.0, 0.0)));
   dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5)));
 
-  AIM::Grid grid(Eigen::Array3d(1, 1, 1), dots, 2);
+  AIM::Grid grid(Eigen::Array3d(1, 1, 1), 2, *dots);
   auto expansions =
       AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(2, grid,
                                                                    *dots);

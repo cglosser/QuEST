@@ -25,7 +25,7 @@ class AIM::Nearfield final : public AimBase {
  private:
   enum FIELD_AXIS_LABEL { STEPS, PAIRS, POINTSETS, EXPANSIONS, DIMS };
   std::array<int, 5> field_table_dims;
-  std::vector<DotRange> mapping;
+  std::vector<const_DotRange> mapping;
   std::vector<Grid::ipair_t> neighbors;
 
   spacetime::vector<cmplx> make_propagation_table() const override;

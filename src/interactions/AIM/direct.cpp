@@ -10,7 +10,7 @@ AIM::DirectInteraction::DirectInteraction(
     const Grid &grid)
     : HistoryInteraction(dots, history, interp_order, c0, dt),
       interaction_pairs(make_pair_list(grid)),
-      shape({static_cast<int>(interaction_pairs.size()), interp_order + 1}),
+      shape({{static_cast<int>(interaction_pairs.size()), interp_order + 1}}),
       floor_delays(shape[0]),
       coefficients(shape)
 {
@@ -45,9 +45,9 @@ std::vector<std::pair<int, int>> AIM::DirectInteraction::make_pair_list(
     const Grid &grid) const
 {
   std::vector<std::pair<int, int>> particle_pairs;
-  std::vector<DotRange> mapping{grid.box_contents_map()};
+  auto mapping = grid.box_contents_map(*dots);
 
-  for(const auto &p : grid.nearfield_pairs(1)) {
+  for(const auto &p : grid.nearfield_pairs(1, *dots)) {
     DotVector::const_iterator begin1, end1, begin2, end2;
 
     std::tie(begin1, end1) = mapping[p.first];

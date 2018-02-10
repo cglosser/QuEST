@@ -40,7 +40,7 @@ class AIM::Grid {
   std::vector<const_DotRange> box_contents_map(const DotVector &) const;
   std::vector<ipair_t> nearfield_pairs(const int, const DotVector &) const;
 
-  inline const auto size() const { return num_gridpoints; }
+  inline auto size() const { return num_gridpoints; }
   inline const auto &shape() const { return dimensions; }
   // == Geometry routines (grid <---> space) ==================================
 

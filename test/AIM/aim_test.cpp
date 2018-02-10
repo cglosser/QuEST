@@ -48,11 +48,11 @@ struct PARAMETERS {
 
 BOOST_AUTO_TEST_SUITE(IDENTITY_KERNEL)
 
-BOOST_FIXTURE_TEST_CASE(DIRECT_1, PARAMETERS<2>)
+BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
 {
   dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
   dots->at(1) = QuantumDot({0.5, 0.5, 1.5}, {0, 0, 1});
-  AIM::Grid grid(spacing, dots, expansion_order);
+  AIM::Grid grid(spacing, expansion_order, *dots);
 
   Eigen::Vector3d dr = dots->at(1).position() - dots->at(0).position();
 
@@ -67,11 +67,11 @@ BOOST_FIXTURE_TEST_CASE(DIRECT_1, PARAMETERS<2>)
   }
 }
 
-BOOST_FIXTURE_TEST_CASE(DIRECT_2, PARAMETERS<2>)
+BOOST_FIXTURE_TEST_CASE(RETARDATION_2, PARAMETERS<2>)
 {
   dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
   dots->at(1) = QuantumDot({0.5, 0.5, 2.5}, {0, 0, 1});
-  AIM::Grid grid(spacing, dots, expansion_order);
+  AIM::Grid grid(spacing, expansion_order, *dots);
 
   Eigen::Vector3d dr = dots->at(1).position() - dots->at(0).position();
 
@@ -86,11 +86,11 @@ BOOST_FIXTURE_TEST_CASE(DIRECT_2, PARAMETERS<2>)
   }
 }
 
-BOOST_FIXTURE_TEST_CASE(DIRECT_NIL, PARAMETERS<2>)
+BOOST_FIXTURE_TEST_CASE(NO_SIGNAL, PARAMETERS<2>)
 {
   dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
   dots->at(1) = QuantumDot({0.5, 0.5, 3.5}, {0, 0, 1});
-  AIM::Grid grid(spacing, dots, expansion_order);
+  AIM::Grid grid(spacing, expansion_order, *dots);
 
   Propagation::Identity<cmplx> gf;
   AIM::DirectInteraction direct1(dots, history, gf, interpolation_order, c, dt,

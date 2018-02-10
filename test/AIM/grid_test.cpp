@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_CASE(COORDINATE_TRANSFORMATIONS_2D)
 {
   Eigen::Vector3d spacing(1, 1, 1);
   Eigen::Array3i shape(6, 5, 1), shift(-2, -2, 0);
-  AIM::Grid grid(spacing, shape, shift);
+  AIM::Grid grid(spacing, 0, shape, shift);
 
   // Check "bottom left" gridpt maps to index 0
   BOOST_CHECK_EQUAL(grid.idx_to_coord(0), Eigen::Vector3i::Zero());
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(COORDINATE_TRANSFORMATIONS_3D)
 {
   Eigen::Vector3d spacing(1, 1, 1);
   Eigen::Array3i shape(6, 5, 2), shift(-2, -3, 1);
-  AIM::Grid grid(spacing, shape, shift);
+  AIM::Grid grid(spacing, 0, shape, shift);
 
   // Check "bottom left" gridpt maps to index 0
   BOOST_CHECK_EQUAL(grid.idx_to_coord(0), Eigen::Vector3i::Zero());
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(NONINTEGER_SHIFT)
 {
   Eigen::Vector3d spacing(0.2, 0.2, 0.2);
   Eigen::Array3i shape(10, 10, 10), shift(-5, -5, -5);
-  AIM::Grid grid(spacing, shape, shift);
+  AIM::Grid grid(spacing, 0, shape, shift);
 
   // Origin is invariant
   BOOST_CHECK_EQUAL(
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(CIRCULANT_MATRIX_SHAPE)
 {
   Eigen::Vector3d spacing(1, 1, 1);
   Eigen::Vector3i shape(20, 20, 20);
-  AIM::Grid grid(spacing, shape);
+  AIM::Grid grid(spacing, 0, shape, Eigen::Vector3i::Zero());
 
   auto dims = grid.circulant_shape(1, 1);
   double diag = shape.cast<double>().norm();
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(EXPANSION_COORDINATES)
 {
   dots->push_back(QuantumDot(Eigen::Vector3d(0, -3, -3)));
   dots->push_back(QuantumDot(Eigen::Vector3d(0, 3, 3)));
-  AIM::Grid grid(spacing, dots, expansion_order);
+  AIM::Grid grid(spacing, expansion_order, *dots);
 
   BOOST_CHECK_EQUAL(grid.coord_to_idx(grid.idx_to_coord(0)), 0);
 
@@ -140,10 +140,13 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(NEARFIELD_PAIRS)
 {
-  AIM::Grid grid(Eigen::Array3d(1, 1, 1), Eigen::Array3i(2, 2, 4),
-                 Eigen::Vector3i::Zero(), 1);
+  DotVector dots(2);
+  dots[0] = QuantumDot({0, 0, 0}, {0, 0, 0});
+  dots[1] = QuantumDot({2, 2, 4}, {0, 0, 0});
 
-  const auto nf = grid.nearfield_pairs(1);
+  AIM::Grid grid(Eigen::Array3d(1, 1, 1), 0, dots);
+
+  const auto nf = grid.nearfield_pairs(1, dots);
 
   BOOST_CHECK_EQUAL(nf.size(), 120);
   BOOST_CHECK(nf.at(0) == std::make_pair(0, 0));

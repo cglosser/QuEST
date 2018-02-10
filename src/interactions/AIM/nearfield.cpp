@@ -11,18 +11,21 @@ AIM::Nearfield::Nearfield(
     const Expansions::ExpansionTable &expansion_table,
     Expansions::ExpansionFunction expansion_function,
     normalization::SpatialNorm normalization)
-    : AimBase(dots,
-              history,
-              interp_order,
-              c0,
-              dt,
-              grid,
-              expansion_table,
-              expansion_function,
-              normalization,
-              grid.nearfield_shape(c0, dt, interp_order, border)),
-      mapping(grid.box_contents_map()),
-      neighbors(grid.nearfield_pairs(border))
+    : AimBase(
+          dots,
+          history,
+          interp_order,
+          c0,
+          dt,
+          grid,
+          expansion_table,
+          expansion_function,
+          normalization,
+          {{grid.max_transit_steps(c0, dt) + interp_order,
+            (int)grid.nearfield_pairs(border, *dots).size(),
+            (int)expansion_table.shape()[1], (int)expansion_table.shape()[1]}}),
+      mapping{grid.box_contents_map(*dots)},
+      neighbors{grid.nearfield_pairs(border, *dots)}
 {
   // The order here is time, pair, point set, expansion index, vector dimension
   // in accordance with the FIELD_AXIS_LABEL enum. Each matrix product maps a
@@ -30,10 +33,11 @@ AIM::Nearfield::Nearfield(
   // by "point set" (0 corresponds to expansion points for the lower-indexed box
   // and 1 corresponds to the same for the equally or higher indexed box, as
   // determined by the structure of neighbors.
+  //
   // It's the biggest hack that the dimensions of these arrays are the same for
   // the NF and FF code. Sorry.
-  field_table_dims = {table_dimensions[0], table_dimensions[1], 2,
-                      table_dimensions[2], 3};
+  field_table_dims = {
+      {table_dimensions[0], table_dimensions[1], 2, table_dimensions[2], 3}};
   source_table.resize(field_table_dims);
   obs_table.resize(field_table_dims);
   propagation_table = make_propagation_table();
