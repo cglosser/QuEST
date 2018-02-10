@@ -4,12 +4,12 @@
 #include "interactions/history_interaction.h"
 
 namespace AIM {
-  class Direct;
+  class DirectInteraction;
 }
 
-class AIM::Direct final : public HistoryInteraction {
+class AIM::DirectInteraction final : public HistoryInteraction {
  public:
-  Direct(std::shared_ptr<const DotVector>,
+  DirectInteraction(std::shared_ptr<const DotVector>,
          std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
          Propagation::Kernel<cmplx> &,
          const int,

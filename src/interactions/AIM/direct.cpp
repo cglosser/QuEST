@@ -1,6 +1,6 @@
 #include "interactions/AIM/direct.h"
 
-AIM::Direct::Direct(
+AIM::DirectInteraction::DirectInteraction(
     std::shared_ptr<const DotVector> dots,
     std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
     Propagation::Kernel<cmplx> &kernel,
@@ -17,7 +17,8 @@ AIM::Direct::Direct(
   build_coefficient_table(kernel);
 }
 
-const Interaction::ResultArray &AIM::Direct::evaluate(const int time_idx)
+const Interaction::ResultArray &AIM::DirectInteraction::evaluate(
+    const int time_idx)
 {
   results.setZero();
 
@@ -40,7 +41,8 @@ const Interaction::ResultArray &AIM::Direct::evaluate(const int time_idx)
   return results;
 }
 
-std::vector<std::pair<int, int>> AIM::Direct::make_pair_list(const Grid &grid) const
+std::vector<std::pair<int, int>> AIM::DirectInteraction::make_pair_list(
+    const Grid &grid) const
 {
   std::vector<std::pair<int, int>> particle_pairs;
   std::vector<DotRange> mapping{grid.box_contents_map()};
@@ -64,7 +66,8 @@ std::vector<std::pair<int, int>> AIM::Direct::make_pair_list(const Grid &grid) c
   return particle_pairs;
 }
 
-void AIM::Direct::build_coefficient_table(Propagation::Kernel<cmplx> &kernel)
+void AIM::DirectInteraction::build_coefficient_table(
+    Propagation::Kernel<cmplx> &kernel)
 {
   Interpolation::UniformLagrangeSet lagrange(shape[1] - 1);
 
