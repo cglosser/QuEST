@@ -112,7 +112,6 @@ void AIM::Nearfield::propagate(const int step)
 
 void AIM::Nearfield::fill_results_table(const int step)
 {
-  using namespace Expansions::enums;
   results = 0;
 
   for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
