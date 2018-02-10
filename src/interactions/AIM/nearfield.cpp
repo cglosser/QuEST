@@ -24,18 +24,18 @@ AIM::Nearfield::Nearfield(
       mapping(grid.box_contents_map()),
       neighbors(grid.nearfield_pairs(border))
 {
-  // The order here is time, pair, point set, expansion index, vector dimension.
-  // Each matrix product maps a set of E points into a set of E points -- these
-  // sets are what are indexed by "point set" (0 corresponds to expansion points
-  // for the lower-indexed box and 1 corresponds to the same for the equally or
-  // higher indexed box, as determined by the structure of neighbors.
-  //
+  // The order here is time, pair, point set, expansion index, vector dimension
+  // in accordance with the FIELD_AXIS_LABEL enum. Each matrix product maps a
+  // set of E points into a set of E points -- these sets are what are indexed
+  // by "point set" (0 corresponds to expansion points for the lower-indexed box
+  // and 1 corresponds to the same for the equally or higher indexed box, as
+  // determined by the structure of neighbors.
   // It's the biggest hack that the dimensions of these arrays are the same for
   // the NF and FF code. Sorry.
-  std::array<int, 5> extents = {table_dimensions[0], table_dimensions[1], 2,
-                                table_dimensions[2], 3};
-  source_table.resize(extents);
-  obs_table.resize(extents);
+  field_table_dims = {table_dimensions[0], table_dimensions[1], 2,
+                      table_dimensions[2], 3};
+  source_table.resize(field_table_dims);
+  obs_table.resize(field_table_dims);
   propagation_table = make_propagation_table();
 }
 
@@ -46,11 +46,11 @@ void AIM::Nearfield::fill_source_table(const int step)
   const int wrapped_step = step % table_dimensions[0];
   spacetime::clear_time_slice(source_table, wrapped_step);
 
-  for(size_t p = 0; p < neighbors.size(); ++p) {
+  for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
     size_t box1, box2;
     std::tie(box1, box2) = neighbors[p];
 
-    for(size_t e = 0; e < expansion_table.shape()[1]; ++e) {
+    for(int e = 0; e < field_table_dims[EXPANSIONS]; ++e) {
       Eigen::Map<Eigen::Vector3cd> grid_field1(
           &source_table[wrapped_step][p][0][e][0]);
 
@@ -84,9 +84,9 @@ void AIM::Nearfield::propagate(const int step)
   const auto wrapped_step = step % table_dimensions[0];
   spacetime::clear_time_slice(obs_table, wrapped_step);
 
-  for(int t = 0; t < table_dimensions[0]; ++t) {
+  for(int t = 0; t < field_table_dims[STEPS]; ++t) {
     const int wrap = std::max(step - t, 0) % table_dimensions[0];
-    for(size_t p = 0; p < neighbors.size(); ++p) {
+    for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
       Eigen::Map<Eigen::MatrixXcd> mat(&propagation_table[t][p][0][0],
                                        table_dimensions[2],
                                        table_dimensions[2]);
@@ -113,15 +113,13 @@ void AIM::Nearfield::propagate(const int step)
 void AIM::Nearfield::fill_results_table(const int step)
 {
   using namespace Expansions::enums;
-
-  const int wrapped_step = step % table_dimensions[0];
   results = 0;
 
-  for(size_t p = 0; p < static_cast<int>(neighbors.size()); ++p) {
+  for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
     size_t box1, box2;
     std::tie(box1, box2) = neighbors[p];
 
-    for(size_t e = 0; e < static_cast<int>(expansion_table.shape()[1]); ++e) {
+    for(int e = 0; e < field_table_dims[EXPANSIONS]; ++e) {
       DotVector::const_iterator start, end;
       std::tie(start, end) = mapping[box1];
       for(auto d = start; d != end; ++d) {

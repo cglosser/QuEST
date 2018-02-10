@@ -23,6 +23,8 @@ class AIM::Nearfield final : public AimBase {
   ~Nearfield() = default;
 
  private:
+  enum FIELD_AXIS_LABEL { STEPS, PAIRS, POINTSETS, EXPANSIONS, DIMS };
+  std::array<int, 5> field_table_dims;
   std::vector<DotRange> mapping;
   std::vector<Grid::ipair_t> neighbors;
 
