@@ -1,6 +1,6 @@
 #include "nearfield_interaction.h"
 
-AIM::NearfieldInteraction::NearfieldInteraction(
+AIM::Direct::Direct(
     std::shared_ptr<const DotVector> dots,
     std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
     Propagation::RotatingFramePropagator propagator,
@@ -18,7 +18,7 @@ AIM::NearfieldInteraction::NearfieldInteraction(
   build_coefficient_table();
 }
 
-void AIM::NearfieldInteraction::build_coefficient_table()
+void AIM::Direct::build_coefficient_table()
 {
   Interpolation::UniformLagrangeSet lagrange(interp_order);
 
@@ -41,8 +41,7 @@ void AIM::NearfieldInteraction::build_coefficient_table()
   }
 }
 
-const Interaction::ResultArray &AIM::NearfieldInteraction::evaluate(
-    const int time_idx)
+const Interaction::ResultArray &AIM::Direct::evaluate(const int time_idx)
 {
   results.setZero();
 

@@ -4,19 +4,18 @@
 #include "interactions/history_interaction.h"
 
 namespace AIM {
-  class NearfieldInteraction;
+  class Direct;
 }
 
-class AIM::NearfieldInteraction final : public HistoryInteraction {
+class AIM::Direct final : public HistoryInteraction {
  public:
-  NearfieldInteraction(
-      std::shared_ptr<const DotVector>,
-      std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
-      Propagation::RotatingFramePropagator,
-      const int,
-      const double,
-      const double,
-      Grid);
+  Direct(std::shared_ptr<const DotVector>,
+         std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
+         Propagation::RotatingFramePropagator,
+         const int,
+         const double,
+         const double,
+         Grid);
 
   const ResultArray &evaluate(const int) final;
 
