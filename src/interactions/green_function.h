@@ -3,31 +3,81 @@
 
 #include <Eigen/Dense>
 #include <array>
+#include <type_traits>
 #include <vector>
 
-#include "../common.h"
-#include "../lagrange_set.h"
+#include "common.h"
+#include "lagrange_set.h"
 
 namespace Propagation {
-  template <class Derived>
-  class Propagator;
+  template <class T>
+  using Mat3D = Eigen::Matrix<T, 3, 3>;
 
-  class FixedFramePropagator;
-  class RotatingFramePropagator;
+  template <class T>
+  class Kernel;
+
+  template <class T>
+  class Default;
+
+  template <class T>
+  class EFIE;
+
+  class RotatingEFIE;
 }
 
-template <class Derived>
-class Propagation::Propagator {
+template <class T>
+class Propagation::Kernel {
  public:
-  Propagator(const double k2, const double c) : k2_(k2), c_(c){};
-  auto coefficients(const Eigen::Vector3d &dr,
-                    const Interpolation::UniformLagrangeSet &interp) const
-  {
-    return static_cast<Derived *>(this)->coefficients(dr, interp);
-  };
+  static_assert(std::is_same<T, double>::value || std::is_same<T, cmplx>::value,
+                "Propagation kernels require numeric types");
+  virtual const std::vector<Mat3D<T>> &coefficients(
+      const Eigen::Vector3d &, const Interpolation::UniformLagrangeSet &) = 0;
 
  protected:
-  double k2_, c_;
+  std::vector<Mat3D<T>> coefs_;
+};
+
+template <class T>
+class Propagation::Default : public Propagation::Kernel<T> {
+ public:
+  Default() = default;
+  const std::vector<Mat3D<T>> &coefficients(
+      const Eigen::Vector3d &dr,
+      const Interpolation::UniformLagrangeSet &interp)
+  {
+    this->coefs_.resize(interp.order() + 1);
+
+    for(int i = 0; i <= interp.order(); ++i) {
+      this->coefs_[i] = Mat3D<T>::Identity() * interp.evaluations[0][i];
+    }
+
+    return this->coefs_;
+  }
+};
+
+template <class T>
+class Propagation::EFIE : public Propagation::Kernel<T> {
+ public:
+  EFIE(const double c, const double k2) : c_(c), k2_(k2){};
+  const std::vector<Mat3D<T>> &coefficients(
+      const Eigen::Vector3d &dr,
+      const Interpolation::UniformLagrangeSet &interp)
+  {
+    this->coefs_.resize(interp.order() + 1);
+
+    const auto dyads(spatial_dyads(dr));
+
+    for(int i = 0; i <= interp.order(); ++i) {
+      this->coefs_[i] = -k2_ * (dyads[0] * interp.evaluations[0][i] +
+                                dyads[1] * interp.evaluations[1][i] +
+                                dyads[2] * interp.evaluations[2][i]);
+    }
+
+    return this->coefs_;
+  }
+
+ protected:
+  double c_, k2_;
 
   std::array<Eigen::Matrix3d, 3> spatial_dyads(const Eigen::Vector3d &dr) const
   {
@@ -55,60 +105,36 @@ class Propagation::Propagator {
   }
 };
 
-class Propagation::FixedFramePropagator
-    : public Propagation::Propagator<Propagation::FixedFramePropagator> {
+class Propagation::RotatingEFIE : public Propagation::EFIE<cmplx> {
  public:
-  FixedFramePropagator(const double k2, const double c) : Propagator(k2, c){};
-  std::vector<Eigen::Matrix3d> coefficients(
+  RotatingEFIE(const double c, const double k2, const double omega)
+      : EFIE<cmplx>(c, k2), omega_(omega){};
+
+  const std::vector<Eigen::Matrix3cd> &coefficients(
       const Eigen::Vector3d &dr,
-      const Interpolation::UniformLagrangeSet &interp) const
+      const Interpolation::UniformLagrangeSet &interp)
   {
-    std::vector<Eigen::Matrix3d> coefs(interp.order() + 1,
-                                       Eigen::Matrix3d::Zero());
+    this->coefs_.resize(interp.order() + 1);
 
     const auto dyads(spatial_dyads(dr));
 
     for(int i = 0; i <= interp.order(); ++i) {
-      coefs[i] = -k2_ * (dyads[0] * interp.evaluations[0][i] +
-                         dyads[1] * interp.evaluations[1][i] +
-                         dyads[2] * interp.evaluations[2][i]);
-    }
-
-    return coefs;
-  }
-};
-
-class Propagation::RotatingFramePropagator
-    : public Propagation::Propagator<Propagation::RotatingFramePropagator> {
- public:
-  RotatingFramePropagator(const double k2, const double c, const double omega)
-      : Propagator(k2, c), omega(omega){};
-  std::vector<Eigen::Matrix3cd> coefficients(
-      const Eigen::Vector3d &dr,
-      const Interpolation::UniformLagrangeSet &interp) const
-  {
-    std::vector<Eigen::Matrix3cd> coefs(interp.order() + 1,
-                                        Eigen::Matrix3cd::Zero());
-
-    const auto dyads(spatial_dyads(dr));
-
-    for(int i = 0; i <= interp.order(); ++i) {
-      coefs[i] =
-          -k2_ * std::exp(-iu * omega * dr.norm() / c_) *
+      this->coefs_[i] =
+          -k2_ * std::exp(-iu * omega_ * dr.norm() / c_) *
           (dyads[0].cast<cmplx>() * interp.evaluations[0][i] +
            dyads[1].cast<cmplx>() * (interp.evaluations[1][i] +
-                                     iu * omega * interp.evaluations[0][i]) +
+                                     iu * omega_ * interp.evaluations[0][i]) +
            dyads[2].cast<cmplx>() *
                (interp.evaluations[2][i] +
-                2.0 * iu * omega * interp.evaluations[1][i] -
-                std::pow(omega, 2) * interp.evaluations[0][i]));
+                2.0 * iu * omega_ * interp.evaluations[1][i] -
+                std::pow(omega_, 2) * interp.evaluations[0][i]));
     }
 
-    return coefs;
+    return this->coefs_;
   }
 
  private:
-  double omega;
+  double omega_;
 };
 
 #endif

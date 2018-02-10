@@ -3,7 +3,7 @@
 DirectInteraction::DirectInteraction(
     std::shared_ptr<const DotVector> dots,
     std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
-    Propagation::RotatingFramePropagator propagator,
+    Propagation::RotatingEFIE propagator,
     const int interp_order,
     const double c0,
     const double dt)

@@ -8,7 +8,7 @@ class DirectInteraction final : public HistoryInteraction {
   DirectInteraction(
       std::shared_ptr<const DotVector>,
       std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
-      Propagation::RotatingFramePropagator,
+      Propagation::RotatingEFIE,
       const int,
       const double,
       const double);
@@ -16,7 +16,7 @@ class DirectInteraction final : public HistoryInteraction {
   const ResultArray &evaluate(const int) final;
 
  private:
-  Propagation::RotatingFramePropagator propagator;
+  Propagation::RotatingEFIE propagator;
   int num_interactions;
   std::vector<int> floor_delays;
   boost::multi_array<cmplx, 2> coefficients;
