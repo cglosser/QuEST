@@ -42,7 +42,8 @@ void DirectInteraction::build_coefficient_table()
   }
 }
 
-const Interaction::ResultArray &DirectInteraction::evaluate(const int time_idx)
+const InteractionBase::ResultArray &DirectInteraction::evaluate(
+    const int time_idx)
 {
   results.setZero();
 

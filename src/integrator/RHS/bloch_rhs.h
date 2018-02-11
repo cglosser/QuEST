@@ -15,13 +15,13 @@ class Integrator::BlochRHS : public Integrator::RHS<Eigen::Vector2cd> {
  public:
   BlochRHS(const double,
            const std::shared_ptr<History<Eigen::Vector2cd>>,
-           std::vector<std::shared_ptr<Interaction>>,
+           std::vector<std::shared_ptr<InteractionBase>>,
            std::vector<BlochFunctionType>);
   void evaluate(const int) const override;
 
  private:
   int num_solutions;
-  std::vector<std::shared_ptr<Interaction>> interactions;
+  std::vector<std::shared_ptr<InteractionBase>> interactions;
   std::vector<BlochFunctionType> rhs_functions;
 };
 

@@ -4,7 +4,7 @@
 #include "../pulse.h"
 #include "interaction.h"
 
-class PulseInteraction : public Interaction {
+class PulseInteraction : public InteractionBase {
  public:
   PulseInteraction(const std::shared_ptr<const DotVector>,
                    const std::shared_ptr<const Pulse>, const double, const double);

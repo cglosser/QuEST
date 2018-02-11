@@ -11,7 +11,7 @@
 #include "green_function.h"
 #include "interaction.h"
 
-class HistoryInteraction : public Interaction {
+class HistoryInteraction : public InteractionBase {
  public:
   HistoryInteraction(
       std::shared_ptr<const DotVector> dots,
@@ -19,7 +19,7 @@ class HistoryInteraction : public Interaction {
       const int interp_order,
       const double c0,
       const double dt)
-      : Interaction(std::move(dots), dt),
+      : InteractionBase(std::move(dots), dt),
         history(std::move(history)),
         interp_order(interp_order),
         c0(c0){};

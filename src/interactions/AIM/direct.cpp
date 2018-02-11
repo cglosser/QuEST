@@ -18,7 +18,7 @@ AIM::DirectInteraction::DirectInteraction(
   build_coefficient_table(kernel);
 }
 
-const Interaction::ResultArray &AIM::DirectInteraction::evaluate(
+const InteractionBase::ResultArray &AIM::DirectInteraction::evaluate(
     const int time_idx)
 {
   results.setZero();

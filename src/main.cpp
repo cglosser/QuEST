@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     Propagation::RotatingEFIE rotating_dyadic(
         config.c0, config.mu0 / (4 * M_PI * config.hbar), config.omega);
 
-    std::vector<std::shared_ptr<Interaction>> interactions{
+    std::vector<std::shared_ptr<InteractionBase>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
         make_shared<DirectInteraction>(qds, history, rotating_dyadic,
                                        config.interpolation_order, config.dt,
