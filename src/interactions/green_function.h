@@ -20,6 +20,9 @@ namespace Propagation {
   class Identity;
 
   template <class T>
+  class Laplace;
+
+  template <class T>
   class EFIE;
 
   class RotatingEFIE;
@@ -53,6 +56,28 @@ class Propagation::Identity : public Propagation::Kernel<T> {
 
     return this->coefs_;
   }
+};
+
+template <class T>
+class Propagation::Laplace : public Propagation::Kernel<T> {
+ public:
+  explicit Laplace(const double k2 = 1) : k2(k2) {}
+  const std::vector<Mat3D<T>> &coefficients(
+      const Eigen::Vector3d &dr,
+      const Interpolation::UniformLagrangeSet &interp)
+  {
+    this->coefs_.resize(interp.order() + 1);
+
+    for(int i = 0; i <= interp.order(); ++i) {
+      this->coefs_[i] =
+          Mat3D<T>::Identity() * interp.evaluations[0][i] * k2 / dr.norm();
+    }
+
+    return this->coefs_;
+  }
+
+ private:
+  double k2;
 };
 
 template <class T>
