@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_SUITE_END()  // DIRECT
 
 BOOST_AUTO_TEST_SUITE(COMPOSITE)
 
-BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
+BOOST_FIXTURE_TEST_CASE(NO_SIGNAL_1, PARAMETERS<2>)
 {
   dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
   dots->at(1) = QuantumDot({0.5, 0.5, 1.5}, {0, 0, 1});
@@ -118,8 +118,6 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
   auto expansions =
       AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
           expansion_order, grid, *dots);
-
-  Eigen::Vector3d dr = dots->at(1).position() - dots->at(0).position();
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
                     expansions,
@@ -134,7 +132,70 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
 
   for(int t = 0; t < num_steps; ++t) {
     const auto prop = ff.evaluate(t) - nf.evaluate(t);
-    std::cout << prop.transpose() << std::endl;
+    BOOST_CHECK_SMALL(std::norm(prop(0)), 1e-16);
+    BOOST_CHECK_SMALL(std::norm(prop(1)), 1e-14);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(NO_SIGNAL_2, PARAMETERS<2>)
+{
+  dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
+  dots->at(1) = QuantumDot({0.5, 0.5, 2.5}, {0, 0, 1});
+  AIM::Grid grid(spacing, expansion_order, *dots);
+  auto expansions =
+      AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
+          expansion_order, grid, *dots);
+
+  AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
+                    expansions,
+                    AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
+                                                 interpolation_order),
+                    AIM::normalization::unit);
+
+  AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
+                   AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
+                                                interpolation_order),
+                   AIM::normalization::unit);
+
+  for(int t = 0; t < num_steps; ++t) {
+    const auto prop = ff.evaluate(t) - nf.evaluate(t);
+    BOOST_CHECK_SMALL(std::norm(prop(0)), 1e-16);
+    BOOST_CHECK_SMALL(std::norm(prop(1)), 1e-14);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
+{
+  dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
+  dots->at(1) = QuantumDot({0.5, 0.5, 3.5}, {0, 0, 1});
+  AIM::Grid grid(spacing, expansion_order, *dots);
+  auto expansions =
+      AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
+          expansion_order, grid, *dots);
+
+  Propagation::Identity<cmplx> gf;
+  AIM::DirectInteraction direct(dots, history, gf, interpolation_order, border,
+                                c, dt, grid);
+
+  AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
+                    expansions,
+                    AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
+                                                 interpolation_order),
+                    AIM::normalization::unit);
+
+  AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
+                   AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
+                                                interpolation_order),
+                   AIM::normalization::unit);
+
+  for(int t = 0; t < num_steps; ++t) {
+    const auto dir = direct.evaluate(t);
+    const auto fft = ff.evaluate(t) - nf.evaluate(t);
+    BOOST_CHECK_SMALL(std::norm(fft(0)), 1e-16);
+    BOOST_CHECK_SMALL(std::norm(fft(1) - dir(1)), 1e0);
+    // 1e0 (i.e. 1%) is about as good as you're going to get without a
+    // rank-defecient kernel -- the delta-function doesn't asymptotically decay,
+    // so the same signal arrives wherever you put the observation point
   }
 }
 
