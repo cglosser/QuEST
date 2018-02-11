@@ -5,11 +5,12 @@ AIM::DirectInteraction::DirectInteraction(
     std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
     Propagation::Kernel<cmplx> &kernel,
     const int interp_order,
+    const int border,
     const double c0,
     const double dt,
     const Grid &grid)
     : HistoryInteraction(dots, history, interp_order, c0, dt),
-      interaction_pairs(make_pair_list(grid)),
+      interaction_pairs(make_pair_list(border, grid)),
       shape({{static_cast<int>(interaction_pairs.size()), interp_order + 1}}),
       floor_delays(shape[0]),
       coefficients(shape)
@@ -42,12 +43,12 @@ const Interaction::ResultArray &AIM::DirectInteraction::evaluate(
 }
 
 std::vector<std::pair<int, int>> AIM::DirectInteraction::make_pair_list(
-    const Grid &grid) const
+    const int border, const Grid &grid) const
 {
   std::vector<std::pair<int, int>> particle_pairs;
   auto mapping = grid.box_contents_map(*dots);
 
-  for(const auto &p : grid.nearfield_pairs(1, *dots)) {
+  for(const auto &p : grid.nearfield_pairs(border, *dots)) {
     DotVector::const_iterator begin1, end1, begin2, end2;
 
     std::tie(begin1, end1) = mapping[p.first];

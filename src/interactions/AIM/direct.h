@@ -9,16 +9,19 @@ namespace AIM {
 
 class AIM::DirectInteraction final : public HistoryInteraction {
  public:
-  DirectInteraction(std::shared_ptr<const DotVector>,
-         std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
-         Propagation::Kernel<cmplx> &,
-         const int,
-         const double,
-         const double,
-         const AIM::Grid &);
+  DirectInteraction(
+      std::shared_ptr<const DotVector>,
+      std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
+      Propagation::Kernel<cmplx> &,
+      const int,
+      const int,
+      const double,
+      const double,
+      const AIM::Grid &);
 
   const ResultArray &evaluate(const int) final;
-  std::vector<std::pair<int, int>> make_pair_list(const Grid &) const;
+  std::vector<std::pair<int, int>> make_pair_list(const int,
+                                                  const Grid &) const;
 
  private:
   std::vector<std::pair<int, int>> interaction_pairs;

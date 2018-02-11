@@ -8,7 +8,7 @@ BOOST_AUTO_TEST_SUITE(AIM)
 
 template <int num_dots>
 struct PARAMETERS {
-  int interpolation_order, expansion_order, num_steps;
+  int interpolation_order, expansion_order, border, num_steps;
   double c, dt, total_time;
 
   Eigen::Array3d spacing;
@@ -19,6 +19,7 @@ struct PARAMETERS {
   PARAMETERS()
       : interpolation_order(4),
         expansion_order(1),
+        border(1),
         num_steps(1024),
 
         c(1),
@@ -48,6 +49,8 @@ struct PARAMETERS {
 
 BOOST_AUTO_TEST_SUITE(IDENTITY_KERNEL)
 
+BOOST_AUTO_TEST_SUITE(DIRECT)
+
 BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
 {
   dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
@@ -57,8 +60,8 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
   Eigen::Vector3d dr = dots->at(1).position() - dots->at(0).position();
 
   Propagation::Identity<cmplx> gf;
-  AIM::DirectInteraction direct1(dots, history, gf, interpolation_order, c, dt,
-                                 grid);
+  AIM::DirectInteraction direct1(dots, history, gf, interpolation_order, border,
+                                 c, dt, grid);
 
   for(int t = 0; t < num_steps; ++t) {
     const auto prop = direct1.evaluate(t);
@@ -76,8 +79,8 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION_2, PARAMETERS<2>)
   Eigen::Vector3d dr = dots->at(1).position() - dots->at(0).position();
 
   Propagation::Identity<cmplx> gf;
-  AIM::DirectInteraction direct1(dots, history, gf, interpolation_order, c, dt,
-                                 grid);
+  AIM::DirectInteraction direct1(dots, history, gf, interpolation_order, border,
+                                 c, dt, grid);
 
   for(int t = 0; t < num_steps; ++t) {
     const auto prop = direct1.evaluate(t);
@@ -93,8 +96,8 @@ BOOST_FIXTURE_TEST_CASE(NO_SIGNAL, PARAMETERS<2>)
   AIM::Grid grid(spacing, expansion_order, *dots);
 
   Propagation::Identity<cmplx> gf;
-  AIM::DirectInteraction direct1(dots, history, gf, interpolation_order, c, dt,
-                                 grid);
+  AIM::DirectInteraction direct1(dots, history, gf, interpolation_order, border,
+                                 c, dt, grid);
 
   for(int t = 0; t < num_steps; ++t) {
     const auto prop = direct1.evaluate(t);
@@ -102,6 +105,40 @@ BOOST_FIXTURE_TEST_CASE(NO_SIGNAL, PARAMETERS<2>)
     BOOST_CHECK_SMALL(std::norm(prop(1)), 1e-14);
   }
 }
+
+BOOST_AUTO_TEST_SUITE_END()  // DIRECT
+
+BOOST_AUTO_TEST_SUITE(COMPOSITE)
+
+BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
+{
+  dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
+  dots->at(1) = QuantumDot({0.5, 0.5, 1.5}, {0, 0, 1});
+  AIM::Grid grid(spacing, expansion_order, *dots);
+  auto expansions =
+      AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
+          expansion_order, grid, *dots);
+
+  Eigen::Vector3d dr = dots->at(1).position() - dots->at(0).position();
+
+  AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
+                    expansions,
+                    AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
+                                                 interpolation_order),
+                    AIM::normalization::unit);
+
+  AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
+                   AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
+                                                interpolation_order),
+                   AIM::normalization::unit);
+
+  for(int t = 0; t < num_steps; ++t) {
+    const auto prop = ff.evaluate(t) - nf.evaluate(t);
+    std::cout << prop.transpose() << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // COMPOSITE
 
 BOOST_AUTO_TEST_SUITE_END()  // IDENTITY_KERNEL
 
