@@ -140,40 +140,20 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(NEARFIELD_PAIRS)
 {
-  DotVector dots(2);
-  dots[0] = QuantumDot({0, 0, 0}, {0, 0, 0});
-  dots[1] = QuantumDot({2, 2, 4}, {0, 0, 0});
+  DotVector dots(3);
+  dots.at(0) = QuantumDot({0, 0, 0}, {0, 0, 0});
+  dots.at(1) = QuantumDot({0, 0, 1}, {0, 0, 0});
+  dots.at(2) = QuantumDot({0, 0, 5}, {0, 0, 0});
 
   AIM::Grid grid(Eigen::Array3d(1, 1, 1), 0, dots);
 
   const auto nf = grid.nearfield_pairs(1, dots);
 
-  BOOST_CHECK_EQUAL(nf.size(), 120);
+  BOOST_CHECK_EQUAL(nf.size(), 4);
   BOOST_CHECK(nf.at(0) == std::make_pair(0, 0));
   BOOST_CHECK(nf.at(1) == std::make_pair(0, 1));
-  BOOST_CHECK(nf.at(2) == std::make_pair(0, 2));
-  BOOST_CHECK(nf.at(3) == std::make_pair(0, 4));
-  BOOST_CHECK(nf.at(4) == std::make_pair(0, 5));
-  BOOST_CHECK(nf.at(5) == std::make_pair(0, 6));
-  BOOST_CHECK(nf.at(6) == std::make_pair(0, 8));
-  BOOST_CHECK(nf.at(7) == std::make_pair(0, 9));
-  BOOST_CHECK(nf.at(8) == std::make_pair(0, 10));
-  BOOST_CHECK(nf.at(9) == std::make_pair(0, 12));
-  BOOST_CHECK(nf.at(10) == std::make_pair(0, 13));
-  BOOST_CHECK(nf.at(11) == std::make_pair(0, 14));
-
-  BOOST_CHECK(nf.at(108) == std::make_pair(11, 13));
-  BOOST_CHECK(nf.at(109) == std::make_pair(11, 14));
-  BOOST_CHECK(nf.at(110) == std::make_pair(11, 15));
-  BOOST_CHECK(nf.at(111) == std::make_pair(12, 12));
-  BOOST_CHECK(nf.at(112) == std::make_pair(12, 13));
-  BOOST_CHECK(nf.at(113) == std::make_pair(12, 14));
-  BOOST_CHECK(nf.at(114) == std::make_pair(13, 13));
-  BOOST_CHECK(nf.at(115) == std::make_pair(13, 14));
-  BOOST_CHECK(nf.at(116) == std::make_pair(13, 15));
-  BOOST_CHECK(nf.at(117) == std::make_pair(14, 14));
-  BOOST_CHECK(nf.at(118) == std::make_pair(14, 15));
-  BOOST_CHECK(nf.at(119) == std::make_pair(15, 15));
+  BOOST_CHECK(nf.at(2) == std::make_pair(1, 1));
+  BOOST_CHECK(nf.at(3) == std::make_pair(5, 5));
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // GRID
