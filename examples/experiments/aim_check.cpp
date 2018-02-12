@@ -108,12 +108,11 @@ class Gaussian {
 
 int main()
 {
-  const int interpolation_order = 4, expansion_order = 1, num_steps = 1024,
-            num_dots = 16;
+  const int interpolation_order = 4, expansion_order = 1, num_steps = 1024;
   const double c = 1, dt = 1, total_time = num_steps * dt, omega = 0;
   const Gaussian source(total_time / 2.0, total_time / 12.0);
 
-  const Eigen::Array3d spacing(1.5, 1.5, 1.5);
+  const Eigen::Array3d spacing(0.6, 0.6, 0.6);
 
   auto dots = std::make_shared<DotVector>();
   // for(int i = 0; i < 20; ++i) {
@@ -124,21 +123,22 @@ int main()
   dots->push_back(QuantumDot({0.0, 1.2, 0.0}, omega, {0, 0}, {0, 0, 1}));
   dots->push_back(QuantumDot({1.2, 0.0, 0.0}, omega, {0, 0}, {0, 0, 1}));
 
-  dots->push_back(QuantumDot({0.0, 0.0, 10.0}, omega, {0, 0}, {0, 0, 1}));
-  dots->push_back(QuantumDot({0.0, 0.0, 8.8}, omega, {0, 0}, {0, 0, 1}));
-  dots->push_back(QuantumDot({0.0, 1.2, 10.0}, omega, {0, 0}, {0, 0, 1}));
-  dots->push_back(QuantumDot({1.2, 0.0, 10.0}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({0.0, 0.0, 10.0}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({0.0, 0.0, 8.8}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({0.0, 1.2, 10.0}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({1.2, 0.0, 10.0}, omega, {0, 0}, {0, 0, 1}));
 
-  dots->push_back(QuantumDot({0.0, 10.0, 0.0}, omega, {0, 0}, {0, 0, 1}));
-  dots->push_back(QuantumDot({0.0, 10.0, 1.2}, omega, {0, 0}, {0, 0, 1}));
-  dots->push_back(QuantumDot({0.0, 8.8, 0.0}, omega, {0, 0}, {0, 0, 1}));
-  dots->push_back(QuantumDot({1.2, 10.0, 0.0}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({0.0, 10.0, 0.0}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({0.0, 10.0, 1.2}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({0.0, 8.8, 0.0}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({1.2, 10.0, 0.0}, omega, {0, 0}, {0, 0, 1}));
 
-  dots->push_back(QuantumDot({10.0, 0.0, 0.0}, omega, {0, 0}, {0, 0, 1}));
-  dots->push_back(QuantumDot({10.0, 0.0, 1.2}, omega, {0, 0}, {0, 0, 1}));
-  dots->push_back(QuantumDot({10.0, 1.2, 0.0}, omega, {0, 0}, {0, 0, 1}));
-  dots->push_back(QuantumDot({8.8, 0.0, 0.0}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({10.0, 0.0, 0.0}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({10.0, 0.0, 1.2}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({10.0, 1.2, 0.0}, omega, {0, 0}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({8.8, 0.0, 0.0}, omega, {0, 0}, {0, 0, 1}));
 
+  const int num_dots = dots->size();
   auto history = std::make_shared<Integrator::History<Eigen::Vector2cd>>(
       num_dots, 10, num_steps);
   for(int d = 0; d < num_dots; ++d) {
@@ -176,12 +176,15 @@ int main()
 
   std::ofstream comparison("comparison.dat");
   comparison.precision(17);
+  comparison << "Actual Calculated | Direct(near) FFT(all) FFT(near) FFT(far)"
+             << std::endl;
   for(int t = 0; t < num_steps; ++t) {
     std::cout << t << std::endl;
     comparison << direct.evaluate(t)(1).real() << " "
                << (di.evaluate(t) + (ff.evaluate(t) - nf.evaluate(t)))(1).real()
                << " | " << di.evaluate(t)(1).real() << " "
                << ff.evaluate(t)(1).real() << " " << nf.evaluate(t)(1).real()
+               << " " << (ff.evaluate(t) - nf.evaluate(t))(1).real()
                << std::endl;
   }
 
