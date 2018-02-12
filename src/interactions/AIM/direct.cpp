@@ -59,7 +59,7 @@ std::vector<std::pair<int, int>> AIM::DirectInteraction::make_pair_list(
       for(auto dot2 = begin2; dot2 != end2; ++dot2) {
         auto idx2{std::distance(dots->begin(), dot2)};
 
-        if(idx1 != idx2) particle_pairs.emplace_back(idx1, idx2);
+        if(idx1 < idx2) particle_pairs.emplace_back(idx1, idx2);
       }
     }
   }
