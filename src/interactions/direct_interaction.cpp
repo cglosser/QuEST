@@ -3,21 +3,21 @@
 DirectInteraction::DirectInteraction(
     std::shared_ptr<const DotVector> dots,
     std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
-    Propagation::RotatingEFIE propagator,
+    Propagation::Kernel<cmplx> &kernel,
     const int interp_order,
     const double c0,
     const double dt)
     : HistoryInteraction(
           std::move(dots), std::move(history), interp_order, c0, dt),
-      propagator(std::move(propagator)),
       num_interactions((this->dots)->size() * ((this->dots)->size() - 1) / 2),
       floor_delays(num_interactions),
       coefficients(boost::extents[num_interactions][interp_order + 1])
 {
-  build_coefficient_table();
+  build_coefficient_table(kernel);
 }
 
-void DirectInteraction::build_coefficient_table()
+void DirectInteraction::build_coefficient_table(
+    Propagation::Kernel<cmplx> &kernel)
 {
   Interpolation::UniformLagrangeSet lagrange(interp_order);
 
@@ -33,7 +33,7 @@ void DirectInteraction::build_coefficient_table()
     lagrange.evaluate_derivative_table_at_x(delay.second, dt);
 
     std::vector<Eigen::Matrix3cd> interp_dyads(
-        propagator.coefficients(dr, lagrange));
+        kernel.coefficients(dr, lagrange));
 
     for(int i = 0; i <= interp_order; ++i) {
       coefficients[pair_idx][i] =
