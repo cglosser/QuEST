@@ -50,17 +50,18 @@ const InteractionBase::ResultArray &DirectInteraction::evaluate(
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
     int src, obs;
     std::tie(src, obs) = idx2coord(pair_idx);
-    const int s = time_idx - floor_delays[pair_idx];
 
     for(int i = 0; i <= interp_order; ++i) {
-      if(s - i < history->array_.index_bases()[1]) continue;
+      const int s =
+          std::max(time_idx - floor_delays[pair_idx] - i,
+                   static_cast<int>(history->array_.index_bases()[1]));
 
       constexpr int RHO_01 = 1;
 
       results[src] +=
-          (history->array_[obs][s - i][0])[RHO_01] * coefficients[pair_idx][i];
+          (history->array_[obs][s][0])[RHO_01] * coefficients[pair_idx][i];
       results[obs] +=
-          (history->array_[src][s - i][0])[RHO_01] * coefficients[pair_idx][i];
+          (history->array_[src][s][0])[RHO_01] * coefficients[pair_idx][i];
     }
   }
 
