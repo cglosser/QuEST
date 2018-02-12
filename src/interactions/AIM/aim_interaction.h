@@ -11,19 +11,22 @@ namespace AIM {
 
 class AIM::Interaction final : public InteractionBase {
  public:
-  Interaction(const std::shared_ptr<const DotVector> dots,
+  Interaction(const std::shared_ptr<DotVector> dots,
               const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>
                   history,
               Propagation::Kernel<cmplx> &kernel,
+              const Eigen::Array3d &spacing,
               const int interp_order,
+              const int expansion_order,
               const int border,
               const double c0,
               const double dt,
-              const Grid grid,
-              const Expansions::ExpansionTable &expansion_table,
               Expansions::ExpansionFunction expansion_function,
               normalization::SpatialNorm normalization)
       : InteractionBase(dots, dt),
+        grid(spacing, expansion_order, *dots),
+        expansion_table(Expansions::LeastSquaresExpansionSolver::get_expansions(
+            expansion_order, grid, *dots)),
 
         ff(dots,
            history,
@@ -57,6 +60,9 @@ class AIM::Interaction final : public InteractionBase {
   }
 
  private:
+  Grid grid;
+  Expansions::ExpansionTable expansion_table;
+
   Farfield ff;
   Nearfield nf;
   DirectInteraction direct;

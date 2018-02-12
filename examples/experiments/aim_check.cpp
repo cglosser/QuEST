@@ -39,41 +39,20 @@ int main()
   }
 
   Propagation::Laplace<cmplx> laplace;
+  int nt = AIM::Grid(spacing, expansion_order, *dots).max_transit_steps(c, dt) +
+           interpolation_order;
 
+  AIM::Interaction aim(
+      dots, history, laplace, spacing, interpolation_order, expansion_order, 1,
+      c, dt, AIM::Expansions::Retardation(nt), AIM::normalization::Laplace());
   DirectInteraction direct(dots, history, laplace, interpolation_order, c, dt);
-
-  std::ofstream direct_fd("direct.dat");
-  direct_fd.precision(17);
-  for(int t = 0; t < num_steps; ++t) {
-    direct_fd << direct.evaluate(t).transpose() << std::endl;
-  }
-
-  AIM::Grid grid(spacing, expansion_order, *dots);
-  auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
-          expansion_order, grid, *dots);
-
-  AIM::DirectInteraction di(dots, history, laplace, interpolation_order, 1, c,
-                            dt, grid);
-  AIM::Nearfield nf(dots, history, interpolation_order, 1, c, dt, grid,
-                    expansions,
-                    AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
-                                                 interpolation_order),
-                    AIM::normalization::Laplace());
-  AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
-                   AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
-                                                interpolation_order),
-                   AIM::normalization::Laplace());
 
   std::ofstream comparison("comparison.dat");
   comparison.precision(17);
   for(int t = 0; t < num_steps; ++t) {
     std::cout << t << std::endl;
     comparison << t * dt << " "
-               << (direct.evaluate(t) -
-                   (di.evaluate(t) + (ff.evaluate(t) - nf.evaluate(t))))
-                      .matrix()
-                      .norm()
+               << (direct.evaluate(t) - aim.evaluate(t)).matrix().norm()
                << std::endl;
   }
 

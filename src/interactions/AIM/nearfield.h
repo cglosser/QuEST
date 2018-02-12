@@ -15,7 +15,7 @@ class AIM::Nearfield final : public AimBase {
             const int,
             const double,
             const double,
-            const Grid,
+            const Grid &,
             const Expansions::ExpansionTable &,
             Expansions::ExpansionFunction,
             normalization::SpatialNorm);

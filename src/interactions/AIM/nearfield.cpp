@@ -7,7 +7,7 @@ AIM::Nearfield::Nearfield(
     const int border,
     const double c0,
     const double dt,
-    const Grid grid,
+    const Grid &grid,
     const Expansions::ExpansionTable &expansion_table,
     Expansions::ExpansionFunction expansion_function,
     normalization::SpatialNorm normalization)
