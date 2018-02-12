@@ -12,7 +12,7 @@ namespace AIM {
       Laplace(const double alpha = 1) : alpha(alpha){};
       double operator()(const Eigen::Vector3d &dr) const
       {
-        return 1 / (alpha * dr.norm());
+        return alpha / dr.norm();
       }
 
      private:
@@ -26,7 +26,7 @@ namespace AIM {
       cmplx operator()(const Eigen::Vector3d &dr) const
       {
         const double R = dr.norm();
-        return std::exp(-iu * k * R) / (alpha * R);
+        return std::exp(-iu * k * R) * alpha / R;
       }
 
      private:

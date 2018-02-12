@@ -166,7 +166,7 @@ spacetime::vector<cmplx> AIM::Nearfield::make_propagation_table() const
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
             prop[t][p][e1][e2] =
-                interp.evaluations[0][polynomial_idx] / normalization(dr);
+                interp.evaluations[0][polynomial_idx] * normalization(dr);
           }
         }
       }

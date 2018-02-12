@@ -167,7 +167,7 @@ void AIM::Farfield::fill_gmatrix_table(
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
             gmatrix_table[t][x][y][z] =
-                interp.evaluations[0][polynomial_idx] / normalization(dr);
+                interp.evaluations[0][polynomial_idx] * normalization(dr);
           }
         }
       }
