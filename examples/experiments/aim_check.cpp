@@ -34,7 +34,7 @@ int main()
       num_dots, 10, num_steps);
   for(int d = 0; d < num_dots; ++d) {
     for(int t = -10; t < num_steps; ++t) {
-      history->array_[d][t][0](RHO_01) = source(t * dt);
+      history->array_[d][t][0](RHO_01) = 2 * source(2 * t * dt) + iu * source(t * dt);
     }
   }
 

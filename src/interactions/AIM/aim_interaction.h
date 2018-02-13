@@ -55,7 +55,9 @@ class AIM::Interaction final : public InteractionBase {
 
   const ResultArray &evaluate(const int t)
   {
-    results = (ff.evaluate(t) - nf.evaluate(t)) + direct.evaluate(t);
+    // I DON'T KNOW WHY THAT NEEDS A CONJUGATE!!!
+    results =
+        (ff.evaluate(t).conjugate() - nf.evaluate(t)) + direct.evaluate(t);
     return results;
   }
 
