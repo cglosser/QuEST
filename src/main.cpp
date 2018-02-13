@@ -9,6 +9,7 @@
 #include "integrator/RHS/bloch_rhs.h"
 #include "integrator/history.h"
 #include "integrator/integrator.h"
+#include "interactions/AIM/aim_interaction.h"
 #include "interactions/direct_interaction.h"
 #include "interactions/green_function.h"
 #include "interactions/pulse_interaction.h"
@@ -38,11 +39,22 @@ int main(int argc, char *argv[])
     Propagation::RotatingEFIE rotating_dyadic(
         config.c0, config.mu0 / (4 * M_PI * config.hbar), config.omega);
 
+    const int wsteps =
+        AIM::Grid(config.grid_spacing, config.expansion_order, *qds)
+            .max_transit_steps(config.c0, config.dt) +
+        config.interpolation_order;
+
     std::vector<std::shared_ptr<InteractionBase>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
-        make_shared<DirectInteraction>(qds, history, rotating_dyadic,
-                                       config.interpolation_order, config.dt,
-                                       config.c0)};
+        make_shared<AIM::Interaction>(
+            qds, history, rotating_dyadic, config.grid_spacing,
+            config.interpolation_order, config.expansion_order, config.border,
+            config.c0, config.dt,
+            AIM::Expansions::RotatingEFIE(wsteps, config.c0, config.dt,
+                                          config.omega),
+            AIM::normalization::Helmholtz(
+                config.omega / config.c0,
+                (config.mu0 / (4 * M_PI * config.hbar))))};
 
     // Set up RHS functions
     auto rhs_funcs = rhs_functions(*qds, config.omega);

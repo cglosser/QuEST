@@ -182,10 +182,8 @@ namespace AIM {
         // taken care of in the normalization class.
 
         return -((deriv.col(2) + 2.0 * iu * omega * deriv.col(1) -
-                std::pow(omega, 2) * deriv.col(0)) -
-               std::pow(c, 2) * (e.del_sq * present_field)).conjugate();
-
-        // I *do not* understand where this conjugate comes from.
+                  std::pow(omega, 2) * deriv.col(0)) -
+                 std::pow(c, 2) * (e.del_sq * present_field));
       }
 
      private:
