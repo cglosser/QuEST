@@ -21,7 +21,7 @@ struct Configuration {
   double c0, mu0, hbar, omega;
 
   // AIM
-  int expansion_order;
+  int expansion_order, border;
   Eigen::Vector3d grid_spacing;
 };
 

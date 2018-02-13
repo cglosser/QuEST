@@ -43,8 +43,9 @@ po::variables_map parse_configs(int argc, char *argv[]) {
 
   po::options_description aim_description("AIM & Grid parameters");
   aim_description.add_options()
-    ("AIM.grid spacing", po::value<std::vector<int>>()->required()->multitoken(), "spacing between grid nodes (distance units)")
+    ("AIM.grid spacing",    po::value<std::string>()->required()->multitoken(), "spacing between grid nodes (distance units)")
     ("AIM.expansion order", po::value<int>(&config.expansion_order)->required(), "spatial grid expansion order")
+    ("AIM.border",          po::value<int>(&config.border)->required(), "infinity-norm distance within which to consider nearfield pairs")
   ;
 
   po::options_description cmdline_options, file_options;
@@ -82,6 +83,16 @@ po::variables_map parse_configs(int argc, char *argv[]) {
   } else {
     po::store(po::parse_config_file(ifs, file_options), vm);
     po::notify(vm);
+
+
+    std::istringstream iss(vm["AIM.grid spacing"].as<std::string>());
+    std::vector<double> tokens{
+      std::istream_iterator<double>(iss),
+      std::istream_iterator<double>()
+    };
+
+    config.grid_spacing = Eigen::Vector3d(tokens.at(0), tokens.at(1), tokens.at(2));
+
   }
 
   return vm;

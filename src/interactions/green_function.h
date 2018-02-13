@@ -22,6 +22,8 @@ namespace Propagation {
   template <class T>
   class Laplace;
 
+  class Helmholtz;
+
   template <class T>
   class EFIE;
 
@@ -78,6 +80,27 @@ class Propagation::Laplace : public Propagation::Kernel<T> {
 
  private:
   double k2;
+};
+
+class Propagation::Helmholtz : public Propagation::Kernel<cmplx> {
+ public:
+  explicit Helmholtz(const double k2, const double k) : k2(k2), k(k) {}
+  const std::vector<Mat3D<cmplx>> &coefficients(
+      const Eigen::Vector3d &dr,
+      const Interpolation::UniformLagrangeSet &interp)
+  {
+    this->coefs_.resize(interp.order() + 1);
+
+    for(int i = 0; i <= interp.order(); ++i) {
+      this->coefs_[i] = Mat3D<cmplx>::Identity() * interp.evaluations[0][i] * k2 *
+                        std::exp(-iu * k * dr.norm()) / dr.norm();
+    }
+
+    return this->coefs_;
+  }
+
+ private:
+  double k2, k;
 };
 
 template <class T>
