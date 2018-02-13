@@ -8,6 +8,11 @@ target_sources(aim_check PUBLIC "${CMAKE_CURRENT_LIST_DIR}/aim_check.cpp")
 target_compile_features(aim_check PUBLIC ${CPP_FEATURES})
 target_link_libraries(aim_check PUBLIC quest ${Boost_LIBRARIES})
 
+add_executable(multiphysics EXCLUDE_FROM_ALL "")
+target_sources(multiphysics PUBLIC "${CMAKE_CURRENT_LIST_DIR}/multiphysics.cpp")
+target_compile_features(multiphysics PUBLIC ${CPP_FEATURES})
+target_link_libraries(multiphysics PUBLIC quest ${Boost_LIBRARIES})
+
 add_executable(timestepping EXCLUDE_FROM_ALL "")
 target_sources(timestepping PUBLIC "${CMAKE_CURRENT_LIST_DIR}/timestepping.cpp")
 target_compile_features(timestepping PUBLIC ${CPP_FEATURES})
