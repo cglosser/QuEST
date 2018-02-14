@@ -47,13 +47,13 @@ int main()
     history->array_[0][t][0](RHO_01) = source(t * dt);
   }
 
-  Propagation::EFIE<cmplx> prop(c, 2.4341349e-5);
+  Propagation::RotatingEFIE prop(c, 2.4341349e-5, omega);
   auto grid = AIM::Grid(spacing, expansion_order, *dots);
   int nt = grid.max_transit_steps(c, dt) + interpolation_order;
 
   AIM::Interaction aim(dots, history, prop, spacing, interpolation_order,
                        expansion_order, 1, c, dt,
-                       AIM::Expansions::EFIE(nt, c, dt),
+                       AIM::Expansions::RotatingEFIE(nt, c, dt, omega),
                        AIM::normalization::Laplace(2.4341349e-5));
   DirectInteraction direct(dots, history, prop, interpolation_order, c, dt);
 
