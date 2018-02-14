@@ -88,7 +88,7 @@ void AIM::Nearfield::propagate(const int step)
   const auto wrapped_step = step % table_dimensions[0];
   spacetime::clear_time_slice(obs_table, wrapped_step);
 
-  for(int t = 0; t < field_table_dims[STEPS]; ++t) {
+  for(int t = 1; t < field_table_dims[STEPS]; ++t) {
     const int wrap = std::max(step - t, 0) % table_dimensions[0];
     for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
       Eigen::Map<Eigen::MatrixXcd> mat(&propagation_table[t][p][0][0],
