@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
         make_shared<AIM::Interaction>(
             qds, history, rotating_dyadic, config.grid_spacing,
-            config.interpolation_order, config.expansion_order, config.border,
-            config.c0, config.dt,
+            config.interpolation_order, config.expansion_order, 3,
+            config.border, config.c0, config.dt,
             AIM::normalization::Helmholtz(
                 config.omega / config.c0,
                 (config.mu0 / (4 * M_PI * config.hbar))))};

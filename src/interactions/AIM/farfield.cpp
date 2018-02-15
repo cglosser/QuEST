@@ -8,7 +8,8 @@ AIM::Farfield::Farfield(
     const double dt,
     const Grid &grid,
     const Expansions::ExpansionTable &expansion_table,
-    normalization::SpatialNorm normalization)
+    normalization::SpatialNorm normalization,
+    const boost::multi_array<double, 4> &chebyshev_weights)
     : AimBase(dots,
               history,
               interp_order,
@@ -17,7 +18,8 @@ AIM::Farfield::Farfield(
               grid,
               expansion_table,
               normalization,
-              grid.circulant_shape(c0, dt, interp_order)),
+              grid.circulant_shape(c0, dt, interp_order),
+              chebyshev_weights),
       spatial_vector_transforms(spatial_fft_plans())
 {
   propagation_table = make_propagation_table();

@@ -23,7 +23,7 @@ class AIM::AimBase : public HistoryInteraction {
           const Expansions::ExpansionTable &expansion_table,
           normalization::SpatialNorm normalization,
           std::array<int, 4> table_dimensions,
-          int chebyshev_order = 3)
+          const boost::multi_array<double, 4> &chebyshev_weights)
       : HistoryInteraction(dots, history, interp_order, c0, dt),
 
         grid(grid),
@@ -37,11 +37,8 @@ class AIM::AimBase : public HistoryInteraction {
         obs_table(spacetime::make_vector3d<cmplx>(table_dimensions)),
 
         // Interior grid
-        chebyshev_order(chebyshev_order),
-        chebyshev_points(Math::chebyshev_points(chebyshev_order)),
-        chebyshev_expansions(
-            boost::extents[chebyshev_order][chebyshev_order][chebyshev_order]
-                          [expansion_table.shape()[1]]),
+        chebyshev_order(chebyshev_weights.shape()[0]),
+        chebyshev_weights(chebyshev_weights),
         chebyshev_table(
             boost::extents[table_dimensions[0]][grid.size()][chebyshev_order]
                           [chebyshev_order][chebyshev_order][3])
@@ -79,8 +76,7 @@ class AIM::AimBase : public HistoryInteraction {
 
   // Interior grid
   int chebyshev_order;
-  std::vector<double> chebyshev_points;
-  boost::multi_array<double, 4> chebyshev_expansions;
+  const boost::multi_array<double, 4> &chebyshev_weights;
   boost::multi_array<cmplx, 6> chebyshev_table;
 
   virtual spacetime::vector<cmplx> make_propagation_table() const = 0;

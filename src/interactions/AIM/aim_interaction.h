@@ -18,6 +18,7 @@ class AIM::Interaction final : public InteractionBase {
               const Eigen::Array3d &spacing,
               const int interp_order,
               const int expansion_order,
+              const int chebyshev_order,
               const int border,
               const double c0,
               const double dt,
@@ -27,6 +28,9 @@ class AIM::Interaction final : public InteractionBase {
         expansion_table(
             AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
                 .table(*dots)),
+        chebyshev_weights(
+            AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
+                .chebyshev_table(Math::chebyshev_points(chebyshev_order))),
 
         ff(dots,
            history,
@@ -35,7 +39,8 @@ class AIM::Interaction final : public InteractionBase {
            dt,
            grid,
            expansion_table,
-           normalization),
+           normalization,
+           chebyshev_weights),
 
         nf(dots,
            history,
@@ -45,7 +50,8 @@ class AIM::Interaction final : public InteractionBase {
            dt,
            grid,
            expansion_table,
-           normalization),
+           normalization,
+           chebyshev_weights),
 
         direct(dots, history, kernel, interp_order, border, c0, dt, grid)
   {
@@ -62,6 +68,7 @@ class AIM::Interaction final : public InteractionBase {
  private:
   Grid grid;
   Expansions::ExpansionTable expansion_table;
+  boost::multi_array<double, 4> chebyshev_weights;
 
   Farfield ff;
   Nearfield nf;

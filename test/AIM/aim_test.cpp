@@ -115,15 +115,17 @@ BOOST_FIXTURE_TEST_CASE(NO_SIGNAL_1, PARAMETERS<2>)
   dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
   dots->at(1) = QuantumDot({0.5, 0.5, 1.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
-  auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
-          .table(*dots);
+
+  auto LSE =
+      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid);
+  auto expansions = LSE.table(*dots);
+  auto chebyshev = LSE.chebyshev_table(Math::chebyshev_points(3));
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
-                    expansions, AIM::normalization::unit);
+                    expansions, AIM::normalization::unit, chebyshev);
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
-                   AIM::normalization::unit);
+                   AIM::normalization::unit, chebyshev);
 
   for(int t = 0; t < num_steps; ++t) {
     const auto prop = ff.evaluate(t) - nf.evaluate(t);
@@ -137,15 +139,17 @@ BOOST_FIXTURE_TEST_CASE(NO_SIGNAL_2, PARAMETERS<2>)
   dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
   dots->at(1) = QuantumDot({0.5, 0.5, 2.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
-  auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
-          .table(*dots);
+
+  auto LSE =
+      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid);
+  auto expansions = LSE.table(*dots);
+  auto chebyshev = LSE.chebyshev_table(Math::chebyshev_points(3));
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
-                    expansions, AIM::normalization::unit);
+                    expansions, AIM::normalization::unit, chebyshev);
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
-                   AIM::normalization::unit);
+                   AIM::normalization::unit, chebyshev);
 
   for(int t = 0; t < num_steps; ++t) {
     const auto prop = ff.evaluate(t) - nf.evaluate(t);
@@ -159,19 +163,21 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
   dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
   dots->at(1) = QuantumDot({0.5, 0.5, 3.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
-  auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
-          .table(*dots);
+
+  auto LSE =
+      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid);
+  auto expansions = LSE.table(*dots);
+  auto chebyshev = LSE.chebyshev_table(Math::chebyshev_points(3));
 
   Propagation::Identity<cmplx> gf;
   AIM::DirectInteraction direct(dots, history, gf, interpolation_order, border,
                                 c, dt, grid);
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
-                    expansions, AIM::normalization::unit);
+                    expansions, AIM::normalization::unit, chebyshev);
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
-                   AIM::normalization::unit);
+                   AIM::normalization::unit, chebyshev);
 
   for(int t = 0; t < num_steps; ++t) {
     const auto dir = direct.evaluate(t);
@@ -189,19 +195,21 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION, PARAMETERS<2>)
   dots->at(0) = QuantumDot({0.5, 0.5, 0.5}, {0, 0, 1});
   dots->at(1) = QuantumDot({0.5, 0.5, 3.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
-  auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
-          .table(*dots);
+
+  auto LSE =
+      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid);
+  auto expansions = LSE.table(*dots);
+  auto chebyshev = LSE.chebyshev_table(Math::chebyshev_points(3));
 
   Propagation::Identity<cmplx> gf;
   AIM::DirectInteraction direct(dots, history, gf, interpolation_order, border,
                                 c, dt, grid);
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
-                    expansions, AIM::normalization::unit);
+                    expansions, AIM::normalization::unit, chebyshev);
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
-                   AIM::normalization::unit);
+                   AIM::normalization::unit, chebyshev);
 
   for(int t = 0; t < num_steps; ++t) {
     const auto dir = direct.evaluate(t);

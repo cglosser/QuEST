@@ -17,7 +17,8 @@ class AIM::Nearfield final : public AimBase {
             const double,
             const Grid &,
             const Expansions::ExpansionTable &,
-            normalization::SpatialNorm);
+            normalization::SpatialNorm,
+            const boost::multi_array<double, 4> &);
 
   ~Nearfield() = default;
 
