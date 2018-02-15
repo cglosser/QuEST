@@ -19,7 +19,7 @@ class Gaussian {
 
 int main()
 {
-  const int interpolation_order = 4, expansion_order = 5, num_steps = 1024;
+  const int interpolation_order = 4, expansion_order = 2, num_steps = 1024;
   const double c = 1, dt = 1, total_time = num_steps * dt, omega = 0.1;
   const Gaussian source(total_time / 2.0, total_time / 12.0);
 
@@ -35,17 +35,13 @@ int main()
   history->fill(Eigen::Vector2cd::Zero());
   for(int t = -10; t < num_steps; ++t) {
     history->array_[0][t][0](RHO_01) =
-        2 * source(2 * t * dt) + iu * source(t * dt);
+        2 * source(2 * t * dt) - iu * source(t * dt);
   }
 
-  Propagation::RotatingEFIE prop(c, 1, omega);
-  int nt = AIM::Grid(spacing, expansion_order, *dots).max_transit_steps(c, dt) +
-           interpolation_order;
-
+  Propagation::Laplace<cmplx> prop;
   AIM::Interaction aim(dots, history, prop, spacing, interpolation_order,
                        expansion_order, 1, c, dt,
-                       AIM::Expansions::RotatingEFIE(nt, c, dt, omega),
-                       AIM::normalization::Helmholtz(omega / c, 1));
+                       AIM::normalization::Laplace());
   DirectInteraction direct(dots, history, prop, interpolation_order, c, dt);
 
   std::ofstream comparison("comparison.dat");
