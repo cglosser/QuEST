@@ -55,3 +55,13 @@ double falling_factorial(const double x, const int n)
 
   return result;
 }
+
+std::vector<double> chebyshev_points(const int n)
+{
+  std::vector<double> pts(n + 1);
+  for(int i = 0; i <= n; ++i) {
+    pts[n - i] = (std::cos(i * M_PI / n) + 1) / 2;
+  }
+
+  return pts;
+}

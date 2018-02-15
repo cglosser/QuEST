@@ -1,5 +1,6 @@
 target_sources(quest
   PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/aim_base.h"
     "${CMAKE_CURRENT_LIST_DIR}/direct.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/direct.h"
     "${CMAKE_CURRENT_LIST_DIR}/expansion.cpp"
