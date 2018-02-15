@@ -77,7 +77,7 @@ void AIM::DirectInteraction::build_coefficient_table(
     const std::pair<const int, const int> &pair = interaction_pairs[pair_idx];
 
     Eigen::Vector3d dr(separation((*dots)[pair.first], (*dots)[pair.second]));
-    auto delay = split_double(dr.norm() / (c0 * dt));
+    auto delay = Math::split_double(dr.norm() / (c0 * dt));
 
     floor_delays[pair_idx] = delay.first;
     lagrange.evaluate_derivative_table_at_x(delay.second, dt);

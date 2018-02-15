@@ -6,16 +6,19 @@
 #include <utility>
 #include <vector>
 
-std::vector<double> linspace(const double,
-                             const double,
-                             const size_t,
-                             double* const = nullptr);
-Eigen::Vector3d unit_normal(const double, const double);
-double gaussian(const double);
-double skew_gaussian(const double, const double);
-int grid_sequence(const int);
-std::pair<int, double> split_double(const double);
-double falling_factorial(const double, int);
-std::vector<double> chebyshev_points(const int);
+namespace Math {
+  int wrapmod(const int, const int);
+  std::vector<double> linspace(const double,
+                               const double,
+                               const size_t,
+                               double* const = nullptr);
+  Eigen::Vector3d unit_normal(const double, const double);
+  double gaussian(const double);
+  double skew_gaussian(const double, const double);
+  int grid_sequence(const int);
+  std::pair<int, double> split_double(const double);
+  double falling_factorial(const double, int);
+  std::vector<double> chebyshev_points(const int);
+}
 
 #endif

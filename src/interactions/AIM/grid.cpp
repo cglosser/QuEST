@@ -80,8 +80,9 @@ std::vector<size_t> AIM::Grid::expansion_indices(const int grid_index) const
   for(int nx = 0; nx <= expansion_order; ++nx) {
     for(int ny = 0; ny <= expansion_order; ++ny) {
       for(int nz = 0; nz <= expansion_order; ++nz) {
-        const Eigen::Vector3i delta(grid_sequence(nx), grid_sequence(ny),
-                                    grid_sequence(nz));
+        const Eigen::Vector3i delta(Math::grid_sequence(nx),
+                                    Math::grid_sequence(ny),
+                                    Math::grid_sequence(nz));
         const size_t grid_idx = coord_to_idx(origin + delta);
 
         indices.at(idx++) = grid_idx;

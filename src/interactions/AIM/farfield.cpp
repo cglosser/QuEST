@@ -154,7 +154,7 @@ void AIM::Farfield::fill_gmatrix_table(
             grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
 
         const double arg = dr.norm() / (c0 * dt);
-        const std::pair<int, double> split_arg = split_double(arg);
+        const std::pair<int, double> split_arg = Math::split_double(arg);
 
         for(int t = 1; t < table_dimensions[0]; ++t) {
           const auto polynomial_idx = static_cast<int>(ceil(t - arg));

@@ -160,7 +160,7 @@ spacetime::vector<cmplx> AIM::Nearfield::make_propagation_table() const
                              grid.spatial_coord_of_box(expansion2[e2]);
 
         const double arg = dr.norm() / (c0 * dt);
-        const std::pair<int, double> split_arg = split_double(arg);
+        const std::pair<int, double> split_arg = Math::split_double(arg);
 
         for(int t = 0; t < table_dimensions[0]; ++t) {
           const auto polynomial_idx = static_cast<int>(ceil(t - arg));

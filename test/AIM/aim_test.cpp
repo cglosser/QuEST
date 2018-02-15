@@ -43,7 +43,7 @@ struct PARAMETERS {
   double src(const double t) const
   {
     double arg = (t - total_time / 2.0) / (total_time / 6.0);
-    return gaussian(arg);
+    return Math::gaussian(arg);
   }
 };
 
