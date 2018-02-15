@@ -33,7 +33,8 @@ class AIM::Grid {
 
   int max_transit_steps(double c, double dt) const
   {
-    double max_diagonal = (dimensions.cast<double>() * spacing_).matrix().norm();
+    double max_diagonal =
+        (dimensions.cast<double>() * spacing_).matrix().norm();
     return static_cast<int>(ceil(max_diagonal / (c * dt)));
   };
 
