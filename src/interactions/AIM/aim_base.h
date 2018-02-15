@@ -22,8 +22,10 @@ class AIM::AimBase : public HistoryInteraction {
           const Grid &grid,
           const Expansions::ExpansionTable &expansion_table,
           normalization::SpatialNorm normalization,
-          std::array<int, 4> table_dimensions)
+          std::array<int, 4> table_dimensions,
+          int chebyshev_order = 3)
       : HistoryInteraction(dots, history, interp_order, c0, dt),
+
         grid(grid),
         expansion_table(expansion_table),
         normalization(std::move(normalization)),
@@ -32,7 +34,17 @@ class AIM::AimBase : public HistoryInteraction {
         // Tables
         propagation_table(table_dimensions),
         source_table(spacetime::make_vector3d<cmplx>(table_dimensions)),
-        obs_table(spacetime::make_vector3d<cmplx>(table_dimensions))
+        obs_table(spacetime::make_vector3d<cmplx>(table_dimensions)),
+
+        // Interior grid
+        chebyshev_order(chebyshev_order),
+        chebyshev_points(Math::chebyshev_points(chebyshev_order)),
+        chebyshev_expansions(
+            boost::extents[chebyshev_order][chebyshev_order][chebyshev_order]
+                          [expansion_table.shape()[1]]),
+        chebyshev_table(
+            boost::extents[table_dimensions[0]][grid.size()][chebyshev_order]
+                          [chebyshev_order][chebyshev_order][3])
   {
     auto clear = [](auto &table) {
       std::fill(table.data(), table.data() + table.num_elements(), cmplx(0, 0));
@@ -64,6 +76,12 @@ class AIM::AimBase : public HistoryInteraction {
 
   // These correspond to J and E and thus hold *vector* quantities
   spacetime::vector3d<cmplx> source_table, obs_table;
+
+  // Interior grid
+  int chebyshev_order;
+  std::vector<double> chebyshev_points;
+  boost::multi_array<double, 4> chebyshev_expansions;
+  boost::multi_array<cmplx, 6> chebyshev_table;
 
   virtual spacetime::vector<cmplx> make_propagation_table() const = 0;
   virtual void fill_source_table(const int) = 0;
