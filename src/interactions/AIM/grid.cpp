@@ -1,10 +1,10 @@
 #include "grid.h"
 
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
-                const int expansion_order,
+                const int order,
                 const Eigen::Array3i &dimensions,
                 const Eigen::Vector3i &shift)
-    : spacing_(spacing), expansion_order(expansion_order), dimensions(dimensions)
+    : spacing_(spacing), order_(order), dimensions(dimensions)
 {
   bounds.col(0) = 0 + shift.array();
   bounds.col(1) = dimensions + shift.array() - 1;
@@ -13,10 +13,10 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
 }
 
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
-                const int expansion_order,
+                const int order,
                 DotVector &dots)
     : spacing_(spacing),
-      expansion_order(expansion_order),
+      order_(order),
       bounds(calculate_bounds(dots)),
       dimensions(bounds.col(1) - bounds.col(0) + 1),
       num_gridpoints(dimensions.prod())
@@ -37,8 +37,8 @@ AIM::Grid::BoundsArray AIM::Grid::calculate_bounds(const DotVector &dots) const
     b.col(1) = grid_coord.array().max(b.col(1));
   }
 
-  b.col(0) -= expansion_order / 2;
-  b.col(1) += (expansion_order + 1) / 2;
+  b.col(0) -= order_ / 2;
+  b.col(1) += (order_ + 1) / 2;
 
   return b;
 }
@@ -74,12 +74,12 @@ std::vector<const_DotRange> AIM::Grid::box_contents_map(
 std::vector<size_t> AIM::Grid::expansion_indices(const int grid_index) const
 {
   Eigen::Vector3i origin = idx_to_coord(grid_index);
-  std::vector<size_t> indices(std::pow(expansion_order + 1, 3));
+  std::vector<size_t> indices(std::pow(order_ + 1, 3));
 
   size_t idx = 0;
-  for(int nx = 0; nx <= expansion_order; ++nx) {
-    for(int ny = 0; ny <= expansion_order; ++ny) {
-      for(int nz = 0; nz <= expansion_order; ++nz) {
+  for(int nx = 0; nx <= order_; ++nx) {
+    for(int ny = 0; ny <= order_; ++ny) {
+      for(int nz = 0; nz <= order_; ++nz) {
         const Eigen::Vector3i delta(Math::grid_sequence(nx),
                                     Math::grid_sequence(ny),
                                     Math::grid_sequence(nz));
@@ -99,7 +99,7 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
   std::vector<ipair_t> nf;
   auto mapping = box_contents_map(dots);
 
-  const int bound = expansion_order + border;
+  const int bound = order_ + border;
 
   for(auto src_idx = 0u; src_idx < num_gridpoints; ++src_idx) {
     Eigen::Vector3i s = idx_to_coord(src_idx);

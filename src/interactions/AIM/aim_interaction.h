@@ -26,11 +26,10 @@ class AIM::Interaction final : public InteractionBase {
       : InteractionBase(dots, dt),
         grid(spacing, expansion_order, *dots),
         expansion_table(
-            AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
-                .table(*dots)),
+            AIM::Expansions::LeastSquaresExpansionSolver(grid).table(*dots)),
         chebyshev_weights(
-            AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
-                .chebyshev_table(Math::chebyshev_points(chebyshev_order))),
+            AIM::Expansions::LeastSquaresExpansionSolver(grid).chebyshev_table(
+                Math::chebyshev_points(chebyshev_order))),
 
         ff(dots,
            history,

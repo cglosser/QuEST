@@ -40,9 +40,10 @@ class AIM::Grid {
   std::vector<const_DotRange> box_contents_map(const DotVector &) const;
   std::vector<ipair_t> nearfield_pairs(const int, const DotVector &) const;
 
+  inline const auto &spacing() const { return spacing_; }
+  inline const auto order() const { return order_; }
   inline auto size() const { return num_gridpoints; }
   inline const auto &shape() const { return dimensions; }
-  inline const auto &spacing() const { return spacing_; }
   // == Geometry routines (grid <---> space) ==================================
 
   inline Eigen::Vector3i grid_coordinate(const Eigen::Vector3d &coord) const
@@ -80,7 +81,7 @@ class AIM::Grid {
 
  private:
   Eigen::Array3d spacing_;
-  int expansion_order;
+  int order_;
   BoundsArray bounds;
   Eigen::Array3i dimensions;
   size_t num_gridpoints;

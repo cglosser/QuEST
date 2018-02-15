@@ -11,11 +11,11 @@ Eigen::MatrixXd AIM::Expansions::LeastSquaresExpansionSolver::w_matrix(
     Eigen::Vector3d dr =
         grid.spatial_coord_of_box(expansion_indices.at(col)) - pos;
     int row = 0;
-    for(int nx = 0; nx <= box_order; ++nx) {
+    for(int nx = 0; nx <= grid.order(); ++nx) {
       double x_term = std::pow(dr(0), nx);
-      for(int ny = 0; ny <= box_order; ++ny) {
+      for(int ny = 0; ny <= grid.order(); ++ny) {
         double y_term = std::pow(dr(1), ny);
-        for(int nz = 0; nz <= box_order; ++nz) {
+        for(int nz = 0; nz <= grid.order(); ++nz) {
           double z_term = std::pow(dr(2), nz);
           w_mat(row++, col) = x_term * y_term * z_term;
         }

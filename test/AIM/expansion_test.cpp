@@ -18,8 +18,7 @@ BOOST_FIXTURE_TEST_CASE(ONE_POINT_ON_GRID, PARAMETERS)
   AIM::Grid grid(grid_spacing, expansion_order, *dots);
 
   auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
-          .table(*dots);
+      AIM::Expansions::LeastSquaresExpansionSolver(grid).table(*dots);
 
   for(int i = 1; i < 8; ++i) {
     BOOST_CHECK_EQUAL(expansions[0][i].weight, 0);
@@ -32,8 +31,7 @@ BOOST_FIXTURE_TEST_CASE(ONE_POINT_EXPANSION_OFF_GRID, PARAMETERS)
       std::make_shared<DotVector>(DotVector{QuantumDot(grid_spacing / 2.0)});
   AIM::Grid grid(grid_spacing, expansion_order, *dots);
   auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
-          .table(*dots);
+      AIM::Expansions::LeastSquaresExpansionSolver(grid).table(*dots);
 
   for(int i = 0; i < 8; ++i) {
     BOOST_CHECK_EQUAL(expansions[0][i].weight, 1.0 / 8);
@@ -47,8 +45,7 @@ BOOST_FIXTURE_TEST_CASE(TWO_POINTS_ON_GRID, PARAMETERS)
                 QuantumDot(grid_spacing * Eigen::Array3d(10, 1, 1))});
   AIM::Grid grid(grid_spacing, expansion_order, *dots);
   auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
-          .table(*dots);
+      AIM::Expansions::LeastSquaresExpansionSolver(grid).table(*dots);
 
   enum PointIndex { POINT_0, POINT_1 };
   BOOST_CHECK_EQUAL(expansions[POINT_0][0].weight, 1);
@@ -67,8 +64,7 @@ BOOST_FIXTURE_TEST_CASE(TWO_POINTS_OFF_GRID, PARAMETERS)
                 QuantumDot(grid_spacing * Eigen::Array3d(10.5, 0.5, 0.5))});
   AIM::Grid grid(grid_spacing, expansion_order, *dots);
   auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
-          .table(*dots);
+      AIM::Expansions::LeastSquaresExpansionSolver(grid).table(*dots);
 
   enum PointIndex { POINT_0, POINT_1 };
   for(int i = 0; i < 8; ++i) {

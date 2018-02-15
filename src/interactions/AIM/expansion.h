@@ -19,9 +19,8 @@ namespace AIM {
 
 class AIM::Expansions::LeastSquaresExpansionSolver {
  public:
-  LeastSquaresExpansionSolver(const int box_order, const Grid &grid)
-      : box_order(box_order),
-        num_pts(std::pow(box_order + 1, 3)),
+  LeastSquaresExpansionSolver(const Grid &grid)
+      : num_pts(std::pow(grid.order() + 1, 3)),
         qvec(Eigen::VectorXd::Zero(num_pts)),
         grid(grid)
   {
@@ -35,7 +34,7 @@ class AIM::Expansions::LeastSquaresExpansionSolver {
       const std::vector<double> &) const;
 
  private:
-  int box_order, num_pts;
+  int num_pts;
   Eigen::VectorXd qvec;
   const Grid &grid;
 };

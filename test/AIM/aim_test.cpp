@@ -116,8 +116,7 @@ BOOST_FIXTURE_TEST_CASE(NO_SIGNAL_1, PARAMETERS<2>)
   dots->at(1) = QuantumDot({0.5, 0.5, 1.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
 
-  auto LSE =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid);
+  auto LSE = AIM::Expansions::LeastSquaresExpansionSolver(grid);
   auto expansions = LSE.table(*dots);
   auto chebyshev = LSE.chebyshev_table(Math::chebyshev_points(3));
 
@@ -140,8 +139,7 @@ BOOST_FIXTURE_TEST_CASE(NO_SIGNAL_2, PARAMETERS<2>)
   dots->at(1) = QuantumDot({0.5, 0.5, 2.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
 
-  auto LSE =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid);
+  auto LSE = AIM::Expansions::LeastSquaresExpansionSolver(grid);
   auto expansions = LSE.table(*dots);
   auto chebyshev = LSE.chebyshev_table(Math::chebyshev_points(3));
 
@@ -164,8 +162,7 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
   dots->at(1) = QuantumDot({0.5, 0.5, 3.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
 
-  auto LSE =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid);
+  auto LSE = AIM::Expansions::LeastSquaresExpansionSolver(grid);
   auto expansions = LSE.table(*dots);
   auto chebyshev = LSE.chebyshev_table(Math::chebyshev_points(3));
 
@@ -196,8 +193,7 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION, PARAMETERS<2>)
   dots->at(1) = QuantumDot({0.5, 0.5, 3.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
 
-  auto LSE =
-      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid);
+  auto LSE = AIM::Expansions::LeastSquaresExpansionSolver(grid);
   auto expansions = LSE.table(*dots);
   auto chebyshev = LSE.chebyshev_table(Math::chebyshev_points(3));
 
