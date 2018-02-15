@@ -120,14 +120,9 @@ BOOST_FIXTURE_TEST_CASE(NO_SIGNAL_1, PARAMETERS<2>)
           expansion_order, grid, *dots);
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
-                    expansions,
-                    AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
-                                                 interpolation_order),
-                    AIM::normalization::unit);
+                    expansions, AIM::normalization::unit);
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
-                   AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
-                                                interpolation_order),
                    AIM::normalization::unit);
 
   for(int t = 0; t < num_steps; ++t) {
@@ -147,14 +142,9 @@ BOOST_FIXTURE_TEST_CASE(NO_SIGNAL_2, PARAMETERS<2>)
           expansion_order, grid, *dots);
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
-                    expansions,
-                    AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
-                                                 interpolation_order),
-                    AIM::normalization::unit);
+                    expansions, AIM::normalization::unit);
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
-                   AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
-                                                interpolation_order),
                    AIM::normalization::unit);
 
   for(int t = 0; t < num_steps; ++t) {
@@ -178,14 +168,9 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
                                 c, dt, grid);
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
-                    expansions,
-                    AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
-                                                 interpolation_order),
-                    AIM::normalization::unit);
+                    expansions, AIM::normalization::unit);
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
-                   AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
-                                                interpolation_order),
                    AIM::normalization::unit);
 
   for(int t = 0; t < num_steps; ++t) {
@@ -213,14 +198,9 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION, PARAMETERS<2>)
                                 c, dt, grid);
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
-                    expansions,
-                    AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
-                                                 interpolation_order),
-                    AIM::normalization::unit);
+                    expansions, AIM::normalization::unit);
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid, expansions,
-                   AIM::Expansions::Retardation(grid.max_transit_steps(c, dt) +
-                                                interpolation_order),
                    AIM::normalization::unit);
 
   for(int t = 0; t < num_steps; ++t) {

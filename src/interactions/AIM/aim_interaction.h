@@ -21,7 +21,6 @@ class AIM::Interaction final : public InteractionBase {
               const int border,
               const double c0,
               const double dt,
-              Expansions::ExpansionFunction expansion_function,
               normalization::SpatialNorm normalization)
       : InteractionBase(dots, dt),
         grid(spacing, expansion_order, *dots),
@@ -35,7 +34,6 @@ class AIM::Interaction final : public InteractionBase {
            dt,
            grid,
            expansion_table,
-           expansion_function,
            normalization),
 
         nf(dots,
@@ -46,7 +44,6 @@ class AIM::Interaction final : public InteractionBase {
            dt,
            grid,
            expansion_table,
-           expansion_function,
            normalization),
 
         direct(dots, history, kernel, interp_order, border, c0, dt, grid)

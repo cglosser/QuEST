@@ -9,7 +9,6 @@ AIM::Nearfield::Nearfield(
     const double dt,
     const Grid &grid,
     const Expansions::ExpansionTable &expansion_table,
-    Expansions::ExpansionFunction expansion_function,
     normalization::SpatialNorm normalization)
     : AimBase(
           dots,
@@ -19,7 +18,6 @@ AIM::Nearfield::Nearfield(
           dt,
           grid,
           expansion_table,
-          expansion_function,
           normalization,
           {{grid.max_transit_steps(c0, dt) + interp_order,
             (int)grid.nearfield_pairs(border, *dots).size(),
@@ -45,8 +43,6 @@ AIM::Nearfield::Nearfield(
 
 void AIM::Nearfield::fill_source_table(const int step)
 {
-  using namespace Expansions::enums;
-
   const int wrapped_step = step % table_dimensions[0];
   spacetime::clear_time_slice(source_table, wrapped_step);
 
@@ -62,7 +58,7 @@ void AIM::Nearfield::fill_source_table(const int step)
       std::tie(start, end) = mapping[box1];
       for(auto d = start; d != end; ++d) {
         const auto dot_idx = std::distance(dots->begin(), d);
-        grid_field1 += expansion_table[dot_idx][e].d0 *
+        grid_field1 += expansion_table[dot_idx][e].weight *
                        (*dots)[dot_idx].dipole() *
                        history->array_[dot_idx][step][0][RHO_01];
       }
@@ -73,7 +69,7 @@ void AIM::Nearfield::fill_source_table(const int step)
       std::tie(start, end) = mapping[box2];
       for(auto d = start; d != end; ++d) {
         const auto dot_idx = std::distance(dots->begin(), d);
-        grid_field2 += expansion_table[dot_idx][e].d0 *
+        grid_field2 += expansion_table[dot_idx][e].weight *
                        (*dots)[dot_idx].dipole() *
                        history->array_[dot_idx][step][0][RHO_01];
       }
@@ -116,6 +112,7 @@ void AIM::Nearfield::propagate(const int step)
 
 void AIM::Nearfield::fill_results_table(const int step)
 {
+  const int wrapped_step = step % table_dimensions[0];
   results = 0;
 
   for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
@@ -127,15 +124,19 @@ void AIM::Nearfield::fill_results_table(const int step)
       std::tie(start, end) = mapping[box1];
       for(auto d = start; d != end; ++d) {
         const auto dot_idx = std::distance(dots->begin(), d);
-        results(dot_idx) += (*dots)[dot_idx].dipole().dot(expansion_function(
-            obs_table, {{step, p, 0, e}}, expansion_table[dot_idx][e]));
+        results(dot_idx) +=
+            expansion_table[dot_idx][e].weight *
+            (*dots)[dot_idx].dipole().dot(Eigen::Map<Eigen::Vector3cd>(
+                &obs_table[wrapped_step][p][0][e][0]));
       }
 
       std::tie(start, end) = mapping[box2];
       for(auto d = start; d != end; ++d) {
         const auto dot_idx = std::distance(dots->begin(), d);
-        results(dot_idx) += (*dots)[dot_idx].dipole().dot(expansion_function(
-            obs_table, {{step, p, 1, e}}, expansion_table[dot_idx][e]));
+        results(dot_idx) +=
+            expansion_table[dot_idx][e].weight *
+            (*dots)[dot_idx].dipole().dot(Eigen::Map<Eigen::Vector3cd>(
+                &obs_table[wrapped_step][p][1][e][0]));
       }
     }
   }

@@ -8,7 +8,6 @@ AIM::Farfield::Farfield(
     const double dt,
     const Grid &grid,
     const Expansions::ExpansionTable &expansion_table,
-    Expansions::ExpansionFunction expansion_function,
     normalization::SpatialNorm normalization)
     : AimBase(dots,
               history,
@@ -17,7 +16,6 @@ AIM::Farfield::Farfield(
               dt,
               grid,
               expansion_table,
-              expansion_function,
               normalization,
               grid.circulant_shape(c0, dt, interp_order)),
       spatial_vector_transforms(spatial_fft_plans())
@@ -27,8 +25,6 @@ AIM::Farfield::Farfield(
 
 void AIM::Farfield::fill_source_table(const int step)
 {
-  using namespace Expansions::enums;
-
   const int wrapped_step = step % table_dimensions[0];
   const auto p = &source_table[wrapped_step][0][0][0][0];
   std::fill(p, p + 3 * 8 * grid.size(), cmplx(0, 0));
@@ -46,9 +42,8 @@ void AIM::Farfield::fill_source_table(const int step)
       // elements) and the electromagnetic source quantities. Ideally the AIM
       // code should not have knowledge of this to better encapsulate
       // "propagation," but this is good enough for now.
-      Eigen::Vector3cd source_field = e.d0 * (*dots)[dot_idx].dipole() *
-                                      history->array_[dot_idx][step][0][RHO_01];
-      grid_field += source_field;
+      grid_field += e.weight * (*dots)[dot_idx].dipole() *
+                    history->array_[dot_idx][step][0][RHO_01];
     }
   }
 }
@@ -86,6 +81,7 @@ void AIM::Farfield::propagate(const int step)
 
 void AIM::Farfield::fill_results_table(const int step)
 {
+  const auto wrapped_step = step % table_dimensions[0];
   results = 0;
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
@@ -94,11 +90,9 @@ void AIM::Farfield::fill_results_table(const int step)
         ++expansion_idx) {
       const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
-      total_field += expansion_function(
-          obs_table, {{step, coord(0), coord(1), coord(2)}}, e);
-      // Don't use a _wrapped_ step here; the expansion_function needs knowledge
-      // of where it's being called in the complete timeline to accommodate
-      // boundary conditions
+      total_field += e.weight * Eigen::Map<Eigen::Vector3cd>(
+                                    &obs_table[wrapped_step][coord(0)][coord(1)]
+                                              [coord(2)][0]);
     }
     results(dot_idx) += total_field.dot((*dots)[dot_idx].dipole());
   }

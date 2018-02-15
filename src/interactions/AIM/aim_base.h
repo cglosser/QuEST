@@ -21,13 +21,11 @@ class AIM::AimBase : public HistoryInteraction {
           const double dt,
           const Grid &grid,
           const Expansions::ExpansionTable &expansion_table,
-          Expansions::ExpansionFunction expansion_function,
           normalization::SpatialNorm normalization,
           std::array<int, 4> table_dimensions)
       : HistoryInteraction(dots, history, interp_order, c0, dt),
         grid(grid),
         expansion_table(expansion_table),
-        expansion_function(std::move(expansion_function)),
         normalization(std::move(normalization)),
         table_dimensions(table_dimensions),
 
@@ -57,7 +55,6 @@ class AIM::AimBase : public HistoryInteraction {
  protected:
   const Grid &grid;
   const Expansions::ExpansionTable &expansion_table;
-  Expansions::ExpansionFunction expansion_function;
   normalization::SpatialNorm normalization;
 
   std::array<int, 4> table_dimensions;

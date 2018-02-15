@@ -39,19 +39,12 @@ int main(int argc, char *argv[])
     Propagation::RotatingEFIE rotating_dyadic(
         config.c0, config.mu0 / (4 * M_PI * config.hbar), config.omega);
 
-    const int wsteps =
-        AIM::Grid(config.grid_spacing, config.expansion_order, *qds)
-            .max_transit_steps(config.c0, config.dt) +
-        config.interpolation_order;
-
     std::vector<std::shared_ptr<InteractionBase>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
         make_shared<AIM::Interaction>(
             qds, history, rotating_dyadic, config.grid_spacing,
             config.interpolation_order, config.expansion_order, config.border,
             config.c0, config.dt,
-            AIM::Expansions::RotatingEFIE(wsteps, config.c0, config.dt,
-                                          config.omega),
             AIM::normalization::Helmholtz(
                 config.omega / config.c0,
                 (config.mu0 / (4 * M_PI * config.hbar))))};

@@ -17,7 +17,6 @@ class AIM::Farfield final : public AimBase {
            const double,
            const Grid &,
            const Expansions::ExpansionTable &,
-           Expansions::ExpansionFunction,
            normalization::SpatialNorm);
 
   ~Farfield() = default;
