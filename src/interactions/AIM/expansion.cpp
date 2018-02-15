@@ -7,26 +7,25 @@ AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
   return LeastSquaresExpansionSolver(box_order, grid).table(dots);
 }
 
+Eigen::VectorXd AIM::Expansions::LeastSquaresExpansionSolver::solve(
+    const Eigen::Vector3d &pos) const
+{
+  Eigen::FullPivLU<Eigen::MatrixXd> lu(w_matrix(pos));
+  return lu.solve(qvec);
+}
+
 AIM::Expansions::ExpansionTable
 AIM::Expansions::LeastSquaresExpansionSolver::table(
     const std::vector<QuantumDot> &dots) const
 {
   AIM::Expansions::ExpansionTable table(boost::extents[dots.size()][num_pts]);
 
-  Eigen::VectorXd q_vec = Eigen::VectorXd::Zero(num_pts);
-  q_vec(0) = 1;
-
   for(auto dot_idx = 0u; dot_idx < dots.size(); ++dot_idx) {
-    const auto &pos = dots.at(dot_idx).position();
-    Eigen::FullPivLU<Eigen::MatrixXd> lu(w_matrix(pos));
+    const auto weights = solve(dots.at(dot_idx).position());
+    const auto indices = grid.expansion_indices(dots.at(dot_idx).position());
 
-    Eigen::VectorXd weights = lu.solve(q_vec);
-
-    const auto indices = grid.expansion_indices(pos);
-    for(auto w = 0; w < num_pts; ++w) {
-      table[dot_idx][w].index = indices[w];
-      table[dot_idx][w].weight = weights(w);
-    }
+    for(auto w = 0; w < num_pts; ++w)
+      table[dot_idx][w] = {indices[w], weights(w)};
   }
 
   return table;
