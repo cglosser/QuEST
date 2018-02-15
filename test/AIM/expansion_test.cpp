@@ -73,4 +73,21 @@ BOOST_FIXTURE_TEST_CASE(TWO_POINTS_OFF_GRID, PARAMETERS)
   }
 }
 
+BOOST_AUTO_TEST_CASE(CHEBYSHEV)
+{
+  AIM::Grid grid(Eigen::Array3d(1, 1, 1), 1, Eigen::Array3i(2, 2, 2),
+                 Eigen::Vector3i::Zero());
+
+  AIM::Expansions::LeastSquaresExpansionSolver LSE(grid);
+  auto cheb_pts = Math::chebyshev_points(2);
+  auto cheb_table = LSE.chebyshev_table(cheb_pts);
+
+  BOOST_CHECK_EQUAL(cheb_table[0][0][0][0], 1);
+  BOOST_CHECK_EQUAL(cheb_table[2][2][2][0], 1);
+
+  for(int w = 0; w < 8; ++w) {
+    BOOST_CHECK_CLOSE(cheb_table[1][1][1][w], 1.0 / 8.0, 1e-12);
+  }
+}
+
 BOOST_AUTO_TEST_SUITE_END()  // EXPANSIONS
