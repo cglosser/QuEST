@@ -24,8 +24,9 @@ class AIM::Interaction final : public InteractionBase {
               normalization::SpatialNorm normalization)
       : InteractionBase(dots, dt),
         grid(spacing, expansion_order, *dots),
-        expansion_table(Expansions::LeastSquaresExpansionSolver::get_expansions(
-            expansion_order, grid, *dots)),
+        expansion_table(
+            AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
+                .table(*dots)),
 
         ff(dots,
            history,

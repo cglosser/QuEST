@@ -116,8 +116,8 @@ BOOST_FIXTURE_TEST_CASE(NO_SIGNAL_1, PARAMETERS<2>)
   dots->at(1) = QuantumDot({0.5, 0.5, 1.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
   auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
-          expansion_order, grid, *dots);
+      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
+          .table(*dots);
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
                     expansions, AIM::normalization::unit);
@@ -138,8 +138,8 @@ BOOST_FIXTURE_TEST_CASE(NO_SIGNAL_2, PARAMETERS<2>)
   dots->at(1) = QuantumDot({0.5, 0.5, 2.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
   auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
-          expansion_order, grid, *dots);
+      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
+          .table(*dots);
 
   AIM::Nearfield nf(dots, history, interpolation_order, border, c, dt, grid,
                     expansions, AIM::normalization::unit);
@@ -160,8 +160,8 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION_1, PARAMETERS<2>)
   dots->at(1) = QuantumDot({0.5, 0.5, 3.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
   auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
-          expansion_order, grid, *dots);
+      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
+          .table(*dots);
 
   Propagation::Identity<cmplx> gf;
   AIM::DirectInteraction direct(dots, history, gf, interpolation_order, border,
@@ -190,8 +190,8 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION, PARAMETERS<2>)
   dots->at(1) = QuantumDot({0.5, 0.5, 3.5}, {0, 0, 1});
   AIM::Grid grid(spacing, expansion_order, *dots);
   auto expansions =
-      AIM::Expansions::LeastSquaresExpansionSolver::get_expansions(
-          expansion_order, grid, *dots);
+      AIM::Expansions::LeastSquaresExpansionSolver(expansion_order, grid)
+          .table(*dots);
 
   Propagation::Identity<cmplx> gf;
   AIM::DirectInteraction direct(dots, history, gf, interpolation_order, border,

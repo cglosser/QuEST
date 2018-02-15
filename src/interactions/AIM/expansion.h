@@ -19,18 +19,6 @@ namespace AIM {
 
 class AIM::Expansions::LeastSquaresExpansionSolver {
  public:
-  static ExpansionTable get_expansions(const int,
-                                       const Grid &,
-                                       const std::vector<QuantumDot> &);
-  Eigen::VectorXd solve(const Eigen::Vector3d &) const;
-  ExpansionTable table(const std::vector<QuantumDot> &) const;
-  Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
-
- private:
-  int box_order, num_pts;
-  Eigen::VectorXd qvec;
-  const Grid &grid;
-
   LeastSquaresExpansionSolver(const int box_order, const Grid &grid)
       : box_order(box_order),
         num_pts(std::pow(box_order + 1, 3)),
@@ -39,6 +27,17 @@ class AIM::Expansions::LeastSquaresExpansionSolver {
   {
     qvec(0) = 1;
   };
+
+  Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
+  Eigen::VectorXd solve(const Eigen::Vector3d &) const;
+  ExpansionTable table(const std::vector<QuantumDot> &) const;
+  boost::multi_array<double, 4> chebyshev_table(
+      const std::vector<double> &) const;
+
+ private:
+  int box_order, num_pts;
+  Eigen::VectorXd qvec;
+  const Grid &grid;
 };
 
 #endif

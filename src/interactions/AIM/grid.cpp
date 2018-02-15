@@ -4,7 +4,7 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
                 const int expansion_order,
                 const Eigen::Array3i &dimensions,
                 const Eigen::Vector3i &shift)
-    : spacing(spacing), expansion_order(expansion_order), dimensions(dimensions)
+    : spacing_(spacing), expansion_order(expansion_order), dimensions(dimensions)
 {
   bounds.col(0) = 0 + shift.array();
   bounds.col(1) = dimensions + shift.array() - 1;
@@ -15,7 +15,7 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
 AIM::Grid::Grid(const Eigen::Array3d &spacing,
                 const int expansion_order,
                 DotVector &dots)
-    : spacing(spacing),
+    : spacing_(spacing),
       expansion_order(expansion_order),
       bounds(calculate_bounds(dots)),
       dimensions(bounds.col(1) - bounds.col(0) + 1),
