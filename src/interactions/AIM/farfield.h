@@ -31,6 +31,7 @@ class AIM::Farfield final : public AimBase {
   spacetime::vector<cmplx> make_propagation_table() const override;
   void fill_source_table(const int) override;
   void propagate(const int) override;
+  void fill_chebyshev_table(const int) override;
   void fill_results_table(const int) override;
 };
 

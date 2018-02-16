@@ -112,6 +112,7 @@ void AIM::Nearfield::propagate(const int step)
   }
 }
 
+void AIM::Nearfield::fill_chebyshev_table(const int step) {}
 void AIM::Nearfield::fill_results_table(const int step)
 {
   const int wrapped_step = step % table_dimensions[0];

@@ -161,15 +161,8 @@ BOOST_AUTO_TEST_CASE(EXPANSION_INDEX_TABLE)
   AIM::Grid grid(Eigen::Array3d(1, 1, 1), 1, Eigen::Array3i(5, 5, 5),
                  Eigen::Vector3i(-2, -2, -2));
 
-  auto tbl = grid.expansion_index_table();
-
-  for(int i = 0; i < grid.size(); ++i) {
-    std::cout << i << ": ";
-    for(int j = 0; j < 8; ++j) {
-      std::cout << tbl[i][j] << " ";
-    }
-    std::cout << std::endl;
-  }
+  boost::multi_array<int, 2> tbl(boost::extents[125][8]);
+  tbl = grid.expansion_index_table();
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // GRID

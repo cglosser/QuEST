@@ -92,8 +92,6 @@ class AIM::Grid {
   BoundsArray bounds;
   Eigen::Array3i dimensions;
   int num_gridpoints;
-
-  boost::multi_array<int, 2> expansion_index_table_;
 };
 
 #endif

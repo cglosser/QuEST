@@ -65,6 +65,7 @@ class AIM::AimBase : public HistoryInteraction {
   const Grid &grid;
   const Expansions::ExpansionTable &expansion_table;
   normalization::SpatialNorm normalization;
+  boost::multi_array<int, 2> expansion_indices;
 
   std::array<int, 4> table_dimensions;
 
@@ -82,6 +83,7 @@ class AIM::AimBase : public HistoryInteraction {
   virtual spacetime::vector<cmplx> make_propagation_table() const = 0;
   virtual void fill_source_table(const int) = 0;
   virtual void propagate(const int) = 0;
+  virtual void fill_chebyshev_table(const int) = 0;
   virtual void fill_results_table(const int) = 0;
 };
 

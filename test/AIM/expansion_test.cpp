@@ -83,10 +83,10 @@ BOOST_AUTO_TEST_CASE(CHEBYSHEV)
   auto cheb_table = LSE.chebyshev_table(cheb_pts);
 
   BOOST_CHECK_EQUAL(cheb_table[0][0][0][0], 1);
-  BOOST_CHECK_EQUAL(cheb_table[2][2][2][0], 1);
+  BOOST_CHECK_EQUAL(cheb_table[0][2][2][2], 1);
 
   for(int w = 0; w < 8; ++w) {
-    BOOST_CHECK_CLOSE(cheb_table[1][1][1][w], 1.0 / 8.0, 1e-12);
+    BOOST_CHECK_CLOSE(cheb_table[w][1][1][1], 1.0 / 8.0, 1e-12);
   }
 }
 

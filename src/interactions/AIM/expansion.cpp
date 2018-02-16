@@ -55,7 +55,7 @@ AIM::Expansions::LeastSquaresExpansionSolver::chebyshev_table(
     const std::vector<double> &pts) const
 {
   boost::multi_array<double, 4> coefs(
-      boost::extents[pts.size()][pts.size()][pts.size()][num_pts]);
+      boost::extents[num_pts][pts.size()][pts.size()][pts.size()]);
 
   const int n = pts.size();
   for(int i = 0; i < n; ++i) {
@@ -64,7 +64,7 @@ AIM::Expansions::LeastSquaresExpansionSolver::chebyshev_table(
         Eigen::Vector3d r =
             Eigen::Array3d(pts[i], pts[j], pts[k]) * grid.spacing();
         const auto weights = solve(r);
-        for(int w = 0; w < num_pts; ++w) coefs[i][j][k][w] = weights[w];
+        for(int w = 0; w < num_pts; ++w) coefs[w][i][j][k] = weights[w];
       }
     }
   }

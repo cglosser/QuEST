@@ -81,25 +81,35 @@ void AIM::Farfield::propagate(const int step)
                    reinterpret_cast<fftw_complex *>(o_ptr));
 }
 
-void AIM::Farfield::fill_results_table(const int step)
+void AIM::Farfield::fill_chebyshev_table(const int step)
 {
   const auto wrapped_step = step % table_dimensions[0];
-  results = 0;
+  auto *p = &chebyshev_table[wrapped_step][0][0][0][0][0];
+  const auto size =
+      std::accumulate(chebyshev_table.shape() + 1, chebyshev_table.shape() + 6,
+                      1, std::multiplies<int>());
+  std::fill(p, p + size, cmplx(0, 0));
 
-  for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
-    Eigen::Vector3cd total_field = Eigen::Vector3cd::Zero();
-    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
-        ++expansion_idx) {
-      const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
-      Eigen::Vector3i coord = grid.idx_to_coord(e.index);
-      total_field += e.weight * Eigen::Map<Eigen::Vector3cd>(
-                                    &obs_table[wrapped_step][coord(0)][coord(1)]
-                                              [coord(2)][0]);
+  for(int box_idx = 0; box_idx < grid.size(); ++box_idx) {
+    for(int w = 0; w < static_cast<int>(expansion_table.shape()[1]); ++w) {
+      Eigen::Vector3i coord = grid.idx_to_coord(expansion_indices[box_idx][w]);
+
+      for(int cheb_x = 0; cheb_x <= chebyshev_order; ++cheb_x) {
+        for(int cheb_y = 0; cheb_y <= chebyshev_order; ++cheb_y) {
+          for(int cheb_z = 0; cheb_z <= chebyshev_order; ++cheb_z) {
+            Eigen::Map<Eigen::Vector3cd> vec(
+                &chebyshev_table[wrapped_step][box_idx][cheb_x][cheb_y][cheb_z]
+                                [0]);
+            vec += Eigen::Map<Eigen::Vector3cd>(
+                &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
+          }
+        }
+      }
     }
-    results(dot_idx) += total_field.dot((*dots)[dot_idx].dipole());
   }
 }
 
+void AIM::Farfield::fill_results_table(const int step) { results = 0; }
 spacetime::vector<cmplx> AIM::Farfield::make_propagation_table() const
 {
   spacetime::vector<cmplx> g_mat(table_dimensions);
