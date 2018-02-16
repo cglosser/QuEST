@@ -8,7 +8,7 @@
 namespace AIM {
   namespace Expansions {
     struct Expansion {
-      size_t index;
+      int index;
       double weight;
     };
 

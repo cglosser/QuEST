@@ -39,7 +39,7 @@ AIM::Expansions::LeastSquaresExpansionSolver::table(
 {
   AIM::Expansions::ExpansionTable table(boost::extents[dots.size()][num_pts]);
 
-  for(auto dot_idx = 0u; dot_idx < dots.size(); ++dot_idx) {
+  for(int dot_idx = 0; dot_idx < static_cast<int>(dots.size()); ++dot_idx) {
     const auto weights = solve(dots.at(dot_idx).position());
     const auto indices = grid.expansion_indices(dots.at(dot_idx).position());
 

@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(COORDINATE_TRANSFORMATIONS_2D)
           (spacing.array() * (shape.cast<double>() - 1)).matrix());
 
   // Check that coord_to_idx and idx_to_coord are inverses
-  for(size_t i = 0; i < grid.size(); ++i) {
+  for(int i = 0; i < grid.size(); ++i) {
     BOOST_CHECK_EQUAL(grid.coord_to_idx(grid.idx_to_coord(i)), i);
   }
 }
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(COORDINATE_TRANSFORMATIONS_3D)
           (spacing.array() * (shape.cast<double>() - 1)).matrix());
 
   // Check that coord_to_idx and idx_to_coord are inverses
-  for(size_t i = 0; i < grid.size(); ++i) {
+  for(int i = 0; i < grid.size(); ++i) {
     BOOST_CHECK_EQUAL(grid.coord_to_idx(grid.idx_to_coord(i)), i);
   }
 }
@@ -154,6 +154,22 @@ BOOST_AUTO_TEST_CASE(NEARFIELD_PAIRS)
   BOOST_CHECK(nf.at(1) == std::make_pair(0, 1));
   BOOST_CHECK(nf.at(2) == std::make_pair(1, 1));
   BOOST_CHECK(nf.at(3) == std::make_pair(5, 5));
+}
+
+BOOST_AUTO_TEST_CASE(EXPANSION_INDEX_TABLE)
+{
+  AIM::Grid grid(Eigen::Array3d(1, 1, 1), 1, Eigen::Array3i(5, 5, 5),
+                 Eigen::Vector3i(-2, -2, -2));
+
+  auto tbl = grid.expansion_index_table();
+
+  for(int i = 0; i < grid.size(); ++i) {
+    std::cout << i << ": ";
+    for(int j = 0; j < 8; ++j) {
+      std::cout << tbl[i][j] << " ";
+    }
+    std::cout << std::endl;
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // GRID

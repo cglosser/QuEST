@@ -25,8 +25,8 @@ class AIM::Grid {
                                      const double,
                                      const int = 0) const;
 
-  std::vector<size_t> expansion_indices(const int) const;
-  std::vector<size_t> expansion_indices(const Eigen::Vector3d &pos) const
+  std::vector<int> expansion_indices(const int) const;
+  std::vector<int> expansion_indices(const Eigen::Vector3d &pos) const
   {
     return expansion_indices(associated_grid_index(pos));
   };
@@ -52,18 +52,21 @@ class AIM::Grid {
     return (coord.array() / spacing_).cast<int>();
   }
 
-  inline size_t associated_grid_index(const Eigen::Vector3d &coord) const
+  inline int associated_grid_index(const Eigen::Vector3d &coord) const
   {
     Eigen::Vector3i grid_coord = grid_coordinate(coord);
     return coord_to_idx(grid_coord - bounds.col(0).matrix());
   }
 
-  inline size_t coord_to_idx(const Eigen::Vector3i &coord) const
+  inline int coord_to_idx(const Eigen::Vector3i &coord) const
   {
+    if((coord.array() < Eigen::Array3i::Zero()).any() ||
+       (coord.array() >= dimensions).any())
+      return -1;
     return coord(2) + dimensions(2) * (coord(1) + dimensions(1) * coord(0));
   }
 
-  inline Eigen::Vector3i idx_to_coord(size_t idx) const
+  inline Eigen::Vector3i idx_to_coord(int idx) const
   {
     const int nynz = dimensions(1) * dimensions(2);
     const int x = idx / nynz;
@@ -74,20 +77,23 @@ class AIM::Grid {
     return Eigen::Vector3i(x, y, z);
   }
 
-  inline Eigen::Vector3d spatial_coord_of_box(const size_t box_id) const
+  inline Eigen::Vector3d spatial_coord_of_box(const int box_id) const
   {
     Eigen::Vector3i dr = (idx_to_coord(box_id) + bounds.col(0).matrix());
     return dr.array().cast<double>() * spacing_;
   }
+
+  void sort_points_on_boxidx(DotVector &) const;
+  boost::multi_array<int, 2> expansion_index_table() const;
 
  private:
   Eigen::Array3d spacing_;
   int order_;
   BoundsArray bounds;
   Eigen::Array3i dimensions;
-  size_t num_gridpoints;
+  int num_gridpoints;
 
-  void sort_points_on_boxidx(DotVector &) const;
+  boost::multi_array<int, 2> expansion_index_table_;
 };
 
 #endif

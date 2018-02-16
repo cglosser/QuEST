@@ -12,9 +12,7 @@ AIM::Grid::Grid(const Eigen::Array3d &spacing,
   num_gridpoints = dimensions.prod();
 }
 
-AIM::Grid::Grid(const Eigen::Array3d &spacing,
-                const int order,
-                DotVector &dots)
+AIM::Grid::Grid(const Eigen::Array3d &spacing, const int order, DotVector &dots)
     : spacing_(spacing),
       order_(order),
       bounds(calculate_bounds(dots)),
@@ -58,7 +56,7 @@ std::vector<const_DotRange> AIM::Grid::box_contents_map(
     const DotVector &dots) const
 {
   std::vector<const_DotRange> boxes(num_gridpoints);
-  for(size_t box_idx = 0; box_idx < boxes.size(); ++box_idx) {
+  for(int box_idx = 0; box_idx < static_cast<int>(boxes.size()); ++box_idx) {
     auto NearestGridpoint = [=](const QuantumDot &qd) {
       return associated_grid_index(qd.position()) == box_idx;
     };
@@ -71,19 +69,19 @@ std::vector<const_DotRange> AIM::Grid::box_contents_map(
   return boxes;
 }
 
-std::vector<size_t> AIM::Grid::expansion_indices(const int grid_index) const
+std::vector<int> AIM::Grid::expansion_indices(const int grid_index) const
 {
   Eigen::Vector3i origin = idx_to_coord(grid_index);
-  std::vector<size_t> indices(std::pow(order_ + 1, 3));
+  std::vector<int> indices(std::pow(order_ + 1, 3));
 
-  size_t idx = 0;
+  int idx = 0;
   for(int nx = 0; nx <= order_; ++nx) {
     for(int ny = 0; ny <= order_; ++ny) {
       for(int nz = 0; nz <= order_; ++nz) {
         const Eigen::Vector3i delta(Math::grid_sequence(nx),
                                     Math::grid_sequence(ny),
                                     Math::grid_sequence(nz));
-        const size_t grid_idx = coord_to_idx(origin + delta);
+        const int grid_idx = coord_to_idx(origin + delta);
 
         indices.at(idx++) = grid_idx;
       }
@@ -101,7 +99,7 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
 
   const int bound = order_ + border;
 
-  for(auto src_idx = 0u; src_idx < num_gridpoints; ++src_idx) {
+  for(int src_idx = 0; src_idx < num_gridpoints; ++src_idx) {
     Eigen::Vector3i s = idx_to_coord(src_idx);
     if(mapping[src_idx].first == mapping[src_idx].second) continue;
 
@@ -133,4 +131,17 @@ void AIM::Grid::sort_points_on_boxidx(DotVector &dots) const
   };
 
   std::stable_sort(dots.begin(), dots.end(), grid_comparitor);
+}
+
+boost::multi_array<int, 2> AIM::Grid::expansion_index_table() const
+{
+  boost::multi_array<int, 2> neighborhood(
+      boost::extents[num_gridpoints][std::pow(order_ + 1, 3)]);
+
+  for(int i = 0; i < num_gridpoints; ++i) {
+    auto indices = expansion_indices(i);
+    std::copy(indices.begin(), indices.end(), &neighborhood[i][0]);
+  }
+
+  return neighborhood;
 }
