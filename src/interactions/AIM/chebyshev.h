@@ -1,3 +1,6 @@
+#ifndef CHEBYSHEV_H
+#define CHEBYSHEV_H
+
 #include <array>
 #include <boost/multi_array.hpp>
 #include <cmath>
@@ -19,7 +22,7 @@ class Chebyshev {
   static boost::multi_array<double, 3> poly_eval_table(
       const AIM::Grid &grid, const std::vector<QuantumDot> &dots)
   {
-    std::array<int, 3> shape{static_cast<int>(dots.size()), M, 3};
+    std::array<int, 3> shape{{static_cast<int>(dots.size()), M, 3}};
     boost::multi_array<double, 3> poly_table(shape);
 
     for(size_t dot = 0; dot < dots.size(); ++dot) {
@@ -144,3 +147,5 @@ class Chebyshev {
   array_t<double> roots_;
   array_t<array_t<double>> poly_samples_;
 };
+
+#endif

@@ -42,7 +42,7 @@ class AIM::Grid {
   std::vector<ipair_t> nearfield_pairs(const int, const DotVector &) const;
 
   inline const auto &spacing() const { return spacing_; }
-  inline const auto order() const { return order_; }
+  inline auto order() const { return order_; }
   inline auto size() const { return num_gridpoints; }
   inline const auto &shape() const { return dimensions; }
   // == Geometry routines (grid <---> space) ==================================
