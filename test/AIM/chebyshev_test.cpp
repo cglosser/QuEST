@@ -59,11 +59,38 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
 {
   std::vector<QuantumDot> dots;
   dots.push_back(QuantumDot({0.1, 0.1, 0.1}));
+  dots.push_back(QuantumDot({0.1, 0.1, 1.1}));
   AIM::Grid grid(Eigen::Array3d(1, 1, 1), 1, dots);
 
-  auto tbl{Chebyshev<4>::poly_eval_table(grid, dots)};
+  constexpr int num_boxes = 2, M = 2;
 
-  std::cout << tbl[0][0][0] << std::endl;
+  constexpr std::array<int, 6> shape{{1, num_boxes, M + 1, M + 1, M + 1, 3}};
+  boost::multi_array<double, 6> eval(shape), coef(shape);
+  std::fill(eval.data(), eval.data() + eval.num_elements(), 0);
+
+  Chebyshev<M> foo;
+
+  auto xs = foo.roots();
+
+  for(int x = 0; x < M + 1; ++x) {
+    for(int y = 0; y < M + 1; ++y) {
+      for(int z = 0; z < M + 1; ++z) {
+        eval[0][0][x][y][z][0] +=
+            std::pow(xs[x], 2) * std::pow(xs[y], 2) * std::pow(xs[z], 2);
+      }
+    }
+  }
+
+  foo.fill_coefficients_tensor(num_boxes, eval.data(), coef.data());
+
+  Chebyshev<M>::Evaluator bar(grid, dots);
+
+  boost::multi_array<double, 2> field(boost::extents[2][3]);
+  bar.evaluate_interpolation_grids(0, coef, field);
+
+  for(int i = 0; i < num_boxes; ++i) {
+    std::cout << Eigen::Map<Eigen::RowVector3d>(&field[i][0]) << std::endl;
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // CHEBYSHEV
