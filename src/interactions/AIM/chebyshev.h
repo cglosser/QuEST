@@ -1,5 +1,7 @@
 #include <array>
+#include <boost/multi_array.hpp>
 #include <cmath>
+#include "grid.h"
 
 template <int M>
 class Chebyshev {
@@ -12,6 +14,31 @@ class Chebyshev {
   Chebyshev()
       : alphas_(alphas()), roots_(roots()), poly_samples_(polynomial_samples())
   {
+  }
+
+  static boost::multi_array<double, 3> poly_eval_table(
+      const AIM::Grid &grid, const std::vector<QuantumDot> &dots)
+  {
+    std::array<int, 3> shape{static_cast<int>(dots.size()), M, 3};
+    boost::multi_array<double, 3> poly_table(shape);
+
+    for(size_t dot = 0; dot < dots.size(); ++dot) {
+      Eigen::Vector3d relative_r =
+          2 * (dots[dot].position().array() / grid.spacing() -
+               grid.grid_coordinate(dots[dot].position())
+                   .array()
+                   .cast<double>()) -
+          1;
+      // effectively 2 * (r/h - floor(r/h)) - 1
+
+      for(int n = 0; n < M; ++n) {
+        poly_table[dot][n][0] = Math::ChebyshevT(n, relative_r[0]);
+        poly_table[dot][n][1] = Math::ChebyshevT(n, relative_r[1]);
+        poly_table[dot][n][2] = Math::ChebyshevT(n, relative_r[2]);
+      }
+    }
+
+    return poly_table;
   }
 
   template <typename T>

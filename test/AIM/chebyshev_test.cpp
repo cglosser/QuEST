@@ -9,7 +9,7 @@
 
 BOOST_AUTO_TEST_SUITE(CHEBYSHEV)
 
-BOOST_AUTO_TEST_CASE(QUADRATIC)
+BOOST_AUTO_TEST_CASE(QUADRATIC_FIT)
 {
   constexpr int num_boxes = 5, M = 2;
 
@@ -53,6 +53,17 @@ BOOST_AUTO_TEST_CASE(QUADRATIC)
       }
     }
   }
+}
+
+BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
+{
+  std::vector<QuantumDot> dots;
+  dots.push_back(QuantumDot({0.1, 0.1, 0.1}));
+  AIM::Grid grid(Eigen::Array3d(1, 1, 1), 1, dots);
+
+  auto tbl{Chebyshev<4>::poly_eval_table(grid, dots)};
+
+  std::cout << tbl[0][0][0] << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // CHEBYSHEV

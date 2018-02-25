@@ -65,3 +65,24 @@ std::vector<double> Math::chebyshev_points(const int n)
 
   return pts;
 }
+
+double Math::ChebyshevT(const int n, const double x)
+{
+  switch(n) {
+    case 0: return 1;
+    case 1: return x;
+    case 2: return 2 * (x * x) - 1;
+  }
+
+  double tnm1(2 * (x * x) - 1);
+  double tnm2(x);
+  double tn(tnm1);
+
+  for(int l = 3; l <= n; l++) {
+    tn = (2.0 * x * tnm1) - tnm2;
+    tnm2 = tnm1;
+    tnm1 = tn;
+  }
+
+  return tn;
+}

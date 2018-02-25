@@ -19,6 +19,7 @@ namespace Math {
   std::pair<int, double> split_double(const double);
   double falling_factorial(const double, int);
   std::vector<double> chebyshev_points(const int);
+  double ChebyshevT(const int, const double);
 }
 
 #endif
