@@ -12,35 +12,37 @@ class Chebyshev {
   template <class T>
   using array_t = std::array<T, M + 1>;
 
+  template <class T>
   class Evaluator {
    public:
     Evaluator(const AIM::Grid &grid, const std::vector<QuantumDot> &dots)
         : eval_table{evaluation_table(grid, dots)},
-          idx_table{index_table(grid, dots)}
+          idx_table{index_table(grid, dots)},
+          field_table(boost::extents[dots.size()][3])
     {
     }
 
-    template <class T>
-    void evaluate_interpolation_grids(const int time_idx,
-                                      const boost::multi_array<T, 6> &coef,
-                                      boost::multi_array<T, 2> &result)
+    const auto &interpolate(const int time_idx,
+                            const boost::multi_array<T, 6> &coef)
     {
-      assert(idx_table.size() == result.shape()[0]);
+      std::fill(field_table.data(),
+                field_table.data() + field_table.num_elements(), 0.0);
 
-      std::fill(result.data(), result.data() + result.num_elements(), 0.0);
       for(int i = 0; i < static_cast<int>(idx_table.size()); ++i) {
-        for(int dim = 0; dim < 3; ++dim) {
-          for(int x = 0; x < M + 1; ++x) {
-            for(int y = 0; y < M + 1; ++y) {
-              for(int z = 0; z < M + 1; ++z) {
-                result[i][dim] += coef[time_idx][idx_table[i]][x][y][z][dim] *
-                                  eval_table[i][x][dim] *
-                                  eval_table[i][y][dim] * eval_table[i][z][dim];
-              }
+        for(int x = 0; x < M + 1; ++x) {
+          for(int y = 0; y < M + 1; ++y) {
+            for(int z = 0; z < M + 1; ++z) {
+              Eigen::Map<Eigen::Matrix<T, 3, 1>>(&field_table[i][0]) +=
+                  Eigen::Map<const Eigen::Matrix<T, 3, 1>>(
+                      &coef[time_idx][idx_table[i]][x][y][z][0]) *
+                  eval_table[i][x][0] * eval_table[i][y][1] *
+                  eval_table[i][z][2];
             }
           }
         }
       }
+
+      return field_table;
     }
 
     static boost::multi_array<double, 3> evaluation_table(
@@ -56,7 +58,7 @@ class Chebyshev {
                      .array()
                      .cast<double>()) -
             1;
-        // effectively 2 * (r/h - floor(r/h)) - 1
+        // Effectively 2 * (r/h - floor(r/h)) - 1
 
         for(int n = 0; n < M + 1; ++n) {
           poly_table[dot][n][0] = Math::ChebyshevT(n, relative_r[0]);
@@ -82,6 +84,7 @@ class Chebyshev {
    private:
     boost::multi_array<double, 3> eval_table;
     std::vector<int> idx_table;
+    boost::multi_array<T, 2> field_table;
   };
 
   Chebyshev()

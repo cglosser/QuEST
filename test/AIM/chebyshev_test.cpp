@@ -1,4 +1,4 @@
-#include <boost/multi_array.hpp>
+
 #include <boost/test/unit_test.hpp>
 #include <cmath>
 #include <iomanip>
@@ -59,37 +59,48 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
 {
   std::vector<QuantumDot> dots;
   dots.push_back(QuantumDot({0.1, 0.1, 0.1}));
-  dots.push_back(QuantumDot({0.1, 0.1, 1.1}));
+  dots.push_back(QuantumDot({0.7, 0.8, 0.9}));
   AIM::Grid grid(Eigen::Array3d(1, 1, 1), 1, dots);
 
-  constexpr int num_boxes = 2, M = 2;
+  constexpr int M = 4;
 
-  constexpr std::array<int, 6> shape{{1, num_boxes, M + 1, M + 1, M + 1, 3}};
+  std::array<int, 6> shape{{1, grid.size(), M + 1, M + 1, M + 1, 3}};
   boost::multi_array<double, 6> eval(shape), coef(shape);
-  std::fill(eval.data(), eval.data() + eval.num_elements(), 0);
+
+  const auto field_fn = [](const Eigen::Vector3d &r) -> Eigen::Vector3d {
+    double x = std::pow(r(0), 2) * std::pow(r(1), 2) * std::pow(r(2), 2);
+    double y = r.squaredNorm();
+    double z = std::cos(2 * M_PI * r(0) / 10) * std::cos(2 * M_PI * r(1) / 10) *
+               std::cos(2 * M_PI * r(2) / 10);
+    return Eigen::Vector3d(x, y, z);
+  };
 
   Chebyshev<M> foo;
-
   auto xs = foo.roots();
 
+  std::fill(eval.data(), eval.data() + eval.num_elements(), 0);
   for(int x = 0; x < M + 1; ++x) {
     for(int y = 0; y < M + 1; ++y) {
       for(int z = 0; z < M + 1; ++z) {
-        eval[0][0][x][y][z][0] +=
-            std::pow(xs[x], 2) * std::pow(xs[y], 2) * std::pow(xs[z], 2);
+        auto f = field_fn({(xs[x] + 1) / 2, (xs[y] + 1) / 2, (xs[z] + 1) / 2});
+        // auto f = field_fn({xs[x], xs[y], xs[z]});
+        eval[0][0][x][y][z][0] = f[0];
+        eval[0][0][x][y][z][1] = f[1];
+        eval[0][0][x][y][z][2] = f[2];
       }
     }
   }
 
-  foo.fill_coefficients_tensor(num_boxes, eval.data(), coef.data());
+  foo.fill_coefficients_tensor(grid.size(), eval.data(), coef.data());
 
-  Chebyshev<M>::Evaluator bar(grid, dots);
+  Chebyshev<M>::Evaluator<double> bar(grid, dots);
+  const boost::multi_array<double, 2> &x = bar.interpolate(0, coef);
 
-  boost::multi_array<double, 2> field(boost::extents[2][3]);
-  bar.evaluate_interpolation_grids(0, coef, field);
-
-  for(int i = 0; i < num_boxes; ++i) {
-    std::cout << Eigen::Map<Eigen::RowVector3d>(&field[i][0]) << std::endl;
+  std::cout.precision(14);
+  std::cout << std::scientific << std::endl;
+  for(int i = 0; i < static_cast<int>(dots.size()); ++i) {
+    std::cout << Eigen::Map<const Eigen::RowVector3d>(&x[i][0]) << " | "
+              << field_fn(dots[i].position()).transpose() << std::endl;
   }
 }
 
