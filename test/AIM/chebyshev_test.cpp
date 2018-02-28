@@ -60,9 +60,11 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
   std::vector<QuantumDot> dots;
   dots.push_back(QuantumDot({0.1, 0.1, 0.1}));
   dots.push_back(QuantumDot({0.7, 0.8, 0.9}));
+  dots.push_back(QuantumDot({1.2, 1.3, 1.4}));
+  dots.push_back(QuantumDot({6.2, 7.3, 8.4}));
   AIM::Grid grid(Eigen::Array3d(1, 1, 1), 1, dots);
 
-  constexpr int M = 4;
+  constexpr int M = 10;
 
   std::array<int, 6> shape{{1, grid.size(), M + 1, M + 1, M + 1, 3}};
   boost::multi_array<double, 6> eval(shape), coef(shape);
@@ -79,14 +81,19 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
   auto xs = foo.roots();
 
   std::fill(eval.data(), eval.data() + eval.num_elements(), 0);
-  for(int x = 0; x < M + 1; ++x) {
-    for(int y = 0; y < M + 1; ++y) {
-      for(int z = 0; z < M + 1; ++z) {
-        auto f = field_fn({(xs[x] + 1) / 2, (xs[y] + 1) / 2, (xs[z] + 1) / 2});
-        // auto f = field_fn({xs[x], xs[y], xs[z]});
-        eval[0][0][x][y][z][0] = f[0];
-        eval[0][0][x][y][z][1] = f[1];
-        eval[0][0][x][y][z][2] = f[2];
+  for(int i = 0; i < grid.size(); ++i) {
+    const auto r0 = grid.spatial_coord_of_box(i);
+    for(int x = 0; x < M + 1; ++x) {
+      for(int y = 0; y < M + 1; ++y) {
+        for(int z = 0; z < M + 1; ++z) {
+          auto f =
+              field_fn(r0 + Eigen::Vector3d((xs[x] + 1) / 2, (xs[y] + 1) / 2,
+                                            (xs[z] + 1) / 2));
+          // auto f = field_fn({xs[x], xs[y], xs[z]});
+          eval[0][i][x][y][z][0] = f[0];
+          eval[0][i][x][y][z][1] = f[1];
+          eval[0][i][x][y][z][2] = f[2];
+        }
       }
     }
   }
@@ -99,8 +106,10 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
   std::cout.precision(14);
   std::cout << std::scientific << std::endl;
   for(int i = 0; i < static_cast<int>(dots.size()); ++i) {
-    std::cout << Eigen::Map<const Eigen::RowVector3d>(&x[i][0]) << " | "
-              << field_fn(dots[i].position()).transpose() << std::endl;
+    std::cout << (Eigen::Map<const Eigen::Vector3d>(&x[i][0]) -
+                  field_fn(dots[i].position()))
+                     .norm()
+              << std::endl;
   }
 }
 

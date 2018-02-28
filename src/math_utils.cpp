@@ -66,23 +66,50 @@ std::vector<double> Math::chebyshev_points(const int n)
   return pts;
 }
 
-double Math::ChebyshevT(const int n, const double x)
+double Math::Chebyshev::T(int n, double x)
 {
   switch(n) {
-    case 0: return 1;
-    case 1: return x;
-    case 2: return 2 * (x * x) - 1;
+    case(0): return T0(x);
+    case(1): return T1(x);
+    case(2): return T2(x);
+    case(3): return T3(x);
+    case(4): return T4(x);
+    case(5): return T5(x);
+    case(6): return T6(x);
+    case(7): return T7(x);
+    case(8): return T8(x);
   }
 
-  double tnm1(2 * (x * x) - 1);
-  double tnm2(x);
-  double tn(tnm1);
+  return 0;
+}
 
-  for(int l = 3; l <= n; l++) {
-    tn = (2.0 * x * tnm1) - tnm2;
-    tnm2 = tnm1;
-    tnm1 = tn;
-  }
-
-  return tn;
+constexpr double Math::Chebyshev::T0(__attribute__((unused)) const double x)
+{
+  return 1;
+}
+constexpr double Math::Chebyshev::T1(const double x) { return x; }
+constexpr double Math::Chebyshev::T2(const double x) { return -1 + 2 * x * x; }
+constexpr double Math::Chebyshev::T3(const double x)
+{
+  return x * (-3 + 4 * x * x);
+}
+constexpr double Math::Chebyshev::T4(const double x)
+{
+  return 1 + x * x * (-8 + 8 * x * x);
+}
+constexpr double Math::Chebyshev::T5(const double x)
+{
+  return x * (5 + x * x * (-20 + 16 * x * x));
+}
+constexpr double Math::Chebyshev::T6(const double x)
+{
+  return -1 + x * x * (18 + x * x * (-48 + 32 * x * x));
+}
+constexpr double Math::Chebyshev::T7(const double x)
+{
+  return x * (-7 + x * x * (56 + x * x * (-112 + 64 * x * x)));
+}
+constexpr double Math::Chebyshev::T8(const double x)
+{
+  return 1 + x * x * (-32 + x * x * (160 + x * x * (-256 + 128 * x * x)));
 }

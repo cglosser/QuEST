@@ -61,9 +61,9 @@ class Chebyshev {
         // Effectively 2 * (r/h - floor(r/h)) - 1
 
         for(int n = 0; n < M + 1; ++n) {
-          poly_table[dot][n][0] = Math::ChebyshevT(n, relative_r[0]);
-          poly_table[dot][n][1] = Math::ChebyshevT(n, relative_r[1]);
-          poly_table[dot][n][2] = Math::ChebyshevT(n, relative_r[2]);
+          poly_table[dot][n][0] = Math::Chebyshev::T(n, relative_r[0]);
+          poly_table[dot][n][1] = Math::Chebyshev::T(n, relative_r[1]);
+          poly_table[dot][n][2] = Math::Chebyshev::T(n, relative_r[2]);
         }
       }
 

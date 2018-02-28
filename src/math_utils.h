@@ -20,6 +20,19 @@ namespace Math {
   double falling_factorial(const double, int);
   std::vector<double> chebyshev_points(const int);
   double ChebyshevT(const int, const double);
+
+  namespace Chebyshev {
+    double T(int, double);
+    constexpr double T0(const double);
+    constexpr double T1(const double);
+    constexpr double T2(const double);
+    constexpr double T3(const double);
+    constexpr double T4(const double);
+    constexpr double T5(const double);
+    constexpr double T6(const double);
+    constexpr double T7(const double);
+    constexpr double T8(const double);
+  }
 }
 
 #endif
