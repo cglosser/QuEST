@@ -32,6 +32,28 @@ namespace Math {
     constexpr double T6(const double);
     constexpr double T7(const double);
     constexpr double T8(const double);
+
+    double T_d1(int, double);
+    constexpr double T0_d1(const double);
+    constexpr double T1_d1(const double);
+    constexpr double T2_d1(const double);
+    constexpr double T3_d1(const double);
+    constexpr double T4_d1(const double);
+    constexpr double T5_d1(const double);
+    constexpr double T6_d1(const double);
+    constexpr double T7_d1(const double);
+    constexpr double T8_d1(const double);
+
+    double T_d2(int, double);
+    constexpr double T0_d2(const double);
+    constexpr double T1_d2(const double);
+    constexpr double T2_d2(const double);
+    constexpr double T3_d2(const double);
+    constexpr double T4_d2(const double);
+    constexpr double T5_d2(const double);
+    constexpr double T6_d2(const double);
+    constexpr double T7_d2(const double);
+    constexpr double T8_d2(const double);
   }
 }
 
