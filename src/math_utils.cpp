@@ -179,27 +179,36 @@ double Math::Chebyshev::T_d2(int n, double x)
 
   return 0;
 }
-constexpr double Math::Chebyshev::TI_d1(const double x) { return 0; }
-constexpr double Math::Chebyshev::TI_d1(const double x) { return 0; }
-constexpr double Math::Chebyshev::TI_d1(const double x) { return 4; }
-constexpr double Math::Chebyshev::TI_d1(const double x) { return 24 * x; }
-constexpr double Math::Chebyshev::TI_d1(const double x)
+constexpr double Math::Chebyshev::T0_d2(__attribute__((unused)) const double x)
+{
+  return 0;
+}
+constexpr double Math::Chebyshev::T1_d2(__attribute__((unused)) const double x)
+{
+  return 0;
+}
+constexpr double Math::Chebyshev::T2_d2(__attribute__((unused)) const double x)
+{
+  return 4;
+}
+constexpr double Math::Chebyshev::T3_d2(const double x) { return 24 * x; }
+constexpr double Math::Chebyshev::T4_d2(const double x)
 {
   return -16 + 96 * x * x;
 }
-constexpr double Math::Chebyshev::TI_d1(const double x)
+constexpr double Math::Chebyshev::T5_d2(const double x)
 {
   return x * (-120 + 320 * x * x);
 }
-constexpr double Math::Chebyshev::TI_d1(const double x)
+constexpr double Math::Chebyshev::T6_d2(const double x)
 {
-  return 36 + x * x(-576 + 960 * x * x);
+  return 36 + x * x * (-576 + 960 * x * x);
 }
-constexpr double Math::Chebyshev::TI_d1(const double x)
+constexpr double Math::Chebyshev::T7_d2(const double x)
 {
-  return x * (336 + x * x(-2240 + 2688 * x * x));
+  return x * (336 + x * x * (-2240 + 26882 * x * x));
 }
-constexpr double Math::Chebyshev::TI_d1(const double x)
+constexpr double Math::Chebyshev::T8_d2(const double x)
 {
-  return -64 + x * x(1920 + x * x(-7680 + 7168 * x * x));
+  return -64 + x * x * (1920 + x * x * (-7680 + 7168 * x * x));
 }
