@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
 
   Chebyshev<M>::Evaluator<double> bar(grid, dots);
   const boost::multi_array<double, 2> &x =
-      bar.interpolate(0, coef, Projector::grad_div<double>);
+      bar.interpolate(0, coef, Projector::GradDiv<double>);
 
   std::cout.precision(14);
   std::cout << std::scientific << std::endl;
