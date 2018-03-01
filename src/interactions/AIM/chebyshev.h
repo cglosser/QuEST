@@ -25,18 +25,40 @@ class Chebyshev {
     const auto &interpolate(const int time_idx,
                             const boost::multi_array<T, 6> &coef)
     {
+      using mVec3_t = Eigen::Map<Eigen::Matrix<T, 3, 1>>;
+      using mVec3_t_const = Eigen::Map<const Eigen::Matrix<T, 3, 1>>;
       std::fill(field_table.data(),
                 field_table.data() + field_table.num_elements(), 0.0);
 
-      for(int i = 0; i < static_cast<int>(idx_table.size()); ++i) {
-        for(int x = 0; x < M + 1; ++x) {
-          for(int y = 0; y < M + 1; ++y) {
-            for(int z = 0; z < M + 1; ++z) {
-              Eigen::Map<Eigen::Matrix<T, 3, 1>>(&field_table[i][0]) +=
-                  Eigen::Map<const Eigen::Matrix<T, 3, 1>>(
-                      &coef[time_idx][idx_table[i]][x][y][z][0]) *
-                  eval_table[i][x][0][0] * eval_table[i][y][1][0] *
-                  eval_table[i][z][2][0];
+      enum DIMENSION { X, Y, Z };
+
+      for(int n = 0; n < static_cast<int>(idx_table.size()); ++n) {
+        mVec3_t vec(&field_table[n][0]);
+        for(int i = 0; i < M + 1; ++i) {
+          for(int j = 0; j < M + 1; ++j) {
+            for(int k = 0; k < M + 1; ++k) {
+              // vec += mVec3_const(&coef[time_idx][idx_table[n]][i][j][k][0]) *
+              // eval_table[n][i][0][0] * eval_table[n][j][1][0] *
+              // eval_table[n][k][2][0];
+
+              // clang-format off
+              mVec3_t_const c(&coef[time_idx][idx_table[n]][i][j][k][0]);
+              Eigen::Matrix<T, 3, 1> u(
+                c[X] * eval_table[n][i][X][2] * eval_table[n][j][Y][0] * eval_table[n][k][Z][0] +
+                c[Y] * eval_table[n][i][X][1] * eval_table[n][j][Y][1] * eval_table[n][k][Z][0] +
+                c[Z] * eval_table[n][i][X][1] * eval_table[n][j][Y][0] * eval_table[n][k][Z][1],
+
+                c[X] * eval_table[n][i][X][1] * eval_table[n][j][Y][1] * eval_table[n][k][Z][0] +
+                c[Y] * eval_table[n][i][X][0] * eval_table[n][j][Y][2] * eval_table[n][k][Z][0] +
+                c[Z] * eval_table[n][i][X][0] * eval_table[n][j][Y][1] * eval_table[n][k][Z][1],
+
+                c[X] * eval_table[n][i][X][1] * eval_table[n][j][Y][0] * eval_table[n][k][Z][1] +
+                c[Y] * eval_table[n][i][X][0] * eval_table[n][j][Y][1] * eval_table[n][k][Z][1] +
+                c[Z] * eval_table[n][i][X][0] * eval_table[n][j][Y][0] * eval_table[n][k][Z][2]
+              );
+              // clang-format on
+
+              vec += u;
             }
           }
         }

@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
   dots.push_back(QuantumDot({6.2, 7.3, 8.4}));
   AIM::Grid grid(Eigen::Array3d(1, 1, 1), 1, dots);
 
-  constexpr int M = 10;
+  constexpr int M = 6;
 
   std::array<int, 6> shape{{1, grid.size(), M + 1, M + 1, M + 1, 3}};
   boost::multi_array<double, 6> eval(shape), coef(shape);
@@ -106,9 +106,8 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
   std::cout.precision(14);
   std::cout << std::scientific << std::endl;
   for(int i = 0; i < static_cast<int>(dots.size()); ++i) {
-    std::cout << (Eigen::Map<const Eigen::Vector3d>(&x[i][0]) -
-                  field_fn(dots[i].position()))
-                     .norm()
+    std::cout << Eigen::Map<const Eigen::Vector3d>(&x[i][0]).transpose()
+              << "    " << field_fn(dots[i].position()).transpose()
               << std::endl;
   }
 }
