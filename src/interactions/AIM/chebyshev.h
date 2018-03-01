@@ -22,11 +22,12 @@ class Chebyshev {
     {
     }
 
+    template <typename F>
     const auto &interpolate(const int time_idx,
-                            const boost::multi_array<T, 6> &coef)
+                            const boost::multi_array<T, 6> &coef,
+                            F projector)
     {
       using mVec3_t = Eigen::Map<Eigen::Matrix<T, 3, 1>>;
-      using mVec3_t_const = Eigen::Map<const Eigen::Matrix<T, 3, 1>>;
       std::fill(field_table.data(),
                 field_table.data() + field_table.num_elements(), 0.0);
 
@@ -37,24 +38,7 @@ class Chebyshev {
         for(int i = 0; i < M + 1; ++i) {
           for(int j = 0; j < M + 1; ++j) {
             for(int k = 0; k < M + 1; ++k) {
-              // clang-format off
-              mVec3_t_const c(&coef[time_idx][idx_table[n]][i][j][k][0]);
-              vec += Eigen::Matrix<T, 3, 1>(
-                c[X] * eval_table[n][i][X][2] * eval_table[n][j][Y][0] * eval_table[n][k][Z][0] +
-                c[Y] * eval_table[n][i][X][1] * eval_table[n][j][Y][1] * eval_table[n][k][Z][0] +
-                c[Z] * eval_table[n][i][X][1] * eval_table[n][j][Y][0] * eval_table[n][k][Z][1],
-
-                c[X] * eval_table[n][i][X][1] * eval_table[n][j][Y][1] * eval_table[n][k][Z][0] +
-                c[Y] * eval_table[n][i][X][0] * eval_table[n][j][Y][2] * eval_table[n][k][Z][0] +
-                c[Z] * eval_table[n][i][X][0] * eval_table[n][j][Y][1] * eval_table[n][k][Z][1],
-
-                c[X] * eval_table[n][i][X][1] * eval_table[n][j][Y][0] * eval_table[n][k][Z][1] +
-                c[Y] * eval_table[n][i][X][0] * eval_table[n][j][Y][1] * eval_table[n][k][Z][1] +
-                c[Z] * eval_table[n][i][X][0] * eval_table[n][j][Y][0] * eval_table[n][k][Z][2]
-              );
-              // If you squint real hard, you'll recognize this as del del acting on the
-              // tensor polnomial that fits a vector field.
-              // clang-format on
+              vec += projector(time_idx, n, i, j, k, coef, eval_table);
             }
           }
         }

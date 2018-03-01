@@ -6,6 +6,7 @@
 #include <iterator>
 
 #include "interactions/AIM/chebyshev.h"
+#include "interactions/AIM/projector.h"
 
 BOOST_AUTO_TEST_SUITE(CHEBYSHEV)
 
@@ -59,10 +60,10 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
 {
   std::vector<QuantumDot> dots;
   dots.push_back(QuantumDot({0.1, 0.1, 0.1}));
-  dots.push_back(QuantumDot({0.7, 0.8, 0.9}));
-  dots.push_back(QuantumDot({1.2, 1.3, 1.4}));
-  dots.push_back(QuantumDot({6.2, 7.3, 8.4}));
-  AIM::Grid grid(Eigen::Array3d(1, 1, 1), 1, dots);
+  dots.push_back(QuantumDot({0.9, 0.9, 0.9}));
+
+  const Eigen::Array3d spacing(0.5, 0.5, 0.5);
+  AIM::Grid grid(spacing, 1, dots);
 
   constexpr int M = 6;
 
@@ -103,7 +104,8 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
   foo.fill_coefficients_tensor(grid.size(), eval.data(), coef.data());
 
   Chebyshev<M>::Evaluator<double> bar(grid, dots);
-  const boost::multi_array<double, 2> &x = bar.interpolate(0, coef);
+  const boost::multi_array<double, 2> &x =
+      bar.interpolate(0, coef, Projector::grad_div<double>);
 
   std::cout.precision(14);
   std::cout << std::scientific << std::endl;
