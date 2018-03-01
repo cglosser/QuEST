@@ -86,10 +86,12 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
     for(int x = 0; x < M + 1; ++x) {
       for(int y = 0; y < M + 1; ++y) {
         for(int z = 0; z < M + 1; ++z) {
-          auto f =
-              field_fn(r0 + Eigen::Vector3d((xs[x] + 1) / 2, (xs[y] + 1) / 2,
-                                            (xs[z] + 1) / 2));
-          // auto f = field_fn({xs[x], xs[y], xs[z]});
+          const Eigen::Vector3d arg =
+              r0.array() +
+              spacing * Eigen::Array3d((xs[x] + 1) / 2, (xs[y] + 1) / 2,
+                                       (xs[z] + 1) / 2);
+
+          auto f = field_fn(arg);
           eval[0][i][x][y][z][0] = f[0];
           eval[0][i][x][y][z][1] = f[1];
           eval[0][i][x][y][z][2] = f[2];
@@ -107,7 +109,7 @@ BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
   std::cout << std::scientific << std::endl;
   for(int i = 0; i < static_cast<int>(dots.size()); ++i) {
     std::cout << Eigen::Map<const Eigen::Vector3d>(&x[i][0]).transpose()
-              << "    " << field_fn(dots[i].position()).transpose()
+              //<< "    " << field_fn(dots[i].position()).transpose()
               << std::endl;
   }
 }

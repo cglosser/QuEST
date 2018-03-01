@@ -39,7 +39,7 @@ class Chebyshev {
             for(int k = 0; k < M + 1; ++k) {
               // clang-format off
               mVec3_t_const c(&coef[time_idx][idx_table[n]][i][j][k][0]);
-              Eigen::Matrix<T, 3, 1> u(
+              vec += Eigen::Matrix<T, 3, 1>(
                 c[X] * eval_table[n][i][X][2] * eval_table[n][j][Y][0] * eval_table[n][k][Z][0] +
                 c[Y] * eval_table[n][i][X][1] * eval_table[n][j][Y][1] * eval_table[n][k][Z][0] +
                 c[Z] * eval_table[n][i][X][1] * eval_table[n][j][Y][0] * eval_table[n][k][Z][1],
@@ -55,8 +55,6 @@ class Chebyshev {
               // If you squint real hard, you'll recognize this as del del acting on the
               // tensor polnomial that fits a vector field.
               // clang-format on
-
-              vec += u;
             }
           }
         }
@@ -68,6 +66,13 @@ class Chebyshev {
     static boost::multi_array<double, 4> evaluation_table(
         const AIM::Grid &grid, const std::vector<QuantumDot> &dots)
     {
+      using Math::Chebyshev::T;
+      using Math::Chebyshev::T_d1;
+      using Math::Chebyshev::T_d2;
+
+      const Eigen::Array3d s = 2 / grid.spacing(),
+                           s2 = 4 / grid.spacing().pow(2);
+
       std::array<int, 4> shape{{static_cast<int>(dots.size()), M + 1, 3, 3}};
       boost::multi_array<double, 4> poly_table(shape);
 
@@ -86,17 +91,17 @@ class Chebyshev {
           //          │   │  ┌─── dimension (x = 0, y = 1, z = 2)
           //          │   │  │  ┌ derivative order
           //          ┴   ┴  ┴  ┴
-          poly_table[dot][n][0][0] = Math::Chebyshev::T(n, relative_r[0]);
-          poly_table[dot][n][0][1] = Math::Chebyshev::T_d1(n, relative_r[0]);
-          poly_table[dot][n][0][2] = Math::Chebyshev::T_d2(n, relative_r[0]);
+          poly_table[dot][n][0][0] = T(n, relative_r[0]);
+          poly_table[dot][n][0][1] = T_d1(n, relative_r[0]) * s[0];
+          poly_table[dot][n][0][2] = T_d2(n, relative_r[0]) * s2[0];
 
-          poly_table[dot][n][1][0] = Math::Chebyshev::T(n, relative_r[1]);
-          poly_table[dot][n][1][1] = Math::Chebyshev::T_d1(n, relative_r[1]);
-          poly_table[dot][n][1][2] = Math::Chebyshev::T_d2(n, relative_r[1]);
+          poly_table[dot][n][1][0] = T(n, relative_r[1]);
+          poly_table[dot][n][1][1] = T_d1(n, relative_r[1]) * s[1];
+          poly_table[dot][n][1][2] = T_d2(n, relative_r[1]) * s2[1];
 
-          poly_table[dot][n][2][0] = Math::Chebyshev::T(n, relative_r[2]);
-          poly_table[dot][n][2][1] = Math::Chebyshev::T_d1(n, relative_r[2]);
-          poly_table[dot][n][2][2] = Math::Chebyshev::T_d2(n, relative_r[2]);
+          poly_table[dot][n][2][0] = T(n, relative_r[2]);
+          poly_table[dot][n][2][1] = T_d1(n, relative_r[2]) * s[2];
+          poly_table[dot][n][2][2] = T_d2(n, relative_r[2]) * s2[2];
         }
       }
 
