@@ -7,13 +7,14 @@ namespace Projector {
   template <typename T>
   auto Potential(const int t,
                  const int n,
+                 const int box,
                  const int i,
                  const int j,
                  const int k,
                  const boost::multi_array<T, 6> &coef,
                  const boost::multi_array<double, 4> &eval)
   {
-    Eigen::Map<const Eigen::Matrix<T, 3, 1>> c(&coef[t][n][i][j][k][0]);
+    Eigen::Map<const Eigen::Matrix<T, 3, 1>> c(&coef[t][box][i][j][k][0]);
     double Ts = eval[n][i][X][0] * eval[n][j][Y][0] * eval[n][k][Z][0];
     return c * Ts;
   }

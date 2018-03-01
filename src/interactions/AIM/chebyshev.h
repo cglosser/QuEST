@@ -27,18 +27,16 @@ class Chebyshev {
                             const boost::multi_array<T, 6> &coef,
                             F projector)
     {
-      using mVec3_t = Eigen::Map<Eigen::Matrix<T, 3, 1>>;
       std::fill(field_table.data(),
                 field_table.data() + field_table.num_elements(), 0.0);
 
-      enum DIMENSION { X, Y, Z };
-
       for(int n = 0; n < static_cast<int>(idx_table.size()); ++n) {
-        mVec3_t vec(&field_table[n][0]);
+        Eigen::Map<Eigen::Matrix<T, 3, 1>> vec(&field_table[n][0]);
         for(int i = 0; i < M + 1; ++i) {
           for(int j = 0; j < M + 1; ++j) {
             for(int k = 0; k < M + 1; ++k) {
-              vec += projector(time_idx, n, i, j, k, coef, eval_table);
+              vec += projector(time_idx, n, idx_table[n], i, j, k, coef,
+                               eval_table);
             }
           }
         }

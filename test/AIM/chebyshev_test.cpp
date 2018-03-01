@@ -56,64 +56,77 @@ BOOST_AUTO_TEST_CASE(QUADRATIC_FIT)
   }
 }
 
-BOOST_AUTO_TEST_CASE(FUNCTION_EVALUATION)
-{
+struct POTENTIAL_PARAMETERS {
   std::vector<QuantumDot> dots;
-  dots.push_back(QuantumDot({0.1, 0.1, 0.1}));
-  dots.push_back(QuantumDot({0.9, 0.9, 0.9}));
 
-  const Eigen::Array3d spacing(0.5, 0.5, 0.5);
-  AIM::Grid grid(spacing, 1, dots);
-
-  constexpr int M = 6;
-
-  std::array<int, 6> shape{{1, grid.size(), M + 1, M + 1, M + 1, 3}};
-  boost::multi_array<double, 6> eval(shape), coef(shape);
-
-  const auto field_fn = [](const Eigen::Vector3d &r) -> Eigen::Vector3d {
+  Eigen::Vector3d field_fn(const Eigen::Vector3d &r)
+  {
     double x = std::pow(r(0), 2) * std::pow(r(1), 2) * std::pow(r(2), 2);
     double y = r.squaredNorm();
     double z = std::cos(2 * M_PI * r(0) / 10) * std::cos(2 * M_PI * r(1) / 10) *
                std::cos(2 * M_PI * r(2) / 10);
-    return Eigen::Vector3d(x, y, z);
-  };
+    return {x, y, z};
+  }
+};
 
-  Chebyshev<M> foo;
-  auto xs = foo.roots();
+BOOST_FIXTURE_TEST_SUITE(POTENTIAL_EVALUATION, POTENTIAL_PARAMETERS)
 
-  std::fill(eval.data(), eval.data() + eval.num_elements(), 0);
-  for(int i = 0; i < grid.size(); ++i) {
-    const auto r0 = grid.spatial_coord_of_box(i);
-    for(int x = 0; x < M + 1; ++x) {
-      for(int y = 0; y < M + 1; ++y) {
-        for(int z = 0; z < M + 1; ++z) {
-          const Eigen::Vector3d arg =
-              r0.array() +
-              spacing * Eigen::Array3d((xs[x] + 1) / 2, (xs[y] + 1) / 2,
-                                       (xs[z] + 1) / 2);
+BOOST_AUTO_TEST_CASE(GRID_SIZE)
+{
+  constexpr int M = 4;
+  std::vector<QuantumDot> dots;
+  dots.push_back(QuantumDot({0.1, 0.1, 0.1}));
+  dots.push_back(QuantumDot({0.9, 0.9, 0.9}));
+  dots.push_back(QuantumDot({1.2, 1.4, 1.8}));
 
-          auto f = field_fn(arg);
-          eval[0][i][x][y][z][0] = f[0];
-          eval[0][i][x][y][z][1] = f[1];
-          eval[0][i][x][y][z][2] = f[2];
+  Eigen::Array<double, 3, 4> spacing;
+  spacing.col(0) = Eigen::Vector3d(0.5, 0.5, 0.5);
+  spacing.col(1) = Eigen::Vector3d(1, 1, 1);
+  spacing.col(2) = Eigen::Vector3d(2, 2, 2);
+  spacing.col(3) = Eigen::Vector3d(4, 4, 4);
+
+  auto xs = Chebyshev<M>::roots();
+  for(auto &x : xs) x = (x + 1) / 2;
+
+  for(int h = 0; h < 4; ++h) {
+    AIM::Grid grid(spacing.col(h), 1, dots);
+    std::array<int, 6> shape{{1, grid.size(), M + 1, M + 1, M + 1, 3}};
+    boost::multi_array<double, 6> eval(shape), coef(shape);
+
+    std::fill(eval.data(), eval.data() + eval.num_elements(), 0);
+    for(int i = 0; i < grid.size(); ++i) {
+      const auto r0 = grid.spatial_coord_of_box(i);
+      for(int x = 0; x < M + 1; ++x) {
+        for(int y = 0; y < M + 1; ++y) {
+          for(int z = 0; z < M + 1; ++z) {
+            Eigen::Map<Eigen::Vector3d> field(&eval[0][i][x][y][z][0]);
+            const Eigen::Vector3d arg =
+                r0.array() +
+                spacing.col(h) * Eigen::Array3d(xs[x], xs[y], xs[z]);
+
+            field = field_fn(arg);
+          }
         }
       }
     }
-  }
 
-  foo.fill_coefficients_tensor(grid.size(), eval.data(), coef.data());
+    Chebyshev<M>::Evaluator<double> bar(grid, dots);
+    Chebyshev<M>().fill_coefficients_tensor(grid.size(), eval.data(),
+                                            coef.data());
 
-  Chebyshev<M>::Evaluator<double> bar(grid, dots);
-  const boost::multi_array<double, 2> &x =
-      bar.interpolate(0, coef, Projector::GradDiv<double>);
+    const boost::multi_array<double, 2> &x =
+        bar.interpolate(0, coef, Projector::Potential<double>);
 
-  std::cout.precision(14);
-  std::cout << std::scientific << std::endl;
-  for(int i = 0; i < static_cast<int>(dots.size()); ++i) {
-    std::cout << Eigen::Map<const Eigen::Vector3d>(&x[i][0]).transpose()
-              //<< "    " << field_fn(dots[i].position()).transpose()
-              << std::endl;
+    for(int i = 0; i < static_cast<int>(dots.size()); ++i) {
+      Eigen::Map<const Eigen::Vector3d> interp_field(&x[i][0]);
+      BOOST_CHECK_SMALL((field_fn(dots[i].position()) - interp_field).norm(),
+                        1.2e-3);
+      // In general can do much better than this threshold; this just
+      // accommodates the large-grid "worst case scenario"
+    }
   }
 }
+
+BOOST_AUTO_TEST_SUITE_END()  // POTENTIAL_EVALUATION
 
 BOOST_AUTO_TEST_SUITE_END()  // CHEBYSHEV
