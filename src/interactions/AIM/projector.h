@@ -22,13 +22,14 @@ namespace Projector {
   template <typename T>
   auto GradDiv(const int t,
                const int n,
+               const int box,
                const int i,
                const int j,
                const int k,
                const boost::multi_array<T, 6> &coef,
                const boost::multi_array<double, 4> &eval)
   {
-    Eigen::Map<const Eigen::Matrix<T, 3, 1>> c(&coef[t][n][i][j][k][0]);
+    Eigen::Map<const Eigen::Matrix<T, 3, 1>> c(&coef[t][box][i][j][k][0]);
     Eigen::Matrix3d m;
     m << eval[n][i][X][2] * eval[n][j][Y][0] * eval[n][k][Z][0],
         eval[n][i][X][1] * eval[n][j][Y][1] * eval[n][k][Z][0],
@@ -57,6 +58,7 @@ namespace Projector {
 
     auto operator()(const int t,
                     const int n,
+                    const int box,
                     const int i,
                     const int j,
                     const int k,
@@ -70,7 +72,7 @@ namespace Projector {
 
       for(int h = 0; h < static_cast<int>(dt_coefs.size()); ++h) {
         int w = std::max(t - h, 0) % history_length;
-        Eigen::Map<const Eigen::Matrix<T, 3, 1>> c(&coef[w][n][i][j][k][0]);
+        Eigen::Map<const Eigen::Matrix<T, 3, 1>> c(&coef[w][box][i][j][k][0]);
         total_field += dt_coefs[h] * c * Ts;
       }
       return total_field;

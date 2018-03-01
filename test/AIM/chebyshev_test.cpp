@@ -1,4 +1,3 @@
-
 #include <boost/test/unit_test.hpp>
 #include <cmath>
 #include <iomanip>
@@ -128,5 +127,66 @@ BOOST_AUTO_TEST_CASE(GRID_SIZE)
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // POTENTIAL_EVALUATION
+
+struct DT_PARAMETERS {
+  double dt;
+  std::vector<QuantumDot> dots;
+
+  Eigen::Vector3d field_fn(const double t)
+  {
+    double x = std::sin(2 * M_PI * t / (20 * dt));
+    return {x, 0, 0};
+  }
+
+  DT_PARAMETERS() : dt(1) {}
+};
+
+BOOST_FIXTURE_TEST_SUITE(DT_EVALUATION, DT_PARAMETERS)
+
+BOOST_AUTO_TEST_CASE(DERIVATIVE)
+{
+  constexpr int M = 4;
+  const int num_steps = 20;
+
+  std::vector<QuantumDot> dots;
+  dots.push_back(QuantumDot({0.1, 0.1, 0.1}));
+
+  Eigen::Array3d spacing(1, 1, 1);
+
+  auto xs = Chebyshev<M>::roots();
+  for(auto &x : xs) x = (x + 1) / 2;
+
+  AIM::Grid grid(spacing, 1, dots);
+  std::array<int, 6> shape{{num_steps, grid.size(), M + 1, M + 1, M + 1, 3}};
+  boost::multi_array<double, 6> eval(shape), coef(shape);
+
+  std::fill(eval.data(), eval.data() + eval.num_elements(), 0);
+  for(int t = 0; t < num_steps; ++t) {
+    for(int i = 0; i < grid.size(); ++i) {
+      for(int x = 0; x < M + 1; ++x) {
+        for(int y = 0; y < M + 1; ++y) {
+          for(int z = 0; z < M + 1; ++z) {
+            Eigen::Map<Eigen::Vector3d> field(&eval[t][i][x][y][z][0]);
+            field = field_fn(t * dt);
+          }
+        }
+      }
+    }
+  }
+
+  for(int t = 0; t < num_steps; ++t) {
+    Chebyshev<M>::Evaluator<double> bar(grid, dots);
+    Chebyshev<M>().fill_coefficients_tensor(
+        grid.size(), &eval[t][0][0][0][0][0], &coef[t][0][0][0][0][0]);
+
+    const boost::multi_array<double, 2> &x = bar.interpolate(
+        t, coef, Projector::TimeDerivative<double>(num_steps, dt));
+
+    Eigen::Map<const Eigen::Vector3d> deriv(&x[0][0]);
+    std::cout << deriv.transpose() << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // DT_EVALUATION
 
 BOOST_AUTO_TEST_SUITE_END()  // CHEBYSHEV
