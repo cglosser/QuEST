@@ -35,8 +35,8 @@ class Chebyshev {
               Eigen::Map<Eigen::Matrix<T, 3, 1>>(&field_table[i][0]) +=
                   Eigen::Map<const Eigen::Matrix<T, 3, 1>>(
                       &coef[time_idx][idx_table[i]][x][y][z][0]) *
-                  eval_table[i][x][0] * eval_table[i][y][1] *
-                  eval_table[i][z][2];
+                  eval_table[i][x][0][0] * eval_table[i][y][1][0] *
+                  eval_table[i][z][2][0];
             }
           }
         }
@@ -45,11 +45,11 @@ class Chebyshev {
       return field_table;
     }
 
-    static boost::multi_array<double, 3> evaluation_table(
+    static boost::multi_array<double, 4> evaluation_table(
         const AIM::Grid &grid, const std::vector<QuantumDot> &dots)
     {
-      std::array<int, 3> shape{{static_cast<int>(dots.size()), M + 1, 3}};
-      boost::multi_array<double, 3> poly_table(shape);
+      std::array<int, 4> shape{{static_cast<int>(dots.size()), M + 1, 3, 3}};
+      boost::multi_array<double, 4> poly_table(shape);
 
       for(size_t dot = 0; dot < dots.size(); ++dot) {
         Eigen::Vector3d relative_r =
@@ -61,9 +61,17 @@ class Chebyshev {
         // Effectively 2 * (r/h - floor(r/h)) - 1
 
         for(int n = 0; n < M + 1; ++n) {
-          poly_table[dot][n][0] = Math::Chebyshev::T(n, relative_r[0]);
-          poly_table[dot][n][1] = Math::Chebyshev::T(n, relative_r[1]);
-          poly_table[dot][n][2] = Math::Chebyshev::T(n, relative_r[2]);
+          poly_table[dot][n][0][0] = Math::Chebyshev::T(n, relative_r[0]);
+          poly_table[dot][n][1][0] = Math::Chebyshev::T(n, relative_r[1]);
+          poly_table[dot][n][2][0] = Math::Chebyshev::T(n, relative_r[2]);
+
+          poly_table[dot][n][0][1] = Math::Chebyshev::T_d1(n, relative_r[0]);
+          poly_table[dot][n][1][1] = Math::Chebyshev::T_d1(n, relative_r[1]);
+          poly_table[dot][n][2][1] = Math::Chebyshev::T_d1(n, relative_r[2]);
+
+          poly_table[dot][n][0][2] = Math::Chebyshev::T_d2(n, relative_r[0]);
+          poly_table[dot][n][1][2] = Math::Chebyshev::T_d2(n, relative_r[1]);
+          poly_table[dot][n][2][2] = Math::Chebyshev::T_d2(n, relative_r[2]);
         }
       }
 
@@ -82,7 +90,7 @@ class Chebyshev {
     }
 
    private:
-    boost::multi_array<double, 3> eval_table;
+    boost::multi_array<double, 4> eval_table;
     std::vector<int> idx_table;
     boost::multi_array<T, 2> field_table;
   };
