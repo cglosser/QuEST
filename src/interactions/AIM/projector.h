@@ -5,14 +5,14 @@ namespace Projector {
   enum DIMENSION { X, Y, Z };
 
   template <typename T>
-  auto Potential(const int t,
-                 const int n,
-                 const int box,
-                 const int i,
-                 const int j,
-                 const int k,
-                 const boost::multi_array<T, 6> &coef,
-                 const boost::multi_array<double, 4> &eval)
+  Eigen::Matrix<T, 3, 1> Potential(const int t,
+                                   const int n,
+                                   const int box,
+                                   const int i,
+                                   const int j,
+                                   const int k,
+                                   const boost::multi_array<T, 6> &coef,
+                                   const boost::multi_array<double, 4> &eval)
   {
     Eigen::Map<const Eigen::Matrix<T, 3, 1>> c(&coef[t][box][i][j][k][0]);
     double Ts = eval[n][i][X][0] * eval[n][j][Y][0] * eval[n][k][Z][0];
@@ -20,14 +20,14 @@ namespace Projector {
   }
 
   template <typename T>
-  auto GradDiv(const int t,
-               const int n,
-               const int box,
-               const int i,
-               const int j,
-               const int k,
-               const boost::multi_array<T, 6> &coef,
-               const boost::multi_array<double, 4> &eval)
+  Eigen::Matrix<T, 3, 1> GradDiv(const int t,
+                                 const int n,
+                                 const int box,
+                                 const int i,
+                                 const int j,
+                                 const int k,
+                                 const boost::multi_array<T, 6> &coef,
+                                 const boost::multi_array<double, 4> &eval)
   {
     Eigen::Map<const Eigen::Matrix<T, 3, 1>> c(&coef[t][box][i][j][k][0]);
     Eigen::Matrix3d m;
@@ -56,14 +56,15 @@ namespace Projector {
       for(auto &c : dt_coefs) c /= dt;
     }
 
-    auto operator()(const int t,
-                    const int n,
-                    const int box,
-                    const int i,
-                    const int j,
-                    const int k,
-                    const boost::multi_array<T, 6> &coef,
-                    const boost::multi_array<double, 4> &eval) const
+    Eigen::Matrix<T, 3, 1> operator()(
+        const int t,
+        const int n,
+        const int box,
+        const int i,
+        const int j,
+        const int k,
+        const boost::multi_array<T, 6> &coef,
+        const boost::multi_array<double, 4> &eval) const
     {
       Eigen::Matrix<T, 3, 1> total_field;
       total_field.setZero();
