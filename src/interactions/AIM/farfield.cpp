@@ -92,19 +92,19 @@ void AIM::Farfield::fill_chebyshev_table(const int step)
                       1, std::multiplies<int>());
   std::fill(p, p + size, cmplx(0, 0));
 
-  for(int box_idx = 0; box_idx < static_cast<int>(expansion_table.shape()[0]);
-      ++box_idx) {
+  for(int box_idx = 0; box_idx < grid.size(); ++box_idx) {
     for(int w = 0; w < static_cast<int>(expansion_table.shape()[1]); ++w) {
-      Eigen::Vector3i coord =
-          grid.idx_to_coord(expansion_table[box_idx][w].index);
+      Eigen::Vector3i coord = grid.idx_to_coord(box_idx);
 
       for(int i = 0; i < chebyshev_order + 1; ++i) {
         for(int j = 0; j < chebyshev_order + 1; ++j) {
           for(int k = 0; k < chebyshev_order + 1; ++k) {
             Eigen::Map<Eigen::Vector3cd> vec(
                 &chebyshev_table[wrapped_step][box_idx][i][j][k][0]);
-            vec += Eigen::Map<Eigen::Vector3cd>(
-                &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
+            vec +=
+                chebyshev_weights[w][i][k][k] *
+                Eigen::Map<Eigen::Vector3cd>(
+                    &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
           }
         }
       }

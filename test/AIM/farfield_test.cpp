@@ -31,8 +31,8 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
   AIM::Farfield ff(dots, history, 4, 1, 1, grid, expansion_table,
                    AIM::normalization::unit, cheb_expansion_table);
 
-  for(int t = 0; t < 5; ++t) {
-    ff.evaluate(t).transpose();
+  for(int t = 0; t < 1024; ++t) {
+    std::cout << ff.evaluate(t).transpose() << std::endl;
   }
 }
 
