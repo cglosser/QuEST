@@ -32,6 +32,9 @@ void AIM::Farfield::fill_source_table(const int step)
   std::fill(p, p + 3 * 8 * grid.size(), cmplx(0, 0));
 
   for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
+    const auto polarization =
+        (*dots)[dot_idx].dipole() * history->array_[dot_idx][step][0][RHO_01];
+
     for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
         ++expansion_idx) {
       const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
@@ -44,8 +47,7 @@ void AIM::Farfield::fill_source_table(const int step)
       // elements) and the electromagnetic source quantities. Ideally the AIM
       // code should not have knowledge of this to better encapsulate
       // "propagation," but this is good enough for now.
-      grid_field += e.weight * (*dots)[dot_idx].dipole() *
-                    history->array_[dot_idx][step][0][RHO_01];
+      grid_field += e.weight * polarization;
     }
   }
 }
@@ -149,8 +151,8 @@ void AIM::Farfield::fill_gmatrix_table(
 {  // Build the circulant vectors that define the G "matrices." Since the G
   // matrices are Toeplitz (and symmetric), they're uniquely determined by
   // their first row. The first row gets computed here then mirrored to make a
-  // list of every circulant (and thus FFT-able) vector. This function needs to
-  // accept a non-const reference to a spacetime::vector (instead of just
+  // list of every circulant (and thus FFT-able) vector. This function needs
+  // to accept a non-const reference to a spacetime::vector (instead of just
   // returning such an array) to play nice with FFTW and its workspaces.
 
   std::fill(gmatrix_table.data(),
@@ -190,11 +192,11 @@ void AIM::Farfield::fill_gmatrix_table(
 TransformPair AIM::Farfield::spatial_fft_plans()
 {
   // Set up FFTW plans to transform projected source distributions. Due to the
-  // requirements of the circulant extension, these plans perform transforms of
-  // length 2 n_{x,y,z} to accommodate the requisite zero padding. While they're
-  // constructed to work on the head of `source_table` (that is, what would be
-  // the I_0 source), the advanced FFTW interface allows them to stride forward
-  // to equivalently transform the source currents at every timestep.
+  // requirements of the circulant extension, these plans perform transforms
+  // of length 2 n_{x,y,z} to accommodate the requisite zero padding. While
+  // they're constructed to work on the head of `source_table` (that is, what
+  // would be the I_0 source), the advanced FFTW interface allows them to stride
+  // forward to equivalently transform the source currents at every timestep.
 
   constexpr int num_transforms = 3;
   constexpr int transform_rank = 3;

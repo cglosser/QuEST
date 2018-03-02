@@ -11,11 +11,15 @@ BOOST_AUTO_TEST_SUITE(FARFIELD)
 BOOST_AUTO_TEST_CASE(CONSTRUCTION)
 {
   auto dots = std::make_shared<DotVector>();
-  dots->push_back(QuantumDot({0.1, 0.1, 0.1}));
-  dots->push_back(QuantumDot({0.1, 0.1, 10.1}));
+  dots->push_back(QuantumDot({0.1, 0.1, 0.1}, {0, 0, 1}));
+  dots->push_back(QuantumDot({0.1, 0.1, 10.1}, {0, 0, 1}));
 
   auto history =
       std::make_shared<Integrator::History<Eigen::Vector2cd>>(2, 10, 1024);
+  for(int t = -10; t < 1024; ++t) {
+    history->array_[0][t][0] =
+        Eigen::Vector2cd(0, Math::gaussian((t - 512) / (1024.0 / 12)));
+  }
 
   AIM::Grid grid({1, 1, 1}, 1, *dots);
 
@@ -28,7 +32,7 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
                    AIM::normalization::unit, cheb_expansion_table);
 
   for(int t = 0; t < 5; ++t) {
-    std::cout << ff.evaluate(t).transpose() << std::endl;
+    ff.evaluate(t).transpose();
   }
 }
 
