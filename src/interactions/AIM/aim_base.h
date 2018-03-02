@@ -41,6 +41,8 @@ class AIM::AimBase : public HistoryInteraction {
         obs_table(spacetime::make_vector3d<cmplx>(table_dimensions)),
 
         // Interior grid
+        Cheb(grid, *dots),
+        projector(table_dimensions[0]),
         chebyshev_weights(chebyshev_weights),
         chebyshev_table(boost::extents[table_dimensions[0]][grid.size()]
                                       [chebyshev_order + 1][chebyshev_order + 1]
@@ -65,6 +67,12 @@ class AIM::AimBase : public HistoryInteraction {
     propagate(step);
     fill_chebyshev_table(step);
 
+    const auto &x = Cheb.interpolate(step, chebyshev_coefficients, projector);
+
+    for(int i = 0; i < dots->size(); ++i) {
+      results(i) = x.col(i).dot((*dots)[i].dipole());
+    }
+
     return results;
   }
 
@@ -76,7 +84,8 @@ class AIM::AimBase : public HistoryInteraction {
 
   std::array<int, 4> table_dimensions;
 
-  // This corresponds to delta(t - R/c)/R and thus holds *scalar* quantities
+  // This corresponds to delta(t - R/c)/R and thus holds *scalar*
+  // quantities
   spacetime::vector<cmplx> propagation_table;
 
   // These correspond to J and E and thus hold *vector* quantities
@@ -84,6 +93,7 @@ class AIM::AimBase : public HistoryInteraction {
 
   // Interior grid
   Chebyshev<cmplx, chebyshev_order> Cheb;
+  Projector::Potential<cmplx> projector;
   const boost::multi_array<double, 4> &chebyshev_weights;
   boost::multi_array<cmplx, 6> chebyshev_table, chebyshev_coefficients;
 

@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(GRID_SIZE)
     Chebyshev<double, M> bar(grid, dots);
     bar.fill_coefficients_tensor(grid.size(), eval.data(), coef.data());
 
-    const auto &x = bar.interpolate(0, coef, Projector::Potential<double>);
+    const auto &x = bar.interpolate(0, coef, Projector::Potential<double>(1));
 
     for(int i = 0; i < static_cast<int>(dots.size()); ++i) {
       BOOST_CHECK_SMALL((field_fn(dots[i].position()) - x.col(i)).norm(),

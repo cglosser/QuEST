@@ -4,20 +4,35 @@
 namespace Projector {
   enum DIMENSION { X, Y, Z };
 
-  template <typename T>
-  Eigen::Matrix<T, 3, 1> Potential(const int t,
-                                   const int n,
-                                   const int box,
-                                   const int i,
-                                   const int j,
-                                   const int k,
-                                   const boost::multi_array<T, 6> &coef,
-                                   const boost::multi_array<double, 4> &eval)
-  {
-    Eigen::Map<const Eigen::Matrix<T, 3, 1>> c(&coef[t][box][i][j][k][0]);
-    double Ts = eval[n][i][X][0] * eval[n][j][Y][0] * eval[n][k][Z][0];
-    return c * Ts;
-  }
+  template <typename num_t>
+  class ProjectorBase {
+   public:
+    ProjectorBase(int max_timestep) : max_timestep_{max_timestep} {}
+   protected:
+    int wrap_step(int t) const { return t % max_timestep_; }
+    int max_timestep_;
+  };
+
+  template <typename num_t>
+  class Potential : public ProjectorBase<num_t> {
+   public:
+    Potential(int max_timestep) : ProjectorBase<num_t>(max_timestep) {}
+    Eigen::Matrix<num_t, 3, 1> operator()(
+        const int t,
+        const int n,
+        const int box,
+        const int i,
+        const int j,
+        const int k,
+        const boost::multi_array<num_t, 6> &coef,
+        const boost::multi_array<double, 4> &eval)
+    {
+      Eigen::Map<const Eigen::Matrix<num_t, 3, 1>> c(
+          &coef[this->wrap_step(t)][box][i][j][k][0]);
+      double Ts = eval[n][i][X][0] * eval[n][j][Y][0] * eval[n][k][Z][0];
+      return c * Ts;
+    }
+  };
 
   template <typename T>
   Eigen::Matrix<T, 3, 1> GradDiv(const int t,
