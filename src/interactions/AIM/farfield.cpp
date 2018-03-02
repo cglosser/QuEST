@@ -90,9 +90,11 @@ void AIM::Farfield::fill_chebyshev_table(const int step)
                       1, std::multiplies<int>());
   std::fill(p, p + size, cmplx(0, 0));
 
-  for(int box_idx = 0; box_idx < grid.size(); ++box_idx) {
+  for(int box_idx = 0; box_idx < static_cast<int>(expansion_table.shape()[0]);
+      ++box_idx) {
     for(int w = 0; w < static_cast<int>(expansion_table.shape()[1]); ++w) {
-      Eigen::Vector3i coord = grid.idx_to_coord(expansion_indices[box_idx][w]);
+      Eigen::Vector3i coord =
+          grid.idx_to_coord(expansion_table[box_idx][w].index);
 
       for(int i = 0; i < chebyshev_order + 1; ++i) {
         for(int j = 0; j < chebyshev_order + 1; ++j) {

@@ -24,8 +24,12 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
   auto cheb_expansion_table = LSE.chebyshev_lambda_weights(
       Math::Chebyshev::normalized_points(AIM::chebyshev_order));
 
-  AIM::Farfield(dots, history, 4, 1, 1, grid, expansion_table,
-                AIM::normalization::unit, cheb_expansion_table);
+  AIM::Farfield ff(dots, history, 4, 1, 1, grid, expansion_table,
+                   AIM::normalization::unit, cheb_expansion_table);
+
+  for(int t = 0; t < 5; ++t) {
+    std::cout << ff.evaluate(t).transpose() << std::endl;
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // FARFIELD

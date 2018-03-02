@@ -42,12 +42,13 @@ class AIM::AimBase : public HistoryInteraction {
 
         // Interior grid
         chebyshev_weights(chebyshev_weights),
-        chebyshev_table(
-            boost::extents[table_dimensions[0]][grid.size()][chebyshev_order]
-                          [chebyshev_order][chebyshev_order][3]),
+        chebyshev_table(boost::extents[table_dimensions[0]][grid.size()]
+                                      [chebyshev_order + 1][chebyshev_order + 1]
+                                      [chebyshev_order + 1][3]),
         chebyshev_coefficients(
-            boost::extents[table_dimensions[0]][grid.size()][chebyshev_order]
-                          [chebyshev_order][chebyshev_order][3])
+            boost::extents[table_dimensions[0]][grid.size()]
+                          [chebyshev_order + 1][chebyshev_order + 1]
+                          [chebyshev_order + 1][3])
   {
     auto clear = [](auto &table) {
       std::fill(table.data(), table.data() + table.num_elements(), cmplx(0, 0));
