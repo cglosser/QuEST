@@ -36,8 +36,17 @@ AIM::Nearfield::Nearfield(
   //
   // It's the biggest hack that the dimensions of these arrays are the same for
   // the NF and FF code. Sorry.
+  // clang-format off
   field_table_dims = {
       {table_dimensions[0], table_dimensions[1], 2, table_dimensions[2], 3}};
+  //   ┬                    ┬                    ┬  ┬                    ┬
+  //   │                    │                    │  │                    └ dimension (x, y, or z)
+  //   │                    │                    │  └───────────────────── # expansion points (exterior grid)
+  //   │                    │                    └──────────────────────── source or observer
+  //   │                    └───────────────────────────────────────────── # nearfield box pairs
+  //   └────────────────────────────────────────────────────────────────── # timesteps
+  // clang-format on
+
   source_table.resize(field_table_dims);
   obs_table.resize(field_table_dims);
   propagation_table = make_propagation_table();
@@ -81,7 +90,7 @@ void AIM::Nearfield::fill_source_table(const int step)
 
 void AIM::Nearfield::propagate(const int step)
 {
-  using Mat3d = Eigen::Matrix<cmplx, Eigen::Dynamic, 3, Eigen::RowMajor>;
+  using MatX3 = Eigen::Matrix<cmplx, Eigen::Dynamic, 3, Eigen::RowMajor>;
 
   const auto wrapped_step = step % table_dimensions[0];
   spacetime::clear_time_slice(obs_table, wrapped_step);
@@ -93,18 +102,18 @@ void AIM::Nearfield::propagate(const int step)
                                        table_dimensions[2],
                                        table_dimensions[2]);
 
-      Eigen::Map<Mat3d> src1(&source_table[wrap][p][0][0][0],
+      Eigen::Map<MatX3> src1(&source_table[wrap][p][0][0][0],
                              table_dimensions[2], 3);
-      Eigen::Map<Mat3d> obs1(&obs_table[wrapped_step][p][1][0][0],
+      Eigen::Map<MatX3> obs1(&obs_table[wrapped_step][p][1][0][0],
                              table_dimensions[2], 3);
 
       obs1 += mat * src1;
 
       if(neighbors[p].first == neighbors[p].second) continue;
 
-      Eigen::Map<Mat3d> src2(&source_table[wrap][p][1][0][0],
+      Eigen::Map<MatX3> src2(&source_table[wrap][p][1][0][0],
                              table_dimensions[2], 3);
-      Eigen::Map<Mat3d> obs2(&obs_table[wrapped_step][p][0][0][0],
+      Eigen::Map<MatX3> obs2(&obs_table[wrapped_step][p][0][0][0],
                              table_dimensions[2], 3);
 
       obs2 += mat.transpose() * src2;
@@ -112,7 +121,47 @@ void AIM::Nearfield::propagate(const int step)
   }
 }
 
-void AIM::Nearfield::fill_chebyshev_table(const int step) {}
+void AIM::Nearfield::fill_chebyshev_table(const int step)
+{
+  const auto wrapped_step = step % table_dimensions[0];
+  auto *p = &chebyshev_table[wrapped_step][0][0][0][0][0];
+  const auto size =
+      std::accumulate(chebyshev_table.shape() + 1, chebyshev_table.shape() + 6,
+                      1, std::multiplies<int>());
+  std::fill(p, p + size, cmplx(0, 0));
+
+  for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
+    size_t box1, box2;
+    std::tie(box1, box2) = neighbors[p];
+
+    for(int e = 0; e < field_table_dims[EXPANSIONS]; ++e) {
+      for(int i = 0; i < chebyshev_order + 1; ++i) {
+        for(int j = 0; j < chebyshev_order + 1; ++j) {
+          for(int k = 0; k < chebyshev_order + 1; ++k) {
+            Eigen::Map<Eigen::Vector3cd> vec1(
+                &chebyshev_table[wrapped_step][box1][i][j][k][0]);
+
+            vec1 += chebyshev_weights[e][i][j][k] *
+                    Eigen::Map<Eigen::Vector3cd>(
+                        &obs_table[wrapped_step][p][0][e][0]);
+
+            Eigen::Map<Eigen::Vector3cd> vec2(
+                &chebyshev_table[wrapped_step][box2][i][j][k][0]);
+
+            vec2 += chebyshev_weights[e][i][j][k] *
+                    Eigen::Map<Eigen::Vector3cd>(
+                        &obs_table[wrapped_step][p][1][e][0]);
+          }
+        }
+      }
+    }
+  }
+
+  Cheb.fill_coefficients_tensor(
+      grid.size(), &chebyshev_table[wrapped_step][0][0][0][0][0],
+      &chebyshev_coefficients[wrapped_step][0][0][0][0][0]);
+}
+
 spacetime::vector<cmplx> AIM::Nearfield::make_propagation_table() const
 {
   spacetime::vector<cmplx> prop(table_dimensions);

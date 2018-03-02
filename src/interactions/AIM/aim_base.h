@@ -69,7 +69,7 @@ class AIM::AimBase : public HistoryInteraction {
 
     const auto &x = Cheb.interpolate(step, chebyshev_coefficients, projector);
 
-    for(int i = 0; i < dots->size(); ++i) {
+    for(size_t i = 0; i < dots->size(); ++i) {
       results(i) = x.col(i).dot((*dots)[i].dipole());
     }
 
