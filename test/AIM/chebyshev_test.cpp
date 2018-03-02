@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(QUADRATIC_FIT)
   boost::multi_array<double, 5> eval(shape), coef(shape);
   std::fill(eval.data(), eval.data() + eval.num_elements(), 0);
 
-  auto xs = Chebyshev<M>::roots();
+  auto xs = Chebyshev<double, M>::roots();
 
   for(int x = 0; x < M + 1; ++x) {
     for(int y = 0; y < M + 1; ++y) {
@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(QUADRATIC_FIT)
     }
   }
 
-  Chebyshev<M> cheb;
+  Chebyshev<double, M> cheb;
   cheb.fill_coefficients_tensor(num_boxes, eval.data(), coef.data());
   for(size_t i = 0; i < coef.num_elements(); ++i) {
     if(std::abs(*(coef.data() + i)) < 1e-12) *(coef.data() + i) = 0;
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(GRID_SIZE)
   spacing.col(2) = Eigen::Vector3d(2, 2, 2);
   spacing.col(3) = Eigen::Vector3d(4, 4, 4);
 
-  auto xs = Chebyshev<M>::roots();
+  auto xs = Chebyshev<double, M>::roots();
   for(auto &x : xs) x = (x + 1) / 2;
 
   for(int h = 0; h < 4; ++h) {
@@ -109,9 +109,8 @@ BOOST_AUTO_TEST_CASE(GRID_SIZE)
       }
     }
 
-    Chebyshev<M>::Evaluator<double> bar(grid, dots);
-    Chebyshev<M>().fill_coefficients_tensor(grid.size(), eval.data(),
-                                            coef.data());
+    Chebyshev<double, M> bar(grid, dots);
+    bar.fill_coefficients_tensor(grid.size(), eval.data(), coef.data());
 
     const boost::multi_array<double, 2> &x =
         bar.interpolate(0, coef, Projector::Potential<double>);
@@ -153,7 +152,7 @@ BOOST_AUTO_TEST_CASE(DERIVATIVE)
 
   Eigen::Array3d spacing(1, 1, 1);
 
-  auto xs = Chebyshev<M>::roots();
+  auto xs = Chebyshev<double, M>::roots();
   for(auto &x : xs) x = (x + 1) / 2;
 
   AIM::Grid grid(spacing, 1, dots);
@@ -175,9 +174,9 @@ BOOST_AUTO_TEST_CASE(DERIVATIVE)
   }
 
   for(int t = 0; t < num_steps; ++t) {
-    Chebyshev<M>::Evaluator<double> bar(grid, dots);
-    Chebyshev<M>().fill_coefficients_tensor(
-        grid.size(), &eval[t][0][0][0][0][0], &coef[t][0][0][0][0][0]);
+    Chebyshev<double, M> bar(grid, dots);
+    bar.fill_coefficients_tensor(grid.size(), &eval[t][0][0][0][0][0],
+                                 &coef[t][0][0][0][0][0]);
 
     const boost::multi_array<double, 2> &x = bar.interpolate(
         t, coef, Projector::TimeDerivative<double>(num_steps, dt));

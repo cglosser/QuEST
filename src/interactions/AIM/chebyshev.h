@@ -6,116 +6,108 @@
 #include <cmath>
 #include "grid.h"
 
-template <int M>
+template <typename num_t, int M>
 class Chebyshev {
  public:
-  template <class T>
-  using array_t = std::array<T, M + 1>;
-
-  template <class T>
-  class Evaluator {
-   public:
-    Evaluator(const AIM::Grid &grid, const std::vector<QuantumDot> &dots)
-        : eval_table{evaluation_table(grid, dots)},
-          idx_table{index_table(grid, dots)},
-          field_table(boost::extents[dots.size()][3])
-    {
-    }
-
-    template <typename F>
-    const auto &interpolate(const int time_idx,
-                            const boost::multi_array<T, 6> &coef,
-                            F projector)
-    {
-      std::fill(field_table.data(),
-                field_table.data() + field_table.num_elements(), 0.0);
-
-      for(int n = 0; n < static_cast<int>(idx_table.size()); ++n) {
-        Eigen::Map<Eigen::Matrix<T, 3, 1>> vec(&field_table[n][0]);
-        for(int i = 0; i < M + 1; ++i) {
-          for(int j = 0; j < M + 1; ++j) {
-            for(int k = 0; k < M + 1; ++k) {
-              vec += projector(time_idx, n, idx_table[n], i, j, k, coef,
-                               eval_table);
-            }
-          }
-        }
-      }
-
-      return field_table;
-    }
-
-    static boost::multi_array<double, 4> evaluation_table(
-        const AIM::Grid &grid, const std::vector<QuantumDot> &dots)
-    {
-      using Math::Chebyshev::T;
-      using Math::Chebyshev::T_d1;
-      using Math::Chebyshev::T_d2;
-
-      const Eigen::Array3d s = 2 / grid.spacing(),
-                           s2 = 4 / grid.spacing().pow(2);
-
-      std::array<int, 4> shape{{static_cast<int>(dots.size()), M + 1, 3, 3}};
-      boost::multi_array<double, 4> poly_table(shape);
-
-      for(size_t dot = 0; dot < dots.size(); ++dot) {
-        Eigen::Vector3d relative_r =
-            2 * (dots[dot].position().array() / grid.spacing() -
-                 grid.grid_coordinate(dots[dot].position())
-                     .array()
-                     .cast<double>()) -
-            1;
-        // Effectively 2 * (r/h - floor(r/h)) - 1
-
-        for(int n = 0; n < M + 1; ++n) {
-          //          ┌────────── particle index
-          //          │   ┌────── Chebyshev index (grid is outer product)
-          //          │   │  ┌─── dimension (x = 0, y = 1, z = 2)
-          //          │   │  │  ┌ derivative order
-          //          ┴   ┴  ┴  ┴
-          poly_table[dot][n][0][0] = T(n, relative_r[0]);
-          poly_table[dot][n][0][1] = T_d1(n, relative_r[0]) * s[0];
-          poly_table[dot][n][0][2] = T_d2(n, relative_r[0]) * s2[0];
-
-          poly_table[dot][n][1][0] = T(n, relative_r[1]);
-          poly_table[dot][n][1][1] = T_d1(n, relative_r[1]) * s[1];
-          poly_table[dot][n][1][2] = T_d2(n, relative_r[1]) * s2[1];
-
-          poly_table[dot][n][2][0] = T(n, relative_r[2]);
-          poly_table[dot][n][2][1] = T_d1(n, relative_r[2]) * s[2];
-          poly_table[dot][n][2][2] = T_d2(n, relative_r[2]) * s2[2];
-        }
-      }
-
-      return poly_table;
-    }
-
-    static std::vector<int> index_table(const AIM::Grid &grid,
-                                        const std::vector<QuantumDot> &dots)
-    {
-      std::vector<int> indices(dots.size());
-      for(int i = 0; i < static_cast<int>(dots.size()); ++i) {
-        indices[i] = grid.associated_grid_index(dots[i].position());
-      }
-
-      return indices;
-    }
-
-   private:
-    boost::multi_array<double, 4> eval_table;
-    std::vector<int> idx_table;
-    boost::multi_array<T, 2> field_table;
-  };
+  template <typename U>
+  using array_t = std::array<U, M + 1>;
 
   Chebyshev()
       : alphas_(alphas()), roots_(roots()), poly_samples_(polynomial_samples())
   {
   }
 
-  template <typename T>
+  Chebyshev(const AIM::Grid &grid, const std::vector<QuantumDot> &dots)
+      : alphas_(alphas()),
+        roots_(roots()),
+        poly_samples_(polynomial_samples()),
+        eval_table{evaluation_table(grid, dots)},
+        idx_table{index_table(grid, dots)},
+        field_table(boost::extents[dots.size()][3])
+  {
+  }
+
+  template <typename F>
+  const auto &interpolate(const int time_idx,
+                          const boost::multi_array<num_t, 6> &coef,
+                          F projector)
+  {
+    std::fill(field_table.data(),
+              field_table.data() + field_table.num_elements(), 0.0);
+
+    for(int n = 0; n < static_cast<int>(idx_table.size()); ++n) {
+      Eigen::Map<Eigen::Matrix<num_t, 3, 1>> vec(&field_table[n][0]);
+      for(int i = 0; i < M + 1; ++i) {
+        for(int j = 0; j < M + 1; ++j) {
+          for(int k = 0; k < M + 1; ++k) {
+            vec +=
+                projector(time_idx, n, idx_table[n], i, j, k, coef, eval_table);
+          }
+        }
+      }
+    }
+
+    return field_table;
+  }
+
+  static boost::multi_array<double, 4> evaluation_table(
+      const AIM::Grid &grid, const std::vector<QuantumDot> &dots)
+  {
+    using Math::Chebyshev::T;
+    using Math::Chebyshev::T_d1;
+    using Math::Chebyshev::T_d2;
+
+    const Eigen::Array3d s = 2 / grid.spacing(), s2 = 4 / grid.spacing().pow(2);
+
+    std::array<int, 4> shape{{static_cast<int>(dots.size()), M + 1, 3, 3}};
+    boost::multi_array<double, 4> poly_table(shape);
+
+    for(size_t dot = 0; dot < dots.size(); ++dot) {
+      Eigen::Vector3d relative_r =
+          2 * (dots[dot].position().array() / grid.spacing() -
+               grid.grid_coordinate(dots[dot].position())
+                   .array()
+                   .cast<double>()) -
+          1;
+      // Effectively 2 * (r/h - floor(r/h)) - 1
+
+      for(int n = 0; n < M + 1; ++n) {
+        //          ┌────────── particle index
+        //          │   ┌────── Chebyshev index (grid is outer product)
+        //          │   │  ┌─── dimension (x = 0, y = 1, z = 2)
+        //          │   │  │  ┌ derivative order
+        //          ┴   ┴  ┴  ┴
+        poly_table[dot][n][0][0] = T(n, relative_r[0]);
+        poly_table[dot][n][0][1] = T_d1(n, relative_r[0]) * s[0];
+        poly_table[dot][n][0][2] = T_d2(n, relative_r[0]) * s2[0];
+
+        poly_table[dot][n][1][0] = T(n, relative_r[1]);
+        poly_table[dot][n][1][1] = T_d1(n, relative_r[1]) * s[1];
+        poly_table[dot][n][1][2] = T_d2(n, relative_r[1]) * s2[1];
+
+        poly_table[dot][n][2][0] = T(n, relative_r[2]);
+        poly_table[dot][n][2][1] = T_d1(n, relative_r[2]) * s[2];
+        poly_table[dot][n][2][2] = T_d2(n, relative_r[2]) * s2[2];
+      }
+    }
+
+    return poly_table;
+  }
+
+  static std::vector<int> index_table(const AIM::Grid &grid,
+                                      const std::vector<QuantumDot> &dots)
+  {
+    std::vector<int> indices(dots.size());
+    for(int i = 0; i < static_cast<int>(dots.size()); ++i) {
+      indices[i] = grid.associated_grid_index(dots[i].position());
+    }
+
+    return indices;
+  }
+
   void fill_coefficients_tensor(const int num_boxes,
-                                const T *const eval,
-                                T *const coef)
+                                const num_t *const eval,
+                                num_t *const coef) const
   {
     constexpr int32_t size{M + 1};
     constexpr double norm{1.0 / (size * size * size)};
@@ -215,6 +207,10 @@ class Chebyshev {
   array_t<int> alphas_;
   array_t<double> roots_;
   array_t<array_t<double>> poly_samples_;
+
+  boost::multi_array<double, 4> eval_table;
+  std::vector<int> idx_table;
+  boost::multi_array<num_t, 2> field_table;
 };
 
 #endif
