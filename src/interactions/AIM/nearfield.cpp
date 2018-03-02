@@ -113,38 +113,6 @@ void AIM::Nearfield::propagate(const int step)
 }
 
 void AIM::Nearfield::fill_chebyshev_table(const int step) {}
-void AIM::Nearfield::fill_results_table(const int step)
-{
-  const int wrapped_step = step % table_dimensions[0];
-  results = 0;
-
-  for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
-    size_t box1, box2;
-    std::tie(box1, box2) = neighbors[p];
-
-    for(int e = 0; e < field_table_dims[EXPANSIONS]; ++e) {
-      DotVector::const_iterator start, end;
-      std::tie(start, end) = mapping[box1];
-      for(auto d = start; d != end; ++d) {
-        const auto dot_idx = std::distance(dots->begin(), d);
-        results(dot_idx) +=
-            expansion_table[dot_idx][e].weight *
-            (*dots)[dot_idx].dipole().dot(Eigen::Map<Eigen::Vector3cd>(
-                &obs_table[wrapped_step][p][0][e][0]));
-      }
-
-      std::tie(start, end) = mapping[box2];
-      for(auto d = start; d != end; ++d) {
-        const auto dot_idx = std::distance(dots->begin(), d);
-        results(dot_idx) +=
-            expansion_table[dot_idx][e].weight *
-            (*dots)[dot_idx].dipole().dot(Eigen::Map<Eigen::Vector3cd>(
-                &obs_table[wrapped_step][p][1][e][0]));
-      }
-    }
-  }
-}
-
 spacetime::vector<cmplx> AIM::Nearfield::make_propagation_table() const
 {
   spacetime::vector<cmplx> prop(table_dimensions);

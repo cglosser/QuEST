@@ -94,12 +94,11 @@ void AIM::Farfield::fill_chebyshev_table(const int step)
     for(int w = 0; w < static_cast<int>(expansion_table.shape()[1]); ++w) {
       Eigen::Vector3i coord = grid.idx_to_coord(expansion_indices[box_idx][w]);
 
-      for(int cheb_x = 0; cheb_x <= chebyshev_order; ++cheb_x) {
-        for(int cheb_y = 0; cheb_y <= chebyshev_order; ++cheb_y) {
-          for(int cheb_z = 0; cheb_z <= chebyshev_order; ++cheb_z) {
+      for(int i = 0; i < chebyshev_order + 1; ++i) {
+        for(int j = 0; j < chebyshev_order + 1; ++j) {
+          for(int k = 0; k < chebyshev_order + 1; ++k) {
             Eigen::Map<Eigen::Vector3cd> vec(
-                &chebyshev_table[wrapped_step][box_idx][cheb_x][cheb_y][cheb_z]
-                                [0]);
+                &chebyshev_table[wrapped_step][box_idx][i][j][k][0]);
             vec += Eigen::Map<Eigen::Vector3cd>(
                 &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
           }
@@ -107,9 +106,12 @@ void AIM::Farfield::fill_chebyshev_table(const int step)
       }
     }
   }
+
+  Cheb.fill_coefficients_tensor(
+      grid.size(), &chebyshev_table[wrapped_step][0][0][0][0][0],
+      &chebyshev_coefficients[wrapped_step][0][0][0][0][0]);
 }
 
-void AIM::Farfield::fill_results_table(const int step) { results = 0; }
 spacetime::vector<cmplx> AIM::Farfield::make_propagation_table() const
 {
   spacetime::vector<cmplx> g_mat(table_dimensions);

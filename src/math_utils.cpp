@@ -56,7 +56,7 @@ double Math::falling_factorial(const double x, const int n)
   return result;
 }
 
-std::vector<double> Math::chebyshev_points(const int n)
+std::vector<double> Math::Chebyshev::normalized_points(const int n)
 {
   std::vector<double> pts(n + 1);
   for(int i = 0; i <= n; ++i) {

@@ -51,7 +51,7 @@ AIM::Expansions::LeastSquaresExpansionSolver::table(
 }
 
 boost::multi_array<double, 4>
-AIM::Expansions::LeastSquaresExpansionSolver::chebyshev_table(
+AIM::Expansions::LeastSquaresExpansionSolver::chebyshev_lambda_weights(
     const std::vector<double> &pts) const
 {
   boost::multi_array<double, 4> coefs(

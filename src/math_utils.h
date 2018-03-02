@@ -18,10 +18,10 @@ namespace Math {
   int grid_sequence(const int);
   std::pair<int, double> split_double(const double);
   double falling_factorial(const double, int);
-  std::vector<double> chebyshev_points(const int);
-  double ChebyshevT(const int, const double);
 
   namespace Chebyshev {
+    std::vector<double> normalized_points(const int);
+
     double T(int, double);
     constexpr double T0(const double);
     constexpr double T1(const double);

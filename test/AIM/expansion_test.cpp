@@ -79,8 +79,8 @@ BOOST_AUTO_TEST_CASE(CHEBYSHEV)
                  Eigen::Vector3i::Zero());
 
   AIM::Expansions::LeastSquaresExpansionSolver LSE(grid);
-  auto cheb_pts = Math::chebyshev_points(2);
-  auto cheb_table = LSE.chebyshev_table(cheb_pts);
+  auto cheb_pts = Math::Chebyshev::normalized_points(2);
+  auto cheb_table = LSE.chebyshev_lambda_weights(cheb_pts);
 
   BOOST_CHECK_EQUAL(cheb_table[0][0][0][0], 1);
   BOOST_CHECK_EQUAL(cheb_table[0][2][2][2], 1);

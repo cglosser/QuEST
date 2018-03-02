@@ -1,14 +1,18 @@
 #ifndef AIM_BASE_H
 #define AIM_BASE_H
 
+#include "chebyshev.h"
 #include "expansion.h"
 #include "grid.h"
 #include "interactions/history_interaction.h"
 #include "normalization.h"
+#include "projector.h"
 #include "spacetime.h"
 
 namespace AIM {
   class AimBase;
+
+  constexpr int chebyshev_order = 4;
 }
 
 class AIM::AimBase : public HistoryInteraction {
@@ -37,9 +41,11 @@ class AIM::AimBase : public HistoryInteraction {
         obs_table(spacetime::make_vector3d<cmplx>(table_dimensions)),
 
         // Interior grid
-        chebyshev_order(chebyshev_weights.shape()[0]),
         chebyshev_weights(chebyshev_weights),
         chebyshev_table(
+            boost::extents[table_dimensions[0]][grid.size()][chebyshev_order]
+                          [chebyshev_order][chebyshev_order][3]),
+        chebyshev_coefficients(
             boost::extents[table_dimensions[0]][grid.size()][chebyshev_order]
                           [chebyshev_order][chebyshev_order][3])
   {
@@ -56,7 +62,7 @@ class AIM::AimBase : public HistoryInteraction {
   {
     fill_source_table(step);
     propagate(step);
-    fill_results_table(step);
+    fill_chebyshev_table(step);
 
     return results;
   }
@@ -76,15 +82,14 @@ class AIM::AimBase : public HistoryInteraction {
   spacetime::vector3d<cmplx> source_table, obs_table;
 
   // Interior grid
-  int chebyshev_order;
+  Chebyshev<cmplx, chebyshev_order> Cheb;
   const boost::multi_array<double, 4> &chebyshev_weights;
-  boost::multi_array<cmplx, 6> chebyshev_table;
+  boost::multi_array<cmplx, 6> chebyshev_table, chebyshev_coefficients;
 
   virtual spacetime::vector<cmplx> make_propagation_table() const = 0;
   virtual void fill_source_table(const int) = 0;
   virtual void propagate(const int) = 0;
   virtual void fill_chebyshev_table(const int) = 0;
-  virtual void fill_results_table(const int) = 0;
 };
 
 #endif

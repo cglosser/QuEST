@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(FALLING_FACTORIAL)
 BOOST_AUTO_TEST_CASE(CHEBYSHEV)
 {
   for(int order = 1; order < 6; ++order) {
-    auto pts = Math::chebyshev_points(order);
+    auto pts = Math::Chebyshev::normalized_points(order);
 
     BOOST_CHECK_EQUAL(pts[0], 0);
     BOOST_CHECK_EQUAL(pts[order], 1);

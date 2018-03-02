@@ -32,7 +32,6 @@ class AIM::Farfield final : public AimBase {
   void fill_source_table(const int) override;
   void propagate(const int) override;
   void fill_chebyshev_table(const int) override;
-  void fill_results_table(const int) override;
 };
 
 #endif

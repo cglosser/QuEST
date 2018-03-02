@@ -30,7 +30,7 @@ class AIM::Expansions::LeastSquaresExpansionSolver {
   Eigen::MatrixXd w_matrix(const Eigen::Vector3d &) const;
   Eigen::VectorXd solve(const Eigen::Vector3d &) const;
   ExpansionTable table(const std::vector<QuantumDot> &) const;
-  boost::multi_array<double, 4> chebyshev_table(
+  boost::multi_array<double, 4> chebyshev_lambda_weights(
       const std::vector<double> &) const;
 
  private:
