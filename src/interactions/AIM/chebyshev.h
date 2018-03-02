@@ -23,7 +23,7 @@ class Chebyshev {
         poly_samples_(polynomial_samples()),
         eval_table{evaluation_table(grid, dots)},
         idx_table{index_table(grid, dots)},
-        field_table(boost::extents[dots.size()][3])
+        field_table(3, dots.size())
   {
   }
 
@@ -32,15 +32,13 @@ class Chebyshev {
                           const boost::multi_array<num_t, 6> &coef,
                           F projector)
   {
-    std::fill(field_table.data(),
-              field_table.data() + field_table.num_elements(), 0.0);
+    field_table.setZero();
 
     for(int n = 0; n < static_cast<int>(idx_table.size()); ++n) {
-      Eigen::Map<Eigen::Matrix<num_t, 3, 1>> vec(&field_table[n][0]);
       for(int i = 0; i < M + 1; ++i) {
         for(int j = 0; j < M + 1; ++j) {
           for(int k = 0; k < M + 1; ++k) {
-            vec +=
+            field_table.col(n) +=
                 projector(time_idx, n, idx_table[n], i, j, k, coef, eval_table);
           }
         }
@@ -210,7 +208,7 @@ class Chebyshev {
 
   boost::multi_array<double, 4> eval_table;
   std::vector<int> idx_table;
-  boost::multi_array<num_t, 2> field_table;
+  Eigen::Matrix<num_t, 3, Eigen::Dynamic> field_table;
 };
 
 #endif

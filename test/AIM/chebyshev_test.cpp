@@ -112,12 +112,10 @@ BOOST_AUTO_TEST_CASE(GRID_SIZE)
     Chebyshev<double, M> bar(grid, dots);
     bar.fill_coefficients_tensor(grid.size(), eval.data(), coef.data());
 
-    const boost::multi_array<double, 2> &x =
-        bar.interpolate(0, coef, Projector::Potential<double>);
+    const auto &x = bar.interpolate(0, coef, Projector::Potential<double>);
 
     for(int i = 0; i < static_cast<int>(dots.size()); ++i) {
-      Eigen::Map<const Eigen::Vector3d> interp_field(&x[i][0]);
-      BOOST_CHECK_SMALL((field_fn(dots[i].position()) - interp_field).norm(),
+      BOOST_CHECK_SMALL((field_fn(dots[i].position()) - x.col(i)).norm(),
                         1.2e-3);
       // In general can do much better than this threshold; this just
       // accommodates the large-grid "worst case scenario"
@@ -178,11 +176,10 @@ BOOST_AUTO_TEST_CASE(DERIVATIVE)
     bar.fill_coefficients_tensor(grid.size(), &eval[t][0][0][0][0][0],
                                  &coef[t][0][0][0][0][0]);
 
-    const boost::multi_array<double, 2> &x = bar.interpolate(
+    const auto &x = bar.interpolate(
         t, coef, Projector::TimeDerivative<double>(num_steps, dt));
 
-    Eigen::Map<const Eigen::Vector3d> deriv(&x[0][0]);
-    std::cout << deriv.transpose() << std::endl;
+    std::cout << x.transpose() << std::endl;
   }
 }
 
