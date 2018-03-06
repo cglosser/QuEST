@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
       Math::Chebyshev::normalized_points(AIM::chebyshev_order));
 
   AIM::Farfield ff(dots, history, 4, 1, 1, grid, expansion_table,
-                   AIM::normalization::unit, cheb_expansion_table);
+                   AIM::Normalization::unit, cheb_expansion_table);
 
   std::cout << std::setprecision(14);
   for(int t = 0; t < 1024; ++t) {

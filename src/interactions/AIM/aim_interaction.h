@@ -21,7 +21,7 @@ class AIM::Interaction final : public InteractionBase {
               const int border,
               const double c0,
               const double dt,
-              normalization::SpatialNorm normalization)
+              Normalization::SpatialNorm normalization)
       : InteractionBase(dots, dt),
         grid(spacing, expansion_order, *dots),
         expansion_table(

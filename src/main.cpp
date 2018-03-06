@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
             qds, history, rotating_dyadic, config.grid_spacing,
             config.interpolation_order, config.expansion_order, 3,
             config.border, config.c0, config.dt,
-            AIM::normalization::Helmholtz(
+            AIM::Normalization::Helmholtz(
                 config.omega / config.c0,
                 (config.mu0 / (4 * M_PI * config.hbar))))};
 

@@ -8,7 +8,7 @@ AIM::Farfield::Farfield(
     const double dt,
     const Grid &grid,
     const Expansions::ExpansionTable &expansion_table,
-    normalization::SpatialNorm normalization,
+    Normalization::SpatialNorm normalization,
     const boost::multi_array<double, 4> &chebyshev_weights)
     : AimBase(dots,
               history,

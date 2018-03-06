@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
       Math::Chebyshev::normalized_points(AIM::chebyshev_order));
 
   AIM::Nearfield nf(dots, history, 4, 100, 1, 1, grid, expansion_table,
-                    AIM::normalization::unit, cheb_expansion_table);
+                    AIM::Normalization::unit, cheb_expansion_table);
 
   std::cout.width(14);
   std::cout << std::setprecision(14);

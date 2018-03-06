@@ -25,7 +25,7 @@ class AIM::AimBase : public HistoryInteraction {
           const double dt,
           const Grid &grid,
           const Expansions::ExpansionTable &expansion_table,
-          normalization::SpatialNorm normalization,
+          Normalization::SpatialNorm normalization,
           std::array<int, 4> table_dimensions,
           const boost::multi_array<double, 4> &chebyshev_weights)
       : HistoryInteraction(dots, history, interp_order, c0, dt),
@@ -79,7 +79,7 @@ class AIM::AimBase : public HistoryInteraction {
  protected:
   const Grid &grid;
   const Expansions::ExpansionTable &expansion_table;
-  normalization::SpatialNorm normalization;
+  Normalization::SpatialNorm normalization;
   boost::multi_array<int, 2> expansion_indices;
 
   std::array<int, 4> table_dimensions;

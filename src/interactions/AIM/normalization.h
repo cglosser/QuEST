@@ -2,7 +2,7 @@
 #define NORMALIZATION_H
 
 namespace AIM {
-  namespace normalization {
+  namespace Normalization {
     using SpatialNorm = std::function<cmplx(const Eigen::Vector3d &)>;
     const SpatialNorm unit = [](__attribute__((unused))
                                 const Eigen::Vector3d &v) { return 1; };
