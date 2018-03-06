@@ -60,7 +60,7 @@ std::vector<double> Math::Chebyshev::normalized_points(const int n)
 {
   std::vector<double> pts(n + 1);
   for(int i = 0; i <= n; ++i) {
-    pts[n - i] = (std::cos(i * M_PI / n) + 1) / 2;
+    pts[n - i] = (std::cos(M_PI * (i + 0.5) / (n + 1)) + 1) / 2;
   }
 
   return pts;
