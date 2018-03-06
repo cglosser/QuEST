@@ -86,16 +86,4 @@ BOOST_AUTO_TEST_CASE(FALLING_FACTORIAL)
   BOOST_CHECK_EQUAL(Math::falling_factorial(3.5, 2), 35.0 / 4.0);
 }
 
-BOOST_AUTO_TEST_CASE(CHEBYSHEV)
-{
-  for(int order = 1; order < 6; ++order) {
-    auto pts = Math::Chebyshev::normalized_points(order);
-
-    BOOST_CHECK_EQUAL(pts[0], 0);
-    BOOST_CHECK_EQUAL(pts[order], 1);
-
-    BOOST_CHECK_CLOSE(pts[1], 1 - pts[order - 1], 1e-12);
-  }
-}
-
 BOOST_AUTO_TEST_SUITE_END()

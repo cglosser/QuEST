@@ -11,8 +11,6 @@ BOOST_AUTO_TEST_SUITE(FARFIELD)
 BOOST_AUTO_TEST_CASE(CONSTRUCTION)
 {
   auto dots = std::make_shared<DotVector>();
-  // dots->push_back(QuantumDot({0.1, 0.2, 0.3}, {0, 0, 1}));
-  // dots->push_back(QuantumDot({0.7, 0.4, 6.2}, {0, 0, 1}));
   dots->push_back(QuantumDot(
       {0.3086582838174551, 0.3086582838174551, 0.3086582838174551}, {0, 0, 1}));
   dots->push_back(QuantumDot(
@@ -24,8 +22,6 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
   for(int t = -10; t < 1024; ++t) {
     history->array_[0][t][0] =
         Eigen::Vector2cd(0, Math::gaussian((t - 512) / (1024.0 / 12)));
-    // history->array_[1][t][0] =
-    // Eigen::Vector2cd(0, -0.5 * Math::gaussian((t - 512) / (1024.0 / 12)));
   }
 
   AIM::Grid grid({1, 1, 1}, 1, *dots);
