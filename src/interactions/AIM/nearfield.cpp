@@ -29,10 +29,10 @@ AIM::Nearfield::Nearfield(
 {
   // The order here is time, pair, point set, expansion index, vector dimension
   // in accordance with the FIELD_AXIS_LABEL enum. Each matrix product maps a
-  // set of E points into a set of E points -- these sets are what are indexed
-  // by "point set" (0 corresponds to expansion points for the lower-indexed box
-  // and 1 corresponds to the same for the equally or higher indexed box, as
-  // determined by the structure of neighbors.
+  // set of expansion points into a set of expansion points -- these sets are
+  // what are indexed by "point set" (0 corresponds to expansion points for the
+  // lower-indexed box and 1 corresponds to the same for the equally or higher
+  // indexed box, as determined by the structure of neighbors.
   //
   // It's the biggest hack that the dimensions of these arrays are the same for
   // the NF and FF code. Sorry.
@@ -123,11 +123,13 @@ void AIM::Nearfield::propagate(const int step)
 
 void AIM::Nearfield::fill_chebyshev_table(const int step)
 {
+  using vec3cd_t = Eigen::Map<Eigen::Vector3cd>;
+
   const auto wrapped_step = step % table_dimensions[0];
   auto *p = &chebyshev_table[wrapped_step][0][0][0][0][0];
+  auto *shape = chebyshev_table.shape();
   const auto size =
-      std::accumulate(chebyshev_table.shape() + 1, chebyshev_table.shape() + 6,
-                      1, std::multiplies<int>());
+      std::accumulate(shape + 1, shape + 6, 1, std::multiplies<int>());
   std::fill(p, p + size, cmplx(0, 0));
 
   for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
@@ -135,22 +137,23 @@ void AIM::Nearfield::fill_chebyshev_table(const int step)
     std::tie(box1, box2) = neighbors[p];
 
     for(int e = 0; e < field_table_dims[EXPANSIONS]; ++e) {
+      vec3cd_t on_grid1(&obs_table[wrapped_step][p][1][e][0]),
+          on_grid2(&obs_table[wrapped_step][p][0][e][0]);
+
       for(int i = 0; i < chebyshev_order + 1; ++i) {
         for(int j = 0; j < chebyshev_order + 1; ++j) {
           for(int k = 0; k < chebyshev_order + 1; ++k) {
-            Eigen::Map<Eigen::Vector3cd> vec1(
-                &chebyshev_table[wrapped_step][box1][i][j][k][0]);
+            if(i == 0 && j == 0 && k == 1) {
+              std::cout << chebyshev_weights[e][i][j][k] << " ";
+              std::cout << on_grid1.transpose() << std::endl;
+              //std::cout << chebyshev_weights[e][i][j][k] * on_grid1.transpose() << std::endl;
+            }
 
-            vec1 += chebyshev_weights[e][i][j][k] *
-                    Eigen::Map<Eigen::Vector3cd>(
-                        &obs_table[wrapped_step][p][0][e][0]);
+            vec3cd_t vec1(&chebyshev_table[wrapped_step][box1][i][j][k][0]);
+            vec1 += chebyshev_weights[e][i][j][k] * on_grid2;
 
-            Eigen::Map<Eigen::Vector3cd> vec2(
-                &chebyshev_table[wrapped_step][box2][i][j][k][0]);
-
-            vec2 += chebyshev_weights[e][i][j][k] *
-                    Eigen::Map<Eigen::Vector3cd>(
-                        &obs_table[wrapped_step][p][1][e][0]);
+            vec3cd_t vec2(&chebyshev_table[wrapped_step][box2][i][j][k][0]);
+            vec2 += chebyshev_weights[e][i][j][k] * on_grid1;
           }
         }
       }
