@@ -85,6 +85,8 @@ void AIM::Farfield::propagate(const int step)
 
 void AIM::Farfield::fill_chebyshev_table(const int step)
 {
+  using vec3cd_t = Eigen::Map<Eigen::Vector3cd>;
+
   const auto wrapped_step = step % table_dimensions[0];
   auto *p = &chebyshev_table[wrapped_step][0][0][0][0][0];
   const auto size =
@@ -93,18 +95,19 @@ void AIM::Farfield::fill_chebyshev_table(const int step)
   std::fill(p, p + size, cmplx(0, 0));
 
   for(int box_idx = 0; box_idx < grid.size(); ++box_idx) {
-    Eigen::Vector3i coord = grid.idx_to_coord(box_idx);
-    Eigen::Map<Eigen::Vector3cd> on_grid(
-        &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
+    const auto expansion_indices = grid.expansion_indices(box_idx);
 
-    for(int w = 0; w < static_cast<int>(expansion_table.shape()[1]); ++w) {
+    for(int e = 0; e < static_cast<int>(expansion_indices.size()); ++e) {
+      if(expansion_indices[e] < 0) continue;
+      Eigen::Vector3i coord = grid.idx_to_coord(expansion_indices[e]);
+      vec3cd_t on_grid(
+          &obs_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
+
       for(int i = 0; i < chebyshev_order + 1; ++i) {
         for(int j = 0; j < chebyshev_order + 1; ++j) {
           for(int k = 0; k < chebyshev_order + 1; ++k) {
-            Eigen::Map<Eigen::Vector3cd> vec(
-                &chebyshev_table[wrapped_step][box_idx][i][j][k][0]);
-
-            vec += chebyshev_weights[w][i][k][k] * on_grid;
+            vec3cd_t vec(&chebyshev_table[wrapped_step][box_idx][i][j][k][0]);
+            vec += chebyshev_weights[e][i][j][k] * on_grid;
           }
         }
       }
