@@ -13,9 +13,9 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
   auto dots = std::make_shared<DotVector>();
   dots->push_back(QuantumDot(
       {0.3086582838174551, 0.3086582838174551, 0.3086582838174551}, {0, 0, 1}));
-  dots->push_back(QuantumDot(
-      {0.3086582838174551, 0.3086582838174551, 3 + 0.3086582838174551},
-      {0, 0, 1}));
+  dots->push_back(
+      QuantumDot({0.961939766255643, 0.961939766255643, 10 + 0.961939766255643},
+                 {0, 0, 1}));
 
   auto history = std::make_shared<Integrator::History<Eigen::Vector2cd>>(
       dots->size(), 10, 1024);
