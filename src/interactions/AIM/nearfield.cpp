@@ -143,12 +143,6 @@ void AIM::Nearfield::fill_chebyshev_table(const int step)
       for(int i = 0; i < chebyshev_order + 1; ++i) {
         for(int j = 0; j < chebyshev_order + 1; ++j) {
           for(int k = 0; k < chebyshev_order + 1; ++k) {
-            if(i == 0 && j == 0 && k == 1) {
-              std::cout << chebyshev_weights[e][i][j][k] << " ";
-              std::cout << on_grid1.transpose() << std::endl;
-              //std::cout << chebyshev_weights[e][i][j][k] * on_grid1.transpose() << std::endl;
-            }
-
             vec3cd_t vec1(&chebyshev_table[wrapped_step][box1][i][j][k][0]);
             vec1 += chebyshev_weights[e][i][j][k] * on_grid2;
 

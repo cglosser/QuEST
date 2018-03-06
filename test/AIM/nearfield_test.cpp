@@ -11,16 +11,22 @@ BOOST_AUTO_TEST_SUITE(NEARFIELD)
 BOOST_AUTO_TEST_CASE(CONSTRUCTION)
 {
   auto dots = std::make_shared<DotVector>();
-  dots->push_back(QuantumDot({0.1, 0.1, 0.1}, {0, 0, 1}));
-  //dots->push_back(QuantumDot({0.1, 0.1, 3.1}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({0.1, 0.2, 0.3}, {0, 0, 1}));
+  // dots->push_back(QuantumDot({0.7, 0.4, 6.2}, {0, 0, 1}));
+  dots->push_back(QuantumDot(
+      {0.3086582838174551, 0.3086582838174551, 0.3086582838174551}, {0, 0, 1}));
+  dots->push_back(QuantumDot(
+      {0.3086582838174551, 0.3086582838174551, 3 + 0.3086582838174551},
+      {0, 0, 1}));
 
   auto history = std::make_shared<Integrator::History<Eigen::Vector2cd>>(
       dots->size(), 10, 1024);
   for(int t = -10; t < 1024; ++t) {
     history->array_[0][t][0] =
         Eigen::Vector2cd(0, Math::gaussian((t - 512) / (1024.0 / 12)));
-    //history->array_[1][t][0] =
-        //Eigen::Vector2cd(0, -0.5 * Math::gaussian((t - 512) / (1024.0 / 12)));
+    // history->array_[1][t][0] =
+    // Eigen::Vector2cd(0, -0.5 * Math::gaussian((t - 512) / (1024.0 /
+    // 12)));
   }
 
   AIM::Grid grid({1, 1, 1}, 1, *dots);
@@ -33,6 +39,7 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
   AIM::Nearfield nf(dots, history, 4, 100, 1, 1, grid, expansion_table,
                     AIM::normalization::unit, cheb_expansion_table);
 
+  std::cout.width(14);
   std::cout << std::setprecision(14);
   for(int t = 0; t < 1024; ++t) {
     std::cout << nf.evaluate(t).transpose() << std::endl;

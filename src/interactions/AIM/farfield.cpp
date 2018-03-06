@@ -101,12 +101,6 @@ void AIM::Farfield::fill_chebyshev_table(const int step)
       for(int i = 0; i < chebyshev_order + 1; ++i) {
         for(int j = 0; j < chebyshev_order + 1; ++j) {
           for(int k = 0; k < chebyshev_order + 1; ++k) {
-            if(box_idx == 0 && i == 0 && j == 0 && k == 1) {
-              std::cout << chebyshev_weights[w][i][j][k] << " ";
-              std::cout << on_grid.transpose() << std::endl;
-              //std::cout << chebyshev_weights[w][i][j][k] * on_grid.transpose() << std::endl;
-            }
-
             Eigen::Map<Eigen::Vector3cd> vec(
                 &chebyshev_table[wrapped_step][box_idx][i][j][k][0]);
 
