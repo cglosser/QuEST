@@ -7,13 +7,15 @@
 
 BOOST_AUTO_TEST_SUITE(AIM)
 
+BOOST_AUTO_TEST_SUITE(EQUIVALENT_FIELDS)
+
 struct PARAMETERS {
   using Hist_t = Integrator::History<Eigen::Vector2cd>;
   using LSE = AIM::Expansions::LeastSquaresExpansionSolver;
 
   std::vector<Eigen::Vector3d> default_pos;
 
-  int n_steps, cheb_order;
+  int n_pts, n_steps, cheb_order;
 
   std::shared_ptr<DotVector> dots;
   std::shared_ptr<Hist_t> history;
@@ -21,19 +23,25 @@ struct PARAMETERS {
   PARAMETERS()
       : default_pos{{0.57, 0.28, 0.04}, {0.76, 0.48, 0.41}, {0.78, 0.56, 0.24},
                     {0.42, 0.66, 0.70}, {0.07, 0.77, 0.77}, {0.68, 0.99, 0.45}},
-        n_steps{1024},
+        n_pts{static_cast<int>(default_pos.size())},
+        n_steps{256},
         cheb_order{3},
         dots{std::make_shared<DotVector>()},
         history{std::make_shared<Hist_t>(default_pos.size(), 10, n_steps, 1)}
   {
     history->fill(Eigen::Vector2cd::Zero());
-    for(int t = -10; t < n_steps; ++t) {
-      history->array_[0][t][0] = Eigen::Vector2cd(
-          0, Math::gaussian((t - n_steps / 2.0) / (n_steps / 12.0)));
+    for(int i = 0; i < n_pts; ++i) {
+      for(int t = -10; t < n_steps; ++t) {
+        history->array_[i][t][0] = Eigen::Vector2cd(
+            0, i * Math::gaussian((t - n_steps / 2.0) / (n_steps / 12.0)));
+      }
     }
   }
 
   AIM::Grid make_grid() { return AIM::Grid({1, 1, 1}, 1, *dots); }
+};
+
+struct RETARDATION_PARAMETERS : public PARAMETERS {
   auto make_interactions()
   {
     auto grid{make_grid()};
@@ -52,7 +60,7 @@ struct PARAMETERS {
   }
 };
 
-BOOST_FIXTURE_TEST_SUITE(FIELDS, PARAMETERS)
+BOOST_FIXTURE_TEST_SUITE(RETARDATION, RETARDATION_PARAMETERS)
 
 BOOST_AUTO_TEST_CASE(SAME_BOX)
 {
@@ -60,6 +68,7 @@ BOOST_AUTO_TEST_CASE(SAME_BOX)
     dots->emplace_back(r, Eigen::Vector3d(0, 0, 1));
   }
 
+  // {&nearfield, &farfield}
   auto inter{make_interactions()};
 
   for(int t = 0; t < n_steps; ++t) {
@@ -68,6 +77,126 @@ BOOST_AUTO_TEST_CASE(SAME_BOX)
   }
 }
 
-BOOST_AUTO_TEST_SUITE_END()  // FIELDS
+BOOST_AUTO_TEST_CASE(ADJACENT_BOX)
+{
+  for(int i = 0; i < n_pts; ++i) {
+    Eigen::Vector3d z_hat(0, 0, 1);
+    if(i < 3) {
+      dots->emplace_back(default_pos[i], z_hat);
+    } else {
+      dots->emplace_back(default_pos[i] + z_hat, z_hat);
+    }
+  }
+
+  // {&nearfield, &farfield}
+  auto inter{make_interactions()};
+
+  for(int t = 0; t < n_steps; ++t) {
+    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
+    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(DISTANT_BOX)
+{
+  for(int i = 0; i < n_pts; ++i) {
+    Eigen::Vector3d z_hat(0, 0, 1);
+    if(i < 3) {
+      dots->emplace_back(default_pos[i], z_hat);
+    } else {
+      dots->emplace_back(default_pos[i] + 10 * z_hat, z_hat);
+    }
+  }
+
+  // {&nearfield, &farfield}
+  auto inter{make_interactions()};
+
+  for(int t = 0; t < n_steps; ++t) {
+    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
+    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // RETARDATION
+
+struct LAPLACE_PARAMETERS : public PARAMETERS {
+  auto make_interactions()
+  {
+    auto grid{make_grid()};
+    LSE lse(grid);
+    auto expansion_table = lse.table(*dots);
+    auto cheb_table = lse.chebyshev_lambda_weights(
+        Math::Chebyshev::normalized_points(cheb_order));
+
+    return std::make_pair(
+        std::make_unique<AIM::Nearfield>(
+            dots, history, 4, 100, 1, 1, grid, expansion_table,
+            AIM::Normalization::Laplace(), cheb_table),
+        std::make_unique<AIM::Farfield>(
+            dots, history, 4, 1, 1, grid, expansion_table,
+            AIM::Normalization::Laplace(), cheb_table));
+  }
+};
+
+BOOST_FIXTURE_TEST_SUITE(LAPLACE, LAPLACE_PARAMETERS)
+
+BOOST_AUTO_TEST_CASE(SAME_BOX)
+{
+  for(const auto &r : default_pos) {
+    dots->emplace_back(r, Eigen::Vector3d(0, 0, 1));
+  }
+
+  // {&nearfield, &farfield}
+  auto inter{make_interactions()};
+
+  for(int t = 0; t < n_steps; ++t) {
+    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
+    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(ADJACENT_BOX)
+{
+  for(int i = 0; i < n_pts; ++i) {
+    Eigen::Vector3d z_hat(0, 0, 1);
+    if(i < 3) {
+      dots->emplace_back(default_pos[i], z_hat);
+    } else {
+      dots->emplace_back(default_pos[i] + z_hat, z_hat);
+    }
+  }
+
+  // {&nearfield, &farfield}
+  auto inter{make_interactions()};
+
+  for(int t = 0; t < n_steps; ++t) {
+    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
+    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(DISTANT_BOX)
+{
+  for(int i = 0; i < n_pts; ++i) {
+    Eigen::Vector3d z_hat(0, 0, 1);
+    if(i < 3) {
+      dots->emplace_back(default_pos[i], z_hat);
+    } else {
+      dots->emplace_back(default_pos[i] + 10 * z_hat, z_hat);
+    }
+  }
+
+  // {&nearfield, &farfield}
+  auto inter{make_interactions()};
+
+  for(int t = 0; t < n_steps; ++t) {
+    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
+    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()  // LAPLACE
+
+BOOST_AUTO_TEST_SUITE_END()  // EQUIVALENT_FIELDS
 
 BOOST_AUTO_TEST_SUITE_END()  // AIM
