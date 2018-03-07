@@ -15,10 +15,10 @@ class AIM::Farfield final : public AimBase {
            const int,
            const double,
            const double,
-           const Grid &,
-           const Expansions::ExpansionTable &,
+           const Grid,
+           const Expansions::ExpansionTable,
            Normalization::SpatialNorm,
-           const boost::multi_array<double, 4> &);
+           const boost::multi_array<double, 4>);
 
   ~Farfield() = default;
 

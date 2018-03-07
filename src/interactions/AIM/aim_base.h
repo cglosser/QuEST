@@ -23,15 +23,15 @@ class AIM::AimBase : public HistoryInteraction {
           const int interp_order,
           const double c0,
           const double dt,
-          const Grid &grid,
-          const Expansions::ExpansionTable &expansion_table,
+          const Grid grid,
+          const Expansions::ExpansionTable expansion_table,
           Normalization::SpatialNorm normalization,
           std::array<int, 4> table_dimensions,
-          const boost::multi_array<double, 4> &chebyshev_weights)
+          const boost::multi_array<double, 4> chebyshev_weights)
       : HistoryInteraction(dots, history, interp_order, c0, dt),
 
-        grid(grid),
-        expansion_table(expansion_table),
+        grid(std::move(grid)),
+        expansion_table(std::move(expansion_table)),
         normalization(std::move(normalization)),
         table_dimensions(table_dimensions),
 
@@ -77,8 +77,8 @@ class AIM::AimBase : public HistoryInteraction {
   }
 
  protected:
-  const Grid &grid;
-  const Expansions::ExpansionTable &expansion_table;
+  const Grid grid;
+  const Expansions::ExpansionTable expansion_table;
   Normalization::SpatialNorm normalization;
   boost::multi_array<int, 2> expansion_indices;
 
@@ -94,7 +94,7 @@ class AIM::AimBase : public HistoryInteraction {
   // Interior grid
   Chebyshev<cmplx, chebyshev_order> Cheb;
   Projector::Potential<cmplx> projector;
-  const boost::multi_array<double, 4> &chebyshev_weights;
+  const boost::multi_array<double, 4> chebyshev_weights;
   boost::multi_array<cmplx, 6> chebyshev_table, chebyshev_coefficients;
 
   virtual spacetime::vector<cmplx> make_propagation_table() const = 0;

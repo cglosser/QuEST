@@ -6,10 +6,10 @@ AIM::Farfield::Farfield(
     const int interp_order,
     const double c0,
     const double dt,
-    const Grid &grid,
-    const Expansions::ExpansionTable &expansion_table,
+    const Grid grid,
+    const Expansions::ExpansionTable expansion_table,
     Normalization::SpatialNorm normalization,
-    const boost::multi_array<double, 4> &chebyshev_weights)
+    const boost::multi_array<double, 4> chebyshev_weights)
     : AimBase(dots,
               history,
               interp_order,
