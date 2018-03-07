@@ -21,7 +21,8 @@ class AIM::Interaction final : public InteractionBase {
               const int border,
               const double c0,
               const double dt,
-              Normalization::SpatialNorm normalization)
+              Normalization::SpatialNorm normalization,
+              Projector::Projector_fn<cmplx> projector)
       : InteractionBase(dots, dt),
         grid(spacing, expansion_order, *dots),
         expansion_table(
@@ -39,7 +40,8 @@ class AIM::Interaction final : public InteractionBase {
            grid,
            expansion_table,
            normalization,
-           chebyshev_weights),
+           chebyshev_weights,
+           projector),
 
         nf(dots,
            history,
@@ -50,7 +52,8 @@ class AIM::Interaction final : public InteractionBase {
            grid,
            expansion_table,
            normalization,
-           chebyshev_weights),
+           chebyshev_weights,
+           projector),
 
         direct(dots, history, kernel, interp_order, border, c0, dt, grid)
   {

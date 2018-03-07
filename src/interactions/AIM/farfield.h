@@ -18,7 +18,8 @@ class AIM::Farfield final : public AimBase {
            const Grid,
            const Expansions::ExpansionTable,
            Normalization::SpatialNorm,
-           const boost::multi_array<double, 4>);
+           const boost::multi_array<double, 4>,
+           Projector::Projector_fn<cmplx>);
 
   ~Farfield() = default;
 

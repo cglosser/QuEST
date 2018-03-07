@@ -27,7 +27,8 @@ class AIM::AimBase : public HistoryInteraction {
           const Expansions::ExpansionTable expansion_table,
           Normalization::SpatialNorm normalization,
           std::array<int, 4> table_dimensions,
-          const boost::multi_array<double, 4> chebyshev_weights)
+          const boost::multi_array<double, 4> chebyshev_weights,
+          Projector::Projector_fn<cmplx> projector)
       : HistoryInteraction(dots, history, interp_order, c0, dt),
 
         grid(std::move(grid)),
@@ -42,7 +43,7 @@ class AIM::AimBase : public HistoryInteraction {
 
         // Interior grid
         Cheb(grid, *dots),
-        projector(table_dimensions[0]),
+        projector_(std::move(projector)),
         chebyshev_weights(chebyshev_weights),
         chebyshev_table(boost::extents[table_dimensions[0]][grid.size()]
                                       [chebyshev_order + 1][chebyshev_order + 1]
@@ -67,7 +68,7 @@ class AIM::AimBase : public HistoryInteraction {
     propagate(step);
     fill_chebyshev_table(step);
 
-    const auto &x = Cheb.interpolate(step, chebyshev_coefficients, projector);
+    const auto &x = Cheb.interpolate(step, chebyshev_coefficients, projector_);
 
     for(size_t i = 0; i < dots->size(); ++i) {
       results(i) = x.col(i).dot((*dots)[i].dipole());
@@ -93,7 +94,7 @@ class AIM::AimBase : public HistoryInteraction {
 
   // Interior grid
   Chebyshev<cmplx, chebyshev_order> Cheb;
-  Projector::Potential<cmplx> projector;
+  Projector::Projector_fn<cmplx> projector_;
   const boost::multi_array<double, 4> chebyshev_weights;
   boost::multi_array<cmplx, 6> chebyshev_table, chebyshev_coefficients;
 

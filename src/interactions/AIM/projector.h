@@ -5,6 +5,17 @@ namespace Projector {
   enum DIMENSION { X, Y, Z };
 
   template <typename num_t>
+  using Projector_fn = std::function<Eigen::Matrix<num_t, 3, 1>(
+      const int,
+      const int,
+      const int,
+      const int,
+      const int,
+      const int,
+      const boost::multi_array<num_t, 6> &,
+      const boost::multi_array<double, 4> &)>;
+
+  template <typename num_t>
   class ProjectorBase {
    public:
     ProjectorBase(int max_timestep) : max_timestep_{max_timestep} {}

@@ -18,7 +18,8 @@ class AIM::Nearfield final : public AimBase {
             const Grid &,
             const Expansions::ExpansionTable &,
             Normalization::SpatialNorm,
-            const boost::multi_array<double, 4> &);
+            const boost::multi_array<double, 4> &,
+            Projector::Projector_fn<cmplx>);
 
   ~Nearfield() = default;
 

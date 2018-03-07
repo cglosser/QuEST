@@ -9,7 +9,8 @@ AIM::Farfield::Farfield(
     const Grid grid,
     const Expansions::ExpansionTable expansion_table,
     Normalization::SpatialNorm normalization,
-    const boost::multi_array<double, 4> chebyshev_weights)
+    const boost::multi_array<double, 4> chebyshev_weights,
+    Projector::Projector_fn<cmplx> projector)
     : AimBase(dots,
               history,
               interp_order,
@@ -19,7 +20,8 @@ AIM::Farfield::Farfield(
               expansion_table,
               normalization,
               grid.circulant_shape(c0, dt, interp_order),
-              chebyshev_weights),
+              chebyshev_weights,
+              projector),
       spatial_vector_transforms(spatial_fft_plans())
 {
   propagation_table = make_propagation_table();

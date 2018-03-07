@@ -16,6 +16,7 @@ struct PARAMETERS {
   std::vector<Eigen::Vector3d> default_pos;
 
   int n_pts, n_steps, cheb_order;
+  double c, dt;
 
   std::shared_ptr<DotVector> dots;
   std::shared_ptr<Hist_t> history;
@@ -26,6 +27,8 @@ struct PARAMETERS {
         n_pts{static_cast<int>(default_pos.size())},
         n_steps{256},
         cheb_order{3},
+        c{1},
+        dt{1},
         dots{std::make_shared<DotVector>()},
         history{std::make_shared<Hist_t>(default_pos.size(), 10, n_steps, 1)}
   {
@@ -49,14 +52,18 @@ struct RETARDATION_PARAMETERS : public PARAMETERS {
     auto expansion_table = lse.table(*dots);
     auto cheb_table = lse.chebyshev_lambda_weights(
         Math::Chebyshev::normalized_points(cheb_order));
+    int interp_order = 4;
+
+    Projector::Potential<cmplx> potential(grid.max_transit_steps(c, dt) +
+                                          interp_order);
 
     return std::make_pair(
-        std::make_unique<AIM::Nearfield>(dots, history, 4, 100, 1, 1, grid,
-                                         expansion_table,
-                                         AIM::Normalization::unit, cheb_table),
-        std::make_unique<AIM::Farfield>(dots, history, 4, 1, 1, grid,
-                                        expansion_table,
-                                        AIM::Normalization::unit, cheb_table));
+        std::make_unique<AIM::Nearfield>(
+            dots, history, interp_order, 100, c, dt, grid, expansion_table,
+            AIM::Normalization::unit, cheb_table, potential),
+        std::make_unique<AIM::Farfield>(
+            dots, history, interp_order, c, dt, grid, expansion_table,
+            AIM::Normalization::unit, cheb_table, potential));
   }
 };
 
@@ -127,14 +134,18 @@ struct LAPLACE_PARAMETERS : public PARAMETERS {
     auto expansion_table = lse.table(*dots);
     auto cheb_table = lse.chebyshev_lambda_weights(
         Math::Chebyshev::normalized_points(cheb_order));
+    int interp_order = 4;
+
+    Projector::Potential<cmplx> potential(grid.max_transit_steps(c, dt) +
+                                          interp_order);
 
     return std::make_pair(
         std::make_unique<AIM::Nearfield>(
             dots, history, 4, 100, 1, 1, grid, expansion_table,
-            AIM::Normalization::Laplace(), cheb_table),
+            AIM::Normalization::Laplace(), cheb_table, potential),
         std::make_unique<AIM::Farfield>(
             dots, history, 4, 1, 1, grid, expansion_table,
-            AIM::Normalization::Laplace(), cheb_table));
+            AIM::Normalization::Laplace(), cheb_table, potential));
   }
 };
 

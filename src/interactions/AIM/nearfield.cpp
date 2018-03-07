@@ -10,7 +10,8 @@ AIM::Nearfield::Nearfield(
     const Grid &grid,
     const Expansions::ExpansionTable &expansion_table,
     Normalization::SpatialNorm normalization,
-    const boost::multi_array<double, 4> &chebyshev_weights)
+    const boost::multi_array<double, 4> &chebyshev_weights,
+    Projector::Projector_fn<cmplx> projector)
     : AimBase(
           dots,
           history,
@@ -23,7 +24,8 @@ AIM::Nearfield::Nearfield(
           {{grid.max_transit_steps(c0, dt) + interp_order,
             (int)grid.nearfield_pairs(border, *dots).size(),
             (int)expansion_table.shape()[1], (int)expansion_table.shape()[1]}},
-          chebyshev_weights),
+          chebyshev_weights,
+          projector),
       mapping{grid.box_contents_map(*dots)},
       neighbors{grid.nearfield_pairs(border, *dots)}
 {
