@@ -78,41 +78,41 @@ namespace Projector {
     }
   };
 
-  template <typename T>
-  class TimeDerivative {
+  template <typename num_t>
+  class TimeDerivative : public ProjectorBase<num_t> {
    public:
     TimeDerivative(const int history_length, const double dt = 1)
-        : history_length(history_length),
+        : ProjectorBase<num_t>(history_length),
           dt_coefs({{25.0 / 12, -4.0, 3.0, -4.0 / 3, 1.0 / 4}})
     {
       for(auto &c : dt_coefs) c /= dt;
     }
 
-    Eigen::Matrix<T, 3, 1> operator()(
+    Eigen::Matrix<num_t, 3, 1> operator()(
         const int t,
         const int n,
         const int box,
         const int i,
         const int j,
         const int k,
-        const boost::multi_array<T, 6> &coef,
+        const boost::multi_array<num_t, 6> &coef,
         const boost::multi_array<double, 4> &eval) const
     {
-      Eigen::Matrix<T, 3, 1> total_field;
+      Eigen::Matrix<num_t, 3, 1> total_field;
       total_field.setZero();
 
       double Ts = eval[n][i][X][0] * eval[n][j][Y][0] * eval[n][k][Z][0];
 
       for(int h = 0; h < static_cast<int>(dt_coefs.size()); ++h) {
-        int w = std::max(t - h, 0) % history_length;
-        Eigen::Map<const Eigen::Matrix<T, 3, 1>> c(&coef[w][box][i][j][k][0]);
+        int w = this->wrap_step(std::max(t - h, 0));
+        Eigen::Map<const Eigen::Matrix<num_t, 3, 1>> c(
+            &coef[w][box][i][j][k][0]);
         total_field += dt_coefs[h] * c * Ts;
       }
       return total_field;
     }
 
    private:
-    int history_length;
     std::array<double, 5> dt_coefs;
   };
 }

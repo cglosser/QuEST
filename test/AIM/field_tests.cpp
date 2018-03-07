@@ -17,26 +17,90 @@ struct PARAMETERS {
   std::shared_ptr<DotVector> dots;
   std::shared_ptr<Hist_t> history;
 
-  PARAMETERS(int n_pts)
+  PARAMETERS(int n_pts, int n_steps)
       : n_pts{n_pts},
-        n_steps{256},
+        n_steps{n_steps},
         cheb_order{3},
         c{1},
         dt{1},
         dots{std::make_shared<DotVector>()},
         history{std::make_shared<Hist_t>(n_pts, 10, n_steps, 1)}
   {
-    history->fill(Eigen::Vector2cd::Zero());
-    for(int i = 0; i < n_pts; ++i) {
-      for(int t = -10; t < n_steps; ++t) {
-        history->array_[i][t][0] = Eigen::Vector2cd(
-            0, i * Math::gaussian((t - n_steps / 2.0) / (n_steps / 12.0)));
-      }
-    }
+    std::cout << std::setprecision(17) << std::scientific;
   }
 
   AIM::Grid make_grid() { return AIM::Grid({1, 1, 1}, 1, *dots); }
 };
+
+BOOST_AUTO_TEST_SUITE(ANALYTIC_COMPARISON)
+
+struct ANALYTIC_PARAMETERS : public PARAMETERS {
+  double source(double t)
+  {
+    return Math::gaussian((t - (n_steps * dt) / 2) / (n_steps * dt / 12));
+  }
+
+  double dr;
+
+  ANALYTIC_PARAMETERS() : PARAMETERS(2, 1024)
+  {
+    Eigen::Vector3d z_hat(0, 0, 1);
+    dots->emplace_back(Eigen::Vector3d(0.1, 0.1, 0.1), z_hat);
+    dots->emplace_back(Eigen::Vector3d(0.9, 0.9, 5.9), z_hat);
+    dr = (dots->at(1).position() - dots->at(0).position()).norm();
+
+    history->fill(Eigen::Vector2cd::Zero());
+    for(int t = -10; t < n_steps; ++t) {
+      history->array_[0][t][0] = Eigen::Vector2cd(0, source(t * dt));
+    }
+  }
+
+  template <typename P>
+  auto make_interaction(AIM::Normalization::SpatialNorm norm)
+  {
+    auto grid{make_grid()};
+    LSE lse(grid);
+    auto expansion_table = lse.table(*dots);
+    auto cheb_table = lse.chebyshev_lambda_weights(
+        Math::Chebyshev::normalized_points(cheb_order));
+    int interp_order = 4;
+
+    P proj(grid.max_transit_steps(c, dt) + interp_order);
+
+    return std::make_unique<AIM::Nearfield>(dots, history, interp_order, 100, c,
+                                            dt, grid, expansion_table, norm,
+                                            cheb_table, proj);
+  }
+};
+
+BOOST_FIXTURE_TEST_CASE(RETARDATION, ANALYTIC_PARAMETERS)
+{
+  // auto solution = [&](double t) { return source(t - dr / c); };
+
+  auto nf =
+      make_interaction<Projector::Potential<cmplx>>(AIM::Normalization::unit);
+
+  for(int t = 0; t < n_steps; ++t) {
+    nf->evaluate(t);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(TIME_DERIVATIVE, ANALYTIC_PARAMETERS)
+{
+  // auto solution = [&](double t) {
+  // return -2 * (t - dr / c) * source(t - dr / c);
+  //};
+
+  auto nf = make_interaction<Projector::TimeDerivative<cmplx>>(
+      AIM::Normalization::unit);
+
+  for(int t = 0; t < n_steps; ++t) {
+    std::cout << source(t * dt) << " " << nf->evaluate(t).transpose()
+              << std::endl;
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(EQUIVALENT_NEAR_AND_FAR_FIELDS)
 
@@ -49,10 +113,17 @@ struct EQUIVALENCE_BASE : public PARAMETERS {
   std::vector<Eigen::Vector3d> default_pos;
 
   EQUIVALENCE_BASE()
-      : PARAMETERS(6),
+      : PARAMETERS(6, 256),
         default_pos{{0.57, 0.28, 0.04}, {0.76, 0.48, 0.41}, {0.78, 0.56, 0.24},
                     {0.42, 0.66, 0.70}, {0.07, 0.77, 0.77}, {0.68, 0.99, 0.45}}
   {
+    history->fill(Eigen::Vector2cd::Zero());
+    for(int i = 0; i < n_pts; ++i) {
+      for(int t = -10; t < n_steps; ++t) {
+        history->array_[i][t][0] = Eigen::Vector2cd(
+            0, i * Math::gaussian((t - n_steps / 2.0) / (n_steps / 12.0)));
+      }
+    }
   }
 
   void test_equivalence(const FieldPair &p)
