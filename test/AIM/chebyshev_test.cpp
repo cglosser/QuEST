@@ -176,10 +176,7 @@ BOOST_AUTO_TEST_CASE(DERIVATIVE)
     bar.fill_coefficients_tensor(grid.size(), &eval[t][0][0][0][0][0],
                                  &coef[t][0][0][0][0][0]);
 
-    const auto &x = bar.interpolate(
-        t, coef, Projector::TimeDerivative<double>(num_steps, dt));
-
-    std::cout << x.transpose() << std::endl;
+    bar.interpolate(t, coef, Projector::TimeDerivative<double>(num_steps, dt));
   }
 }
 
