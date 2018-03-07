@@ -30,9 +30,10 @@ BOOST_AUTO_TEST_CASE(CONSTRUCTION)
   auto expansion_table = LSE.table(*dots);
   auto cheb_expansion_table = LSE.chebyshev_lambda_weights(
       Math::Chebyshev::normalized_points(AIM::chebyshev_order));
+  Projector::Potential<cmplx> proj(grid.max_transit_steps(1, 1) + 4);
 
   AIM::Nearfield nf(dots, history, 4, 100, 1, 1, grid, expansion_table,
-                    AIM::Normalization::unit, cheb_expansion_table);
+                    AIM::Normalization::unit, cheb_expansion_table, proj);
 
   std::cout.width(14);
   std::cout << std::setprecision(14);

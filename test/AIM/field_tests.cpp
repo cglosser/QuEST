@@ -20,7 +20,7 @@ struct PARAMETERS {
   PARAMETERS(int n_pts, int n_steps)
       : n_pts{n_pts},
         n_steps{n_steps},
-        cheb_order{3},
+        cheb_order{AIM::chebyshev_order},
         c{1},
         dt{1},
         dots{std::make_shared<DotVector>()},
@@ -121,7 +121,7 @@ struct EQUIVALENCE_BASE : public PARAMETERS {
     for(int i = 0; i < n_pts; ++i) {
       for(int t = -10; t < n_steps; ++t) {
         history->array_[i][t][0] = Eigen::Vector2cd(
-            0, i * Math::gaussian((t - n_steps / 2.0) / (n_steps / 12.0)));
+            0, Math::gaussian((t - n_steps / 2.0) / (n_steps / 12.0)));
       }
     }
   }
@@ -172,13 +172,9 @@ BOOST_AUTO_TEST_CASE(SAME_BOX)
 
 BOOST_AUTO_TEST_CASE(ADJACENT_BOX)
 {
+  Eigen::Vector3d z_hat(0, 0, 1);
   for(int i = 0; i < n_pts; ++i) {
-    Eigen::Vector3d z_hat(0, 0, 1);
-    if(i < 3) {
-      dots->emplace_back(default_pos[i], z_hat);
-    } else {
-      dots->emplace_back(default_pos[i] + z_hat, z_hat);
-    }
+    dots->emplace_back(default_pos[i] + (i % 2) * z_hat, z_hat);
   }
 
   FieldPair fieldPair{make_interactions()};
@@ -187,13 +183,9 @@ BOOST_AUTO_TEST_CASE(ADJACENT_BOX)
 
 BOOST_AUTO_TEST_CASE(DISTANT_BOX)
 {
+  Eigen::Vector3d z_hat(0, 0, 1);
   for(int i = 0; i < n_pts; ++i) {
-    Eigen::Vector3d z_hat(0, 0, 1);
-    if(i < 3) {
-      dots->emplace_back(default_pos[i], z_hat);
-    } else {
-      dots->emplace_back(default_pos[i] + 10 * z_hat, z_hat);
-    }
+    dots->emplace_back(default_pos[i] + (i % 2) * 10 * z_hat, z_hat);
   }
 
   FieldPair fieldPair{make_interactions()};
@@ -238,13 +230,9 @@ BOOST_AUTO_TEST_CASE(SAME_BOX)
 
 BOOST_AUTO_TEST_CASE(ADJACENT_BOX)
 {
+  Eigen::Vector3d z_hat(0, 0, 1);
   for(int i = 0; i < n_pts; ++i) {
-    Eigen::Vector3d z_hat(0, 0, 1);
-    if(i < 3) {
-      dots->emplace_back(default_pos[i], z_hat);
-    } else {
-      dots->emplace_back(default_pos[i] + z_hat, z_hat);
-    }
+    dots->emplace_back(default_pos[i] + (i % 2) * z_hat, z_hat);
   }
 
   FieldPair fieldPair{make_interactions()};
@@ -253,13 +241,9 @@ BOOST_AUTO_TEST_CASE(ADJACENT_BOX)
 
 BOOST_AUTO_TEST_CASE(DISTANT_BOX)
 {
+  Eigen::Vector3d z_hat(0, 0, 1);
   for(int i = 0; i < n_pts; ++i) {
-    Eigen::Vector3d z_hat(0, 0, 1);
-    if(i < 3) {
-      dots->emplace_back(default_pos[i], z_hat);
-    } else {
-      dots->emplace_back(default_pos[i] + 10 * z_hat, z_hat);
-    }
+    dots->emplace_back(default_pos[i] + (i % 2) * 10 * z_hat, z_hat);
   }
 
   FieldPair fieldPair{make_interactions()};
