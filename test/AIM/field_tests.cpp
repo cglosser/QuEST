@@ -71,32 +71,50 @@ struct ANALYTIC_PARAMETERS : public PARAMETERS {
                                             dt, grid, expansion_table, norm,
                                             cheb_table, proj);
   }
+
+  template <typename T>
+  double test_analytic(T &interaction, std::function<cmplx(double)> solution)
+  {
+    double max_err = 0;
+    for(int t = 0; t < n_steps; ++t) {
+      auto x = interaction->evaluate(t);
+      double err = std::abs(solution(t) - x(1)) / std::abs(solution(t));
+      if(t > n_steps / 10) max_err = std::max(max_err, err);
+    }
+
+    BOOST_TEST_MESSAGE("Maximum error: " << max_err);
+    return max_err;
+  }
 };
 
 BOOST_FIXTURE_TEST_CASE(RETARDATION, ANALYTIC_PARAMETERS)
 {
-  // auto solution = [&](double t) { return source(t - dr / c); };
+  auto solution = [&](double t) -> cmplx {
+    return cmplx(source(t - dr / c), 0);
+  };
 
   auto nf =
       make_interaction<Projector::Potential<cmplx>>(AIM::Normalization::unit);
 
-  for(int t = 0; t < n_steps; ++t) {
-    nf->evaluate(t);
-  }
+  test_analytic(nf, solution);
 }
 
 BOOST_FIXTURE_TEST_CASE(TIME_DERIVATIVE, ANALYTIC_PARAMETERS)
 {
-  // auto solution = [&](double t) {
-  // return -2 * (t - dr / c) * source(t - dr / c);
-  //};
+  auto solution = [&](double t) -> cmplx {
+    return Math::gaussian((t - (n_steps * dt) / 2) / (n_steps * dt / 12));
+    return cmplx(-2 * (t - (n_steps * dt / 2) - dr / c) / (n_steps * dt / 12) *
+                     source(t - dr / c),
+                 0);
+  };
 
   auto nf = make_interaction<Projector::TimeDerivative<cmplx>>(
       AIM::Normalization::unit);
 
   for(int t = 0; t < n_steps; ++t) {
-    std::cout << source(t * dt) << " " << nf->evaluate(t).transpose()
-              << std::endl;
+    // auto x = nf->evaluate(t);
+    // std::cout << t << " " << x(1) << " " << solution(t * dt) << std::endl;
+    std::cout << t << solution(t) << std::endl;
   }
 }
 
