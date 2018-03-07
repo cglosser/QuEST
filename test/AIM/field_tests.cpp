@@ -7,13 +7,9 @@
 
 BOOST_AUTO_TEST_SUITE(AIM)
 
-BOOST_AUTO_TEST_SUITE(EQUIVALENT_NEAR_AND_FAR_FIELDS)
-
 struct PARAMETERS {
   using Hist_t = Integrator::History<Eigen::Vector2cd>;
   using LSE = AIM::Expansions::LeastSquaresExpansionSolver;
-
-  std::vector<Eigen::Vector3d> default_pos;
 
   int n_pts, n_steps, cheb_order;
   double c, dt;
@@ -21,16 +17,14 @@ struct PARAMETERS {
   std::shared_ptr<DotVector> dots;
   std::shared_ptr<Hist_t> history;
 
-  PARAMETERS()
-      : default_pos{{0.57, 0.28, 0.04}, {0.76, 0.48, 0.41}, {0.78, 0.56, 0.24},
-                    {0.42, 0.66, 0.70}, {0.07, 0.77, 0.77}, {0.68, 0.99, 0.45}},
-        n_pts{static_cast<int>(default_pos.size())},
+  PARAMETERS(int n_pts)
+      : n_pts{n_pts},
         n_steps{256},
         cheb_order{3},
         c{1},
         dt{1},
         dots{std::make_shared<DotVector>()},
-        history{std::make_shared<Hist_t>(default_pos.size(), 10, n_steps, 1)}
+        history{std::make_shared<Hist_t>(n_pts, 10, n_steps, 1)}
   {
     history->fill(Eigen::Vector2cd::Zero());
     for(int i = 0; i < n_pts; ++i) {
@@ -44,7 +38,33 @@ struct PARAMETERS {
   AIM::Grid make_grid() { return AIM::Grid({1, 1, 1}, 1, *dots); }
 };
 
-struct RETARDATION_PARAMETERS : public PARAMETERS {
+BOOST_AUTO_TEST_SUITE(EQUIVALENT_NEAR_AND_FAR_FIELDS)
+
+struct EQUIVALENCE_BASE : public PARAMETERS {
+  struct FieldPair {
+    std::unique_ptr<AIM::Nearfield> nf;
+    std::unique_ptr<AIM::Farfield> ff;
+  };
+
+  std::vector<Eigen::Vector3d> default_pos;
+
+  EQUIVALENCE_BASE()
+      : PARAMETERS(6),
+        default_pos{{0.57, 0.28, 0.04}, {0.76, 0.48, 0.41}, {0.78, 0.56, 0.24},
+                    {0.42, 0.66, 0.70}, {0.07, 0.77, 0.77}, {0.68, 0.99, 0.45}}
+  {
+  }
+
+  void test_equivalence(const FieldPair &p)
+  {
+    for(int t = 0; t < n_steps; ++t) {
+      auto eval = p.nf->evaluate(t) - p.ff->evaluate(t);
+      BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
+    }
+  }
+};
+
+struct RETARDATION_PARAMETERS : public EQUIVALENCE_BASE {
   auto make_interactions()
   {
     auto grid{make_grid()};
@@ -57,13 +77,13 @@ struct RETARDATION_PARAMETERS : public PARAMETERS {
     Projector::Potential<cmplx> potential(grid.max_transit_steps(c, dt) +
                                           interp_order);
 
-    return std::make_pair(
+    return FieldPair{
         std::make_unique<AIM::Nearfield>(
             dots, history, interp_order, 100, c, dt, grid, expansion_table,
             AIM::Normalization::unit, cheb_table, potential),
         std::make_unique<AIM::Farfield>(
             dots, history, interp_order, c, dt, grid, expansion_table,
-            AIM::Normalization::unit, cheb_table, potential));
+            AIM::Normalization::unit, cheb_table, potential)};
   }
 };
 
@@ -75,13 +95,8 @@ BOOST_AUTO_TEST_CASE(SAME_BOX)
     dots->emplace_back(r, Eigen::Vector3d(0, 0, 1));
   }
 
-  // {&nearfield, &farfield}
-  auto inter{make_interactions()};
-
-  for(int t = 0; t < n_steps; ++t) {
-    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
-    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
-  }
+  FieldPair fieldPair{make_interactions()};
+  test_equivalence(fieldPair);
 }
 
 BOOST_AUTO_TEST_CASE(ADJACENT_BOX)
@@ -95,13 +110,8 @@ BOOST_AUTO_TEST_CASE(ADJACENT_BOX)
     }
   }
 
-  // {&nearfield, &farfield}
-  auto inter{make_interactions()};
-
-  for(int t = 0; t < n_steps; ++t) {
-    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
-    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
-  }
+  FieldPair fieldPair{make_interactions()};
+  test_equivalence(fieldPair);
 }
 
 BOOST_AUTO_TEST_CASE(DISTANT_BOX)
@@ -115,18 +125,13 @@ BOOST_AUTO_TEST_CASE(DISTANT_BOX)
     }
   }
 
-  // {&nearfield, &farfield}
-  auto inter{make_interactions()};
-
-  for(int t = 0; t < n_steps; ++t) {
-    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
-    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
-  }
+  FieldPair fieldPair{make_interactions()};
+  test_equivalence(fieldPair);
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // RETARDATION
 
-struct LAPLACE_PARAMETERS : public PARAMETERS {
+struct LAPLACE_PARAMETERS : public EQUIVALENCE_BASE {
   auto make_interactions()
   {
     auto grid{make_grid()};
@@ -139,13 +144,12 @@ struct LAPLACE_PARAMETERS : public PARAMETERS {
     Projector::Potential<cmplx> potential(grid.max_transit_steps(c, dt) +
                                           interp_order);
 
-    return std::make_pair(
-        std::make_unique<AIM::Nearfield>(
-            dots, history, 4, 100, 1, 1, grid, expansion_table,
-            AIM::Normalization::Laplace(), cheb_table, potential),
-        std::make_unique<AIM::Farfield>(
-            dots, history, 4, 1, 1, grid, expansion_table,
-            AIM::Normalization::Laplace(), cheb_table, potential));
+    return FieldPair{std::make_unique<AIM::Nearfield>(
+                         dots, history, 4, 100, 1, 1, grid, expansion_table,
+                         AIM::Normalization::Laplace(), cheb_table, potential),
+                     std::make_unique<AIM::Farfield>(
+                         dots, history, 4, 1, 1, grid, expansion_table,
+                         AIM::Normalization::Laplace(), cheb_table, potential)};
   }
 };
 
@@ -157,13 +161,8 @@ BOOST_AUTO_TEST_CASE(SAME_BOX)
     dots->emplace_back(r, Eigen::Vector3d(0, 0, 1));
   }
 
-  // {&nearfield, &farfield}
-  auto inter{make_interactions()};
-
-  for(int t = 0; t < n_steps; ++t) {
-    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
-    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
-  }
+  FieldPair fieldPair{make_interactions()};
+  test_equivalence(fieldPair);
 }
 
 BOOST_AUTO_TEST_CASE(ADJACENT_BOX)
@@ -177,13 +176,8 @@ BOOST_AUTO_TEST_CASE(ADJACENT_BOX)
     }
   }
 
-  // {&nearfield, &farfield}
-  auto inter{make_interactions()};
-
-  for(int t = 0; t < n_steps; ++t) {
-    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
-    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
-  }
+  FieldPair fieldPair{make_interactions()};
+  test_equivalence(fieldPair);
 }
 
 BOOST_AUTO_TEST_CASE(DISTANT_BOX)
@@ -197,13 +191,8 @@ BOOST_AUTO_TEST_CASE(DISTANT_BOX)
     }
   }
 
-  // {&nearfield, &farfield}
-  auto inter{make_interactions()};
-
-  for(int t = 0; t < n_steps; ++t) {
-    auto eval = inter.first->evaluate(t) - inter.second->evaluate(t);
-    BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
-  }
+  FieldPair fieldPair{make_interactions()};
+  test_equivalence(fieldPair);
 }
 
 BOOST_AUTO_TEST_SUITE_END()  // LAPLACE
