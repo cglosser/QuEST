@@ -28,33 +28,61 @@ struct PARAMETERS {
   {
     std::cout << std::setprecision(17) << std::scientific;
   }
-
-  AIM::Grid make_grid() { return AIM::Grid({1, 1, 1}, 1, *dots); }
 };
 
 BOOST_AUTO_TEST_SUITE(ANALYTIC_COMPARISON)
 
-struct ANALYTIC_PARAMETERS : public PARAMETERS {
-  double source(double t)
+class Gaussian {
+ public:
+  Gaussian(double mu, double sigma) : mu_{mu}, sigma_{sigma} {};
+
+  double operator()(int n, double x)
   {
-    return Math::gaussian((t - (n_steps * dt) / 2) / (n_steps * dt / 12));
+    switch(n) {
+      case 0: return dt0(x);
+      case 1: return dt1(x);
+      case 2: return dt2(x);
+      default: return 0;
+    }
   }
 
-  double dr;
+ private:
+  double dt0(double x) { return Math::gaussian((x - mu_) / sigma_); }
+  double dt1(double x)
+  {
+    double arg = (x - mu_) / sigma_;
+    return -1 * arg * Math::gaussian(arg) / sigma_;
+  }
+  double dt2(double x)
+  {
+    double arg = (x - mu_) / sigma_;
+    return (std::pow(arg, 2) - 1) * Math::gaussian(arg) / std::pow(sigma_, 2);
+  }
 
-  ANALYTIC_PARAMETERS() : PARAMETERS(2, 1024)
+  double mu_, sigma_;
+};
+
+struct ANALYTIC_PARAMETERS : public PARAMETERS {
+  Gaussian gaussian;
+  Eigen::Vector3d dr;
+  double dr_norm;
+
+  ANALYTIC_PARAMETERS()
+      : PARAMETERS(2, 1024), gaussian(n_steps / 2.0, n_steps / 12.0)
   {
     Eigen::Vector3d z_hat(0, 0, 1);
     dots->emplace_back(Eigen::Vector3d(0.1, 0.1, 0.1), z_hat);
     dots->emplace_back(Eigen::Vector3d(0.9, 0.9, 5.9), z_hat);
-    dr = (dots->at(1).position() - dots->at(0).position()).norm();
+    dr = dots->at(1).position() - dots->at(0).position();
+    dr_norm = dr.norm();
 
     history->fill(Eigen::Vector2cd::Zero());
     for(int t = -10; t < n_steps; ++t) {
-      history->array_[0][t][0] = Eigen::Vector2cd(0, source(t * dt));
+      history->array_[0][t][0] = Eigen::Vector2cd(0, gaussian(0, t * dt));
     }
   }
 
+  AIM::Grid make_grid() { return AIM::Grid({1, 1, 1}, 2, *dots); }
   template <typename P>
   auto make_interaction(AIM::Normalization::SpatialNorm norm)
   {
@@ -90,7 +118,7 @@ struct ANALYTIC_PARAMETERS : public PARAMETERS {
 BOOST_FIXTURE_TEST_CASE(RETARDATION, ANALYTIC_PARAMETERS)
 {
   auto solution = [&](double t) -> cmplx {
-    return cmplx(source(t - dr / c), 0);
+    return cmplx(gaussian(0, t - dr_norm / c), 0);
   };
 
   auto nf =
@@ -103,13 +131,32 @@ BOOST_FIXTURE_TEST_CASE(RETARDATION, ANALYTIC_PARAMETERS)
 BOOST_FIXTURE_TEST_CASE(TIME_DERIVATIVE, ANALYTIC_PARAMETERS)
 {
   auto solution = [&](double t) -> cmplx {
-    double mu = n_steps * dt / 2 + dr / c, sigma = n_steps * dt / 12;
-    return cmplx(
-        -(t - mu) / std::pow(sigma, 2) * Math::gaussian((t - mu) / sigma), 0);
+    return cmplx(gaussian(1, t - dr_norm / c), 0);
   };
 
   auto nf = make_interaction<Projector::TimeDerivative<cmplx>>(
       AIM::Normalization::unit);
+
+  double err = test_analytic(nf, solution);
+  BOOST_CHECK_SMALL(err, 1.0);
+}
+
+BOOST_FIXTURE_TEST_CASE(GRAD_DIV, ANALYTIC_PARAMETERS)
+{
+  auto solution = [&](double t) -> cmplx {
+    double r_sq = std::pow(dr_norm, 2), z_sq = std::pow(dr(2), 2);
+    double arg = t - dr_norm / c;
+    cmplx q{-c * (r_sq - 3 * z_sq) *
+                    (c * gaussian(0, arg) + dr_norm * gaussian(1, arg)) +
+                r_sq * z_sq * gaussian(2, arg),
+            0};
+
+    double denominator = std::pow(c, 2) * std::pow(dr_norm, 5);
+    return q / denominator;
+  };
+
+  auto nf =
+      make_interaction<Projector::GradDiv<cmplx>>(AIM::Normalization::unit);
 
   double err = test_analytic(nf, solution);
   BOOST_CHECK_SMALL(err, 1.0);
@@ -141,6 +188,7 @@ struct EQUIVALENCE_BASE : public PARAMETERS {
     }
   }
 
+  AIM::Grid make_grid() { return AIM::Grid({1, 1, 1}, 1, *dots); }
   void test_equivalence(const FieldPair &p)
   {
     for(int t = 0; t < n_steps; ++t) {
