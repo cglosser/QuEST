@@ -12,7 +12,7 @@
 namespace AIM {
   class AimBase;
 
-  constexpr int chebyshev_order = 3;
+  constexpr int chebyshev_order = 4;
 }
 
 class AIM::AimBase : public HistoryInteraction {

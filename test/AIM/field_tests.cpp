@@ -47,13 +47,13 @@ class Gaussian {
   }
 
  private:
-  double dt0(double x) { return Math::gaussian((x - mu_) / sigma_); }
-  double dt1(double x)
+  double dt0(double x) const { return Math::gaussian((x - mu_) / sigma_); }
+  double dt1(double x) const
   {
     double arg = (x - mu_) / sigma_;
     return -1 * arg * Math::gaussian(arg) / sigma_;
   }
-  double dt2(double x)
+  double dt2(double x) const
   {
     double arg = (x - mu_) / sigma_;
     return (std::pow(arg, 2) - 1) * Math::gaussian(arg) / std::pow(sigma_, 2);
@@ -82,7 +82,7 @@ struct ANALYTIC_PARAMETERS : public PARAMETERS {
     }
   }
 
-  AIM::Grid make_grid() { return AIM::Grid({1, 1, 1}, 2, *dots); }
+  AIM::Grid make_grid() { return AIM::Grid({0.7, 0.7, 0.7}, 2, *dots); }
   template <typename P>
   auto make_interaction(AIM::Normalization::SpatialNorm norm)
   {
@@ -144,15 +144,12 @@ BOOST_FIXTURE_TEST_CASE(TIME_DERIVATIVE, ANALYTIC_PARAMETERS)
 BOOST_FIXTURE_TEST_CASE(GRAD_DIV, ANALYTIC_PARAMETERS)
 {
   auto solution = [&](double t) -> cmplx {
-    double r_sq = std::pow(dr_norm, 2), z_sq = std::pow(dr(2), 2);
     double arg = t - dr_norm / c;
-    cmplx q{-c * (r_sq - 3 * z_sq) *
-                    (c * gaussian(0, arg) + dr_norm * gaussian(1, arg)) +
-                r_sq * z_sq * gaussian(2, arg),
-            0};
-
-    double denominator = std::pow(c, 2) * std::pow(dr_norm, 5);
-    return q / denominator;
+    double val =
+        (c * (std::pow(dr(2), 2) - std::pow(dr_norm, 2)) * gaussian(1, arg) +
+         dr_norm * std::pow(dr(2), 2) * gaussian(2, arg)) /
+        (std::pow(c, 2) * std::pow(dr_norm, 3));
+    return {val, 0};
   };
 
   auto nf =
