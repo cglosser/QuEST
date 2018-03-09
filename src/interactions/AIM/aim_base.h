@@ -17,14 +17,13 @@ namespace AIM {
 
 class AIM::AimBase : public HistoryInteraction {
  public:
-  AimBase(const std::shared_ptr<const DotVector> dots,
-          const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>
-              history,
+  AimBase(std::shared_ptr<const DotVector> dots,
+          std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
           const int interp_order,
           const double c0,
           const double dt,
           const Grid grid,
-          const Expansions::ExpansionTable expansion_table,
+          std::shared_ptr<const Expansions::ExpansionTable> expansion_table,
           Normalization::SpatialNorm normalization,
           std::array<int, 4> table_dimensions,
           const boost::multi_array<double, 4> chebyshev_weights,
@@ -78,8 +77,8 @@ class AIM::AimBase : public HistoryInteraction {
   }
 
  protected:
-  const Grid grid;
-  const Expansions::ExpansionTable expansion_table;
+  Grid grid;
+  std::shared_ptr<const Expansions::ExpansionTable> expansion_table;
   Normalization::SpatialNorm normalization;
   boost::multi_array<int, 2> expansion_indices;
 

@@ -1,13 +1,13 @@
 #include "farfield.h"
 
 AIM::Farfield::Farfield(
-    const std::shared_ptr<const DotVector> dots,
-    const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
+    std::shared_ptr<const DotVector> dots,
+    std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
     const int interp_order,
     const double c0,
     const double dt,
     const Grid grid,
-    const Expansions::ExpansionTable expansion_table,
+    std::shared_ptr<const Expansions::ExpansionTable> expansion_table,
     Normalization::SpatialNorm normalization,
     const boost::multi_array<double, 4> chebyshev_weights,
     Projector::Projector_fn<cmplx> projector)
@@ -33,13 +33,13 @@ void AIM::Farfield::fill_source_table(const int step)
   const auto p = &source_table[wrapped_step][0][0][0][0];
   std::fill(p, p + 3 * 8 * grid.size(), cmplx(0, 0));
 
-  for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
+  for(auto dot_idx = 0u; dot_idx < expansion_table->shape()[0]; ++dot_idx) {
     const auto polarization =
         (*dots)[dot_idx].dipole() * history->array_[dot_idx][step][0][RHO_01];
 
-    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
+    for(auto expansion_idx = 0u; expansion_idx < expansion_table->shape()[1];
         ++expansion_idx) {
-      const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
+      const Expansions::Expansion &e = (*expansion_table)[dot_idx][expansion_idx];
       Eigen::Vector3i coord = grid.idx_to_coord(e.index);
 
       Eigen::Map<Eigen::Vector3cd> grid_field(

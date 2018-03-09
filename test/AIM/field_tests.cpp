@@ -88,7 +88,8 @@ struct ANALYTIC_PARAMETERS : public PARAMETERS {
   {
     auto grid{make_grid()};
     LSE lse(grid);
-    auto expansion_table = lse.table(*dots);
+    auto expansion_table =
+        std::make_shared<AIM::Expansions::ExpansionTable>(lse.table(*dots));
     auto cheb_table = lse.chebyshev_lambda_weights(
         Math::Chebyshev::normalized_points(cheb_order));
     int interp_order = 4;
@@ -200,7 +201,8 @@ struct RETARDATION_PARAMETERS : public EQUIVALENCE_BASE {
   {
     auto grid{make_grid()};
     LSE lse(grid);
-    auto expansion_table = lse.table(*dots);
+    auto expansion_table =
+        std::make_shared<AIM::Expansions::ExpansionTable>(lse.table(*dots));
     auto cheb_table = lse.chebyshev_lambda_weights(
         Math::Chebyshev::normalized_points(cheb_order));
     int interp_order = 4;
@@ -259,7 +261,8 @@ struct LAPLACE_PARAMETERS : public EQUIVALENCE_BASE {
   {
     auto grid{make_grid()};
     LSE lse(grid);
-    auto expansion_table = lse.table(*dots);
+    auto expansion_table =
+        std::make_shared<AIM::Expansions::ExpansionTable>(lse.table(*dots));
     auto cheb_table = lse.chebyshev_lambda_weights(
         Math::Chebyshev::normalized_points(cheb_order));
     int interp_order = 4;

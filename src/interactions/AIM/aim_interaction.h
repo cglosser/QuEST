@@ -25,8 +25,8 @@ class AIM::Interaction final : public InteractionBase {
               Projector::Projector_fn<cmplx> projector)
       : InteractionBase(dots, dt),
         grid(spacing, expansion_order, *dots),
-        expansion_table(
-            AIM::Expansions::LeastSquaresExpansionSolver(grid).table(*dots)),
+        expansion_table(std::make_shared<const AIM::Expansions::ExpansionTable>(
+            AIM::Expansions::LeastSquaresExpansionSolver(grid).table(*dots))),
         chebyshev_weights(
             AIM::Expansions::LeastSquaresExpansionSolver(grid)
                 .chebyshev_lambda_weights(
@@ -69,7 +69,7 @@ class AIM::Interaction final : public InteractionBase {
 
  private:
   Grid grid;
-  Expansions::ExpansionTable expansion_table;
+  std::shared_ptr<const Expansions::ExpansionTable> expansion_table;
   boost::multi_array<double, 4> chebyshev_weights;
 
   Farfield ff;

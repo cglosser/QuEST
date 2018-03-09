@@ -9,14 +9,14 @@ namespace AIM {
 
 class AIM::Nearfield final : public AimBase {
  public:
-  Nearfield(const std::shared_ptr<const DotVector>,
-            const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
+  Nearfield(std::shared_ptr<const DotVector>,
+            std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
             const int,
             const int,
             const double,
             const double,
             const Grid &,
-            const Expansions::ExpansionTable &,
+            std::shared_ptr<const Expansions::ExpansionTable>,
             Normalization::SpatialNorm,
             const boost::multi_array<double, 4> &,
             Projector::Projector_fn<cmplx>);

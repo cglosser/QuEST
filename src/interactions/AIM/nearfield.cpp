@@ -1,31 +1,31 @@
 #include "nearfield.h"
 
 AIM::Nearfield::Nearfield(
-    const std::shared_ptr<const DotVector> dots,
-    const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
+    std::shared_ptr<const DotVector> dots,
+    std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
     const int interp_order,
     const int border,
     const double c0,
     const double dt,
     const Grid &grid,
-    const Expansions::ExpansionTable &expansion_table,
+    std::shared_ptr<const Expansions::ExpansionTable> expansion_table,
     Normalization::SpatialNorm normalization,
     const boost::multi_array<double, 4> &chebyshev_weights,
     Projector::Projector_fn<cmplx> projector)
-    : AimBase(
-          dots,
-          history,
-          interp_order,
-          c0,
-          dt,
-          grid,
-          expansion_table,
-          normalization,
-          {{grid.max_transit_steps(c0, dt) + interp_order,
-            (int)grid.nearfield_pairs(border, *dots).size(),
-            (int)expansion_table.shape()[1], (int)expansion_table.shape()[1]}},
-          chebyshev_weights,
-          projector),
+    : AimBase(dots,
+              history,
+              interp_order,
+              c0,
+              dt,
+              grid,
+              expansion_table,
+              normalization,
+              {{grid.max_transit_steps(c0, dt) + interp_order,
+                (int)grid.nearfield_pairs(border, *dots).size(),
+                (int)expansion_table->shape()[1],
+                (int)expansion_table->shape()[1]}},
+              chebyshev_weights,
+              projector),
       mapping{grid.box_contents_map(*dots)},
       neighbors{grid.nearfield_pairs(border, *dots)}
 {
@@ -71,7 +71,7 @@ void AIM::Nearfield::fill_source_table(const int step)
       std::tie(start, end) = mapping[box1];
       for(auto d = start; d != end; ++d) {
         const auto dot_idx = std::distance(dots->begin(), d);
-        grid_field1 += expansion_table[dot_idx][e].weight *
+        grid_field1 += (*expansion_table)[dot_idx][e].weight *
                        (*dots)[dot_idx].dipole() *
                        history->array_[dot_idx][step][0][RHO_01];
       }
@@ -82,7 +82,7 @@ void AIM::Nearfield::fill_source_table(const int step)
       std::tie(start, end) = mapping[box2];
       for(auto d = start; d != end; ++d) {
         const auto dot_idx = std::distance(dots->begin(), d);
-        grid_field2 += expansion_table[dot_idx][e].weight *
+        grid_field2 += (*expansion_table)[dot_idx][e].weight *
                        (*dots)[dot_idx].dipole() *
                        history->array_[dot_idx][step][0][RHO_01];
       }
@@ -172,8 +172,8 @@ spacetime::vector<cmplx> AIM::Nearfield::make_propagation_table() const
     const auto expansion1 = grid.expansion_indices(neighbors[p].first);
     const auto expansion2 = grid.expansion_indices(neighbors[p].second);
 
-    for(size_t e1 = 0; e1 < expansion_table.shape()[1]; ++e1) {
-      for(size_t e2 = 0; e2 < expansion_table.shape()[1]; ++e2) {
+    for(size_t e1 = 0; e1 < expansion_table->shape()[1]; ++e1) {
+      for(size_t e2 = 0; e2 < expansion_table->shape()[1]; ++e2) {
         if(expansion1[e1] == expansion2[e2]) continue;
         Eigen::Vector3d dr = grid.spatial_coord_of_box(expansion1[e1]) -
                              grid.spatial_coord_of_box(expansion2[e2]);

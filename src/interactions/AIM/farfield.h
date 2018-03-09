@@ -10,13 +10,13 @@ namespace AIM {
 
 class AIM::Farfield final : public AimBase {
  public:
-  Farfield(const std::shared_ptr<const DotVector>,
-           const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
+  Farfield(std::shared_ptr<const DotVector>,
+           std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
            const int,
            const double,
            const double,
            const Grid,
-           const Expansions::ExpansionTable,
+           std::shared_ptr<const Expansions::ExpansionTable>,
            Normalization::SpatialNorm,
            const boost::multi_array<double, 4>,
            Projector::Projector_fn<cmplx>);
