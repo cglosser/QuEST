@@ -46,7 +46,7 @@ namespace Projector {
   };
 
   template <typename num_t>
-  class DerivZ : public ProjectorBase<num_t> {
+  class Derivative : public ProjectorBase<num_t> {
    public:
     using ProjectorBase<num_t>::ProjectorBase;
     Eigen::Matrix<num_t, 3, 1> operator()(
@@ -59,10 +59,11 @@ namespace Projector {
         const boost::multi_array<num_t, 6> &coef,
         const boost::multi_array<double, 4> &eval)
     {
-      Eigen::Map<const Eigen::Matrix<num_t, 3, 1>> c(
+      Eigen::Map<const Eigen::Array<num_t, 3, 1>> c(
           &coef[this->wrap_step(t)][box][i][j][k][0]);
-      double Ts = eval[n][i][X][0] * eval[n][j][Y][0] * eval[n][k][Z][1];
-      return c * Ts;
+
+      double deriv = eval[n][i][X][0] * eval[n][j][Y][0] * eval[n][k][Z][1];
+      return deriv * c;
     }
   };
 
