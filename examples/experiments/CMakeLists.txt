@@ -17,3 +17,8 @@ add_executable(timestepping EXCLUDE_FROM_ALL "")
 target_sources(timestepping PUBLIC "${CMAKE_CURRENT_LIST_DIR}/timestepping.cpp")
 target_compile_features(timestepping PUBLIC ${CPP_FEATURES})
 target_link_libraries(timestepping PUBLIC quest ${Boost_LIBRARIES})
+
+add_executable(convergence EXCLUDE_FROM_ALL "")
+target_sources(convergence PUBLIC "${CMAKE_CURRENT_LIST_DIR}/convergence.cpp")
+target_compile_features(convergence PUBLIC ${CPP_FEATURES})
+target_link_libraries(convergence PUBLIC quest ${Boost_LIBRARIES})
