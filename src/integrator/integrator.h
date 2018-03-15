@@ -3,9 +3,10 @@
 
 #include <string>
 
-#include "../math_utils.h"
 #include "RHS/rhs.h"
 #include "history.h"
+#include "logging.h"
+#include "math_utils.h"
 #include "weights.h"
 
 namespace Integrator {
@@ -16,10 +17,13 @@ namespace Integrator {
 template <class soltype>
 class Integrator::PredictorCorrector {
  public:
-  PredictorCorrector(const double, const int, const int, const double,
+  PredictorCorrector(const double,
+                     const int,
+                     const int,
+                     const double,
                      const std::shared_ptr<Integrator::History<soltype>>,
                      std::unique_ptr<Integrator::RHS<soltype>>);
-  void solve() const;
+  void solve(const log_level_t = log_level_t::LOG_NOTHING) const;
 
  private:
   int num_solutions, time_idx_ubound;
@@ -38,7 +42,10 @@ class Integrator::PredictorCorrector {
 constexpr int NUM_CORRECTOR_STEPS = 10;
 template <class soltype>
 Integrator::PredictorCorrector<soltype>::PredictorCorrector(
-    const double dt, const int n_lambda, const int n_time, const double radius,
+    const double dt,
+    const int n_lambda,
+    const int n_time,
+    const double radius,
     const std::shared_ptr<Integrator::History<soltype>> history,
     std::unique_ptr<Integrator::RHS<soltype>> rhs)
     : num_solutions(history->array_.shape()[0]),
@@ -52,11 +59,12 @@ Integrator::PredictorCorrector<soltype>::PredictorCorrector(
 }
 
 template <class soltype>
-void Integrator::PredictorCorrector<soltype>::solve() const
+void Integrator::PredictorCorrector<soltype>::solve(
+    const log_level_t log_level) const
 {
   for(int step = 0; step < time_idx_ubound; ++step) {
     solve_step(step);
-    //log_percentage_complete(step);
+    if(log_level >= log_level_t::LOG_INFO) log_percentage_complete(step);
   }
 }
 

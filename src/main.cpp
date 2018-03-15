@@ -44,18 +44,18 @@ int main(int argc, char *argv[])
     Propagation::RotatingEFIE rotating_dyadic(
         config.c0, config.mu0 / (4 * M_PI * config.hbar), config.omega);
 
-    const int wsteps =
-        AIM::Grid(config.grid_spacing, config.expansion_order, *qds)
-            .max_transit_steps(config.c0, config.dt) +
-        config.interpolation_order;
-
     std::shared_ptr<InteractionBase> pairwise;
     if(config.sim_type == Configuration::SIMULATION_TYPE::FAST) {
+      AIM::Grid grid(config.grid_spacing, config.expansion_order, *qds);
+      const int transit_steps = grid.max_transit_steps(config.c0, config.dt) +
+                                config.interpolation_order;
+
       pairwise = make_shared<AIM::Interaction>(
           qds, history, rotating_dyadic, config.grid_spacing,
           config.interpolation_order, config.expansion_order, config.border,
-          config.c0, config.dt, AIM::Expansions::RotatingEFIE(
-                                    wsteps, config.c0, config.dt, config.omega),
+          config.c0, config.dt,
+          AIM::Expansions::RotatingEFIE(transit_steps, config.c0, config.dt,
+                                        config.omega),
           AIM::normalization::Helmholtz(
               config.omega / config.c0,
               (config.mu0 / (4 * M_PI * config.hbar))));
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
         config.dt, 18, 22, 3.15, history, std::move(bloch_rhs));
 
     cout << "Solving..." << endl;
-    solver.solve();
+    solver.solve(log_level_t::LOG_INFO);
 
     cout << "Writing output..." << endl;
     ofstream outfile("output.dat");
