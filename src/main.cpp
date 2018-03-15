@@ -23,7 +23,11 @@ int main(int argc, char *argv[])
     auto vm = parse_configs(argc, argv);
 
     cout << "Initializing..." << endl;
-    std::cout << static_cast<bool>(config.sim_type) << std::endl;
+    std::cout << "  Running in "
+              << ((config.sim_type == Configuration::SIMULATION_TYPE::FAST)
+                      ? "FAST"
+                      : "SLOW")
+              << " mode" << std::endl;
 
     auto qds = make_shared<DotVector>(import_dots(config.qd_path));
     qds->resize(config.num_particles);
