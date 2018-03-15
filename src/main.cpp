@@ -23,15 +23,16 @@ int main(int argc, char *argv[])
     auto vm = parse_configs(argc, argv);
 
     cout << "Initializing..." << endl;
+    std::cout << static_cast<bool>(config.sim_type) << std::endl;
 
     auto qds = make_shared<DotVector>(import_dots(config.qd_path));
     qds->resize(config.num_particles);
-    auto rhs_funs = rhs_functions(*qds, config.omega);
+    auto rhs_funcs = rhs_functions(*qds, config.omega);
 
     // Set up History
-    auto history = std::make_shared<Integrator::History<Eigen::Vector2cd>>(
+    auto history = make_shared<Integrator::History<Eigen::Vector2cd>>(
         config.num_particles, 22, config.num_timesteps);
-    history->fill(Eigen::Vector2cd(0, 0));
+    history->fill(Eigen::Vector2cd::Zero());
     history->initialize_past(Eigen::Vector2cd(1, 0));
 
     // Set up Interactions
@@ -44,20 +45,25 @@ int main(int argc, char *argv[])
             .max_transit_steps(config.c0, config.dt) +
         config.interpolation_order;
 
+    std::shared_ptr<InteractionBase> pairwise;
+    if(config.sim_type == Configuration::SIMULATION_TYPE::FAST) {
+      pairwise = make_shared<AIM::Interaction>(
+          qds, history, rotating_dyadic, config.grid_spacing,
+          config.interpolation_order, config.expansion_order, config.border,
+          config.c0, config.dt, AIM::Expansions::RotatingEFIE(
+                                    wsteps, config.c0, config.dt, config.omega),
+          AIM::normalization::Helmholtz(
+              config.omega / config.c0,
+              (config.mu0 / (4 * M_PI * config.hbar))));
+    } else {
+      pairwise = make_shared<DirectInteraction>(qds, history, rotating_dyadic,
+                                                config.interpolation_order,
+                                                config.c0, config.dt);
+    }
+
     std::vector<std::shared_ptr<InteractionBase>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
-        make_shared<AIM::Interaction>(
-            qds, history, rotating_dyadic, config.grid_spacing,
-            config.interpolation_order, config.expansion_order, config.border,
-            config.c0, config.dt,
-            AIM::Expansions::RotatingEFIE(wsteps, config.c0, config.dt,
-                                          config.omega),
-            AIM::normalization::Helmholtz(
-                config.omega / config.c0,
-                (config.mu0 / (4 * M_PI * config.hbar))))};
-
-    // Set up RHS functions
-    auto rhs_funcs = rhs_functions(*qds, config.omega);
+        pairwise};
 
     // Set up Bloch RHS
     std::unique_ptr<Integrator::RHS<Eigen::Vector2cd>> bloch_rhs =

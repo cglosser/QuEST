@@ -13,6 +13,7 @@ struct Configuration {
   // Parameters
   int num_particles, num_timesteps, interpolation_order;
   double dt, total_time;
+  enum class SIMULATION_TYPE { FAST, DIRECT } sim_type;
 
   // File paths
   std::string qd_path, pulse_path;
