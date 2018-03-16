@@ -10,7 +10,7 @@ AIM::DirectInteraction::DirectInteraction(
     const double dt,
     const Grid &grid)
     : HistoryInteraction(dots, history, interp_order, c0, dt),
-      interaction_pairs(make_pair_list(border, grid)),
+      interaction_pairs(grid.nearfield_point_pairs(border, *dots)),
       shape({{static_cast<int>(interaction_pairs.size()), interp_order + 1}}),
       floor_delays(shape[0]),
       coefficients(shape)
@@ -41,31 +41,6 @@ const InteractionBase::ResultArray &AIM::DirectInteraction::evaluate(
   }
 
   return results;
-}
-
-std::vector<std::pair<int, int>> AIM::DirectInteraction::make_pair_list(
-    const int border, const Grid &grid) const
-{
-  std::vector<std::pair<int, int>> particle_pairs;
-  auto mapping = grid.box_contents_map(*dots);
-
-  for(const auto &p : grid.nearfield_pairs(border, *dots)) {
-    DotVector::const_iterator begin1, end1, begin2, end2;
-
-    std::tie(begin1, end1) = mapping[p.first];
-    std::tie(begin2, end2) = mapping[p.second];
-
-    for(auto dot1 = begin1; dot1 != end1; ++dot1) {
-      auto idx1{std::distance(dots->begin(), dot1)};
-      for(auto dot2 = begin2; dot2 != end2; ++dot2) {
-        auto idx2{std::distance(dots->begin(), dot2)};
-
-        if(idx1 < idx2) particle_pairs.emplace_back(idx1, idx2);
-      }
-    }
-  }
-
-  return particle_pairs;
 }
 
 void AIM::DirectInteraction::build_coefficient_table(

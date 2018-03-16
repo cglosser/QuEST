@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(NEARFIELD_PAIRS)
 
   AIM::Grid grid(Eigen::Array3d(1, 1, 1), 0, dots);
 
-  const auto nf = grid.nearfield_pairs(1, dots);
+  const auto nf = grid.nearfield_box_pairs(1, dots);
 
   BOOST_CHECK_EQUAL(nf.size(), 4);
   BOOST_CHECK(nf.at(0) == std::make_pair(0, 0));

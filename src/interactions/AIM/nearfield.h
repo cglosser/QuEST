@@ -22,7 +22,6 @@ class AIM::Nearfield final : public AimBase {
   ~Nearfield() = default;
 
   const ResultArray &evaluate(const int) final;
-  std::vector<std::pair<int, int>> make_pair_list(const int) const;
 
  private:
   std::vector<std::pair<int, int>> interaction_pairs_;

@@ -92,7 +92,7 @@ std::vector<size_t> AIM::Grid::expansion_indices(const int grid_index) const
   return indices;
 }
 
-std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
+std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_box_pairs(
     const int border, const DotVector &dots) const
 {
   std::vector<ipair_t> nf;
@@ -122,6 +122,32 @@ std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_pairs(
 
   nf.shrink_to_fit();
   return nf;
+}
+
+std::vector<AIM::Grid::ipair_t> AIM::Grid::nearfield_point_pairs(
+    const int border, const DotVector &dots) const
+{
+  std::vector<ipair_t> particle_pairs;
+  auto mapping = box_contents_map(dots);
+
+  for(const auto &p : nearfield_box_pairs(border, dots)) {
+    DotVector::const_iterator begin1, end1, begin2, end2;
+
+    std::tie(begin1, end1) = mapping[p.first];
+    std::tie(begin2, end2) = mapping[p.second];
+
+    for(auto dot1 = begin1; dot1 != end1; ++dot1) {
+      auto idx1{std::distance(dots.begin(), dot1)};
+      for(auto dot2 = begin2; dot2 != end2; ++dot2) {
+        auto idx2{std::distance(dots.begin(), dot2)};
+
+        if(idx1 <= idx2) particle_pairs.emplace_back(idx1, idx2);
+      }
+    }
+  }
+
+  particle_pairs.shrink_to_fit();
+  return particle_pairs;
 }
 
 void AIM::Grid::sort_points_on_boxidx(DotVector &dots) const

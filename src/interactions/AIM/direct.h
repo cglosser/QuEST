@@ -20,8 +20,6 @@ class AIM::DirectInteraction final : public HistoryInteraction {
       const AIM::Grid &);
 
   const ResultArray &evaluate(const int) final;
-  std::vector<std::pair<int, int>> make_pair_list(const int,
-                                                  const Grid &) const;
 
  private:
   std::vector<std::pair<int, int>> interaction_pairs;

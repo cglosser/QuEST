@@ -20,7 +20,7 @@ AIM::Nearfield::Nearfield(
               expansion_table,
               expansion_function,
               normalization),
-      interaction_pairs_(make_pair_list(border)),
+      interaction_pairs_(grid->nearfield_point_pairs(border, *dots)),
       shape_({{static_cast<int>(interaction_pairs_.size()),
                grid->max_transit_steps(c0, dt) + interp_order}}),
       coefficients_{build_coefficient_table(interp_order)}
@@ -47,31 +47,6 @@ const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
   }
 
   return results;
-}
-
-std::vector<std::pair<int, int>> AIM::Nearfield::make_pair_list(
-    const int border) const
-{
-  std::vector<std::pair<int, int>> particle_pairs;
-  auto mapping = grid->box_contents_map(*dots);
-
-  for(const auto &p : grid->nearfield_pairs(border, *dots)) {
-    DotVector::const_iterator begin1, end1, begin2, end2;
-
-    std::tie(begin1, end1) = mapping[p.first];
-    std::tie(begin2, end2) = mapping[p.second];
-
-    for(auto dot1 = begin1; dot1 != end1; ++dot1) {
-      auto idx1{std::distance(dots->begin(), dot1)};
-      for(auto dot2 = begin2; dot2 != end2; ++dot2) {
-        auto idx2{std::distance(dots->begin(), dot2)};
-
-        if(idx1 <= idx2) particle_pairs.emplace_back(idx1, idx2);
-      }
-    }
-  }
-
-  return particle_pairs;
 }
 
 boost::multi_array<cmplx, 2> AIM::Nearfield::build_coefficient_table(
