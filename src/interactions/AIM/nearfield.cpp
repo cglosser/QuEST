@@ -7,171 +7,117 @@ AIM::Nearfield::Nearfield(
     const int border,
     const double c0,
     const double dt,
-    const Grid &grid,
-    const Expansions::ExpansionTable &expansion_table,
+    std::shared_ptr<const Grid> grid,
+    std::shared_ptr<const Expansions::ExpansionTable> expansion_table,
     Expansions::ExpansionFunction expansion_function,
-    normalization::SpatialNorm normalization)
-    : AimBase(
-          dots,
-          history,
-          interp_order,
-          c0,
-          dt,
-          grid,
-          expansion_table,
-          expansion_function,
-          normalization,
-          {{grid.max_transit_steps(c0, dt) + interp_order,
-            (int)grid.nearfield_pairs(border, *dots).size(),
-            (int)expansion_table.shape()[1], (int)expansion_table.shape()[1]}}),
-      mapping{grid.box_contents_map(*dots)},
-      neighbors{grid.nearfield_pairs(border, *dots)}
+    Normalization::SpatialNorm normalization)
+    : AimBase(dots,
+              history,
+              interp_order,
+              c0,
+              dt,
+              grid,
+              expansion_table,
+              expansion_function,
+              normalization),
+      interaction_pairs_(make_pair_list(border)),
+      shape_({{static_cast<int>(interaction_pairs_.size()),
+               grid->max_transit_steps(c0, dt) + interp_order}}),
+      coefficients_{build_coefficient_table(shape_, interp_order)}
 {
-  // The order here is time, pair, point set, expansion index, vector dimension
-  // in accordance with the FIELD_AXIS_LABEL enum. Each matrix product maps a
-  // set of E points into a set of E points -- these sets are what are indexed
-  // by "point set" (0 corresponds to expansion points for the lower-indexed box
-  // and 1 corresponds to the same for the equally or higher indexed box, as
-  // determined by the structure of neighbors.
-  //
-  // It's the biggest hack that the dimensions of these arrays are the same for
-  // the NF and FF code. Sorry.
-  field_table_dims = {
-      {table_dimensions[0], table_dimensions[1], 2, table_dimensions[2], 3}};
-  source_table.resize(field_table_dims);
-  obs_table.resize(field_table_dims);
-  propagation_table = make_propagation_table();
 }
 
-void AIM::Nearfield::fill_source_table(const int step)
+const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
 {
-  using namespace Expansions::enums;
+  results.setZero();
 
-  const int wrapped_step = step % table_dimensions[0];
-  spacetime::clear_time_slice(source_table, wrapped_step);
+  for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
+    const auto &pair = interaction_pairs_[pair_idx];
 
-  for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
-    size_t box1, box2;
-    std::tie(box1, box2) = neighbors[p];
+    for(int i = 0; i < shape_[1]; ++i) {
+      const int s = std::max(
+          time_idx - i, static_cast<int>(history->array_.index_bases()[1]));
 
-    for(int e = 0; e < field_table_dims[EXPANSIONS]; ++e) {
-      Eigen::Map<Eigen::Vector3cd> grid_field1(
-          &source_table[wrapped_step][p][0][e][0]);
+      constexpr int RHO_01 = 1;
 
-      DotVector::const_iterator start, end;
-      std::tie(start, end) = mapping[box1];
-      for(auto d = start; d != end; ++d) {
-        const auto dot_idx = std::distance(dots->begin(), d);
-        grid_field1 += expansion_table[dot_idx][e].d0 *
-                       (*dots)[dot_idx].dipole() *
-                       history->array_[dot_idx][step][0][RHO_01];
-      }
+      results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
+                             coefficients_[pair_idx][i];
+      results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
+                              coefficients_[pair_idx][i];
+    }
+  }
 
-      Eigen::Map<Eigen::Vector3cd> grid_field2(
-          &source_table[wrapped_step][p][1][e][0]);
+  return results;
+}
 
-      std::tie(start, end) = mapping[box2];
-      for(auto d = start; d != end; ++d) {
-        const auto dot_idx = std::distance(dots->begin(), d);
-        grid_field2 += expansion_table[dot_idx][e].d0 *
-                       (*dots)[dot_idx].dipole() *
-                       history->array_[dot_idx][step][0][RHO_01];
+std::vector<std::pair<int, int>> AIM::Nearfield::make_pair_list(
+    const int border) const
+{
+  std::vector<std::pair<int, int>> particle_pairs;
+  auto mapping = grid->box_contents_map(*dots);
+
+  for(const auto &p : grid->nearfield_pairs(border, *dots)) {
+    DotVector::const_iterator begin1, end1, begin2, end2;
+
+    std::tie(begin1, end1) = mapping[p.first];
+    std::tie(begin2, end2) = mapping[p.second];
+
+    for(auto dot1 = begin1; dot1 != end1; ++dot1) {
+      auto idx1{std::distance(dots->begin(), dot1)};
+      for(auto dot2 = begin2; dot2 != end2; ++dot2) {
+        auto idx2{std::distance(dots->begin(), dot2)};
+
+        if(idx1 < idx2) particle_pairs.emplace_back(idx1, idx2);
       }
     }
   }
+
+  return particle_pairs;
 }
 
-void AIM::Nearfield::propagate(const int step)
+boost::multi_array<cmplx, 2> AIM::Nearfield::build_coefficient_table(
+    const std::array<int, 2> &shape, const int interp_order) const
 {
-  using Mat3d = Eigen::Matrix<cmplx, Eigen::Dynamic, 3, Eigen::RowMajor>;
+  boost::multi_array<cmplx, 2> coefficients(shape);
+  std::fill(coefficients.data(),
+            coefficients.data() + coefficients.num_elements(), cmplx(0, 0));
 
-  const auto wrapped_step = step % table_dimensions[0];
-  spacetime::clear_time_slice(obs_table, wrapped_step);
+  Interpolation::UniformLagrangeSet lagrange(interp_order);
 
-  for(int t = 1; t < field_table_dims[STEPS]; ++t) {
-    const int wrap = std::max(step - t, 0) % table_dimensions[0];
-    for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
-      Eigen::Map<Eigen::MatrixXcd> mat(&propagation_table[t][p][0][0],
-                                       table_dimensions[2],
-                                       table_dimensions[2]);
+  for(int pair_idx = 0; pair_idx < shape[0]; ++pair_idx) {
+    const auto &pair = interaction_pairs_[pair_idx];
 
-      Eigen::Map<Mat3d> src1(&source_table[wrap][p][0][0][0],
-                             table_dimensions[2], 3);
-      Eigen::Map<Mat3d> obs1(&obs_table[wrapped_step][p][1][0][0],
-                             table_dimensions[2], 3);
+    const double innerprod =
+        (*dots)[pair.second].dipole().dot((*dots)[pair.first].dipole());
 
-      obs1 += mat * src1;
+    for(size_t e1 = 0; e1 < expansion_table->shape()[1]; ++e1) {
+      for(size_t e2 = 0; e2 < expansion_table->shape()[1]; ++e2) {
+        int idx1 = (*expansion_table)[pair.first][e1].index,
+            idx2 = (*expansion_table)[pair.second][e2].index;
 
-      if(neighbors[p].first == neighbors[p].second) continue;
+        if(idx1 == idx2) continue;
 
-      Eigen::Map<Mat3d> src2(&source_table[wrap][p][1][0][0],
-                             table_dimensions[2], 3);
-      Eigen::Map<Mat3d> obs2(&obs_table[wrapped_step][p][0][0][0],
-                             table_dimensions[2], 3);
-
-      obs2 += mat.transpose() * src2;
-    }
-  }
-}
-
-void AIM::Nearfield::fill_results_table(const int step)
-{
-  results = 0;
-
-  for(int p = 0; p < field_table_dims[PAIRS]; ++p) {
-    size_t box1, box2;
-    std::tie(box1, box2) = neighbors[p];
-
-    for(int e = 0; e < field_table_dims[EXPANSIONS]; ++e) {
-      DotVector::const_iterator start, end;
-      std::tie(start, end) = mapping[box1];
-      for(auto d = start; d != end; ++d) {
-        const auto dot_idx = std::distance(dots->begin(), d);
-        results(dot_idx) += (*dots)[dot_idx].dipole().dot(expansion_function(
-            obs_table, {{step, p, 0, e}}, expansion_table[dot_idx][e]));
-      }
-
-      std::tie(start, end) = mapping[box2];
-      for(auto d = start; d != end; ++d) {
-        const auto dot_idx = std::distance(dots->begin(), d);
-        results(dot_idx) += (*dots)[dot_idx].dipole().dot(expansion_function(
-            obs_table, {{step, p, 1, e}}, expansion_table[dot_idx][e]));
-      }
-    }
-  }
-}
-
-spacetime::vector<cmplx> AIM::Nearfield::make_propagation_table() const
-{
-  spacetime::vector<cmplx> prop(table_dimensions);
-  std::fill(prop.data(), prop.data() + prop.num_elements(), cmplx(0.0, 0.0));
-
-  Interpolation::UniformLagrangeSet interp(interp_order);
-
-  for(size_t p = 0; p < neighbors.size(); ++p) {
-    const auto expansion1 = grid.expansion_indices(neighbors[p].first);
-    const auto expansion2 = grid.expansion_indices(neighbors[p].second);
-
-    for(size_t e1 = 0; e1 < expansion_table.shape()[1]; ++e1) {
-      for(size_t e2 = 0; e2 < expansion_table.shape()[1]; ++e2) {
-        if(expansion1[e1] == expansion2[e2]) continue;
-        Eigen::Vector3d dr = grid.spatial_coord_of_box(expansion1[e1]) -
-                             grid.spatial_coord_of_box(expansion2[e2]);
+        Eigen::Vector3d dr(grid->spatial_coord_of_box(idx2) -
+                           grid->spatial_coord_of_box(idx1));
 
         const double arg = dr.norm() / (c0 * dt);
-        const std::pair<int, double> split_arg = split_double(arg);
+        const auto split_arg = split_double(arg);
 
-        for(int t = 0; t < table_dimensions[0]; ++t) {
+        for(int t = 1; t < shape[1]; ++t) {
           const auto polynomial_idx = static_cast<int>(ceil(t - arg));
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
-            interp.evaluate_derivative_table_at_x(split_arg.second, dt);
-            prop[t][p][e1][e2] =
-                interp.evaluations[0][polynomial_idx] * normalization(dr);
+            lagrange.evaluate_derivative_table_at_x(split_arg.second, dt);
+            cmplx matrix_element =
+                lagrange.evaluations[0][polynomial_idx] * normalization(dr);
+
+            coefficients[pair_idx][t] +=
+                innerprod * (*expansion_table)[pair.second][e2].d0 *
+                matrix_element * (*expansion_table)[pair.first][e1].d0;
           }
         }
       }
     }
   }
 
-  return prop;
+  return coefficients;
 }

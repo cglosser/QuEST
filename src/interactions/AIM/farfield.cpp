@@ -6,10 +6,10 @@ AIM::Farfield::Farfield(
     const int interp_order,
     const double c0,
     const double dt,
-    const Grid &grid,
-    const Expansions::ExpansionTable &expansion_table,
+    std::shared_ptr<const Grid> grid,
+    std::shared_ptr<const Expansions::ExpansionTable> expansion_table,
     Expansions::ExpansionFunction expansion_function,
-    normalization::SpatialNorm normalization)
+    Normalization::SpatialNorm normalization)
     : AimBase(dots,
               history,
               interp_order,
@@ -18,29 +18,39 @@ AIM::Farfield::Farfield(
               grid,
               expansion_table,
               expansion_function,
-              normalization,
-              grid.circulant_shape(c0, dt, interp_order)),
-      spatial_vector_transforms(spatial_fft_plans())
+              normalization),
+      table_dimensions_{grid->circulant_shape(c0, dt, interp_order)},
+      propagation_table_{make_propagation_table()},
+      source_table_{spacetime::make_vector3d<cmplx>(table_dimensions_)},
+      obs_table_{spacetime::make_vector3d<cmplx>(table_dimensions_)},
+      spatial_vector_transforms_{spatial_fft_plans()}
 {
-  propagation_table = make_propagation_table();
+  auto clear = [](auto &table) {
+    std::fill(table.data(), table.data() + table.num_elements(), cmplx(0, 0));
+  };
+
+  clear(source_table_);
+  clear(obs_table_);
 }
 
 void AIM::Farfield::fill_source_table(const int step)
 {
   using namespace Expansions::enums;
 
-  const int wrapped_step = step % table_dimensions[0];
-  const auto p = &source_table[wrapped_step][0][0][0][0];
-  std::fill(p, p + 3 * 8 * grid.size(), cmplx(0, 0));
+  const int wrapped_step = step % table_dimensions_[0];
+  const auto p = &source_table_[wrapped_step][0][0][0][0];
 
-  for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
-    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
+  std::fill(p, p + 3 * 8 * grid->size(), cmplx(0, 0));
+
+  for(auto dot_idx = 0u; dot_idx < expansion_table->shape()[0]; ++dot_idx) {
+    for(auto expansion_idx = 0u; expansion_idx < expansion_table->shape()[1];
         ++expansion_idx) {
-      const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
-      Eigen::Vector3i coord = grid.idx_to_coord(e.index);
+      const Expansions::Expansion &e =
+          (*expansion_table)[dot_idx][expansion_idx];
+      Eigen::Vector3i coord = grid->idx_to_coord(e.index);
 
       Eigen::Map<Eigen::Vector3cd> grid_field(
-          &source_table[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
+          &source_table_[wrapped_step][coord(0)][coord(1)][coord(2)][0]);
 
       // This is the seam between what's stored in the History (density matrix
       // elements) and the electromagnetic source quantities. Ideally the AIM
@@ -55,31 +65,31 @@ void AIM::Farfield::fill_source_table(const int step)
 
 void AIM::Farfield::propagate(const int step)
 {
-  const auto wrapped_step = step % table_dimensions[0];
-  const auto nb = 8 * grid.size();
+  const auto wrapped_step = step % table_dimensions_[0];
+  const auto nb = 8 * grid->size();
   const std::array<int, 5> front = {{wrapped_step, 0, 0, 0, 0}};
 
-  const auto s_ptr = &source_table(front);
-  fftw_execute_dft(spatial_vector_transforms.forward,
+  const auto s_ptr = &source_table_(front);
+  fftw_execute_dft(spatial_vector_transforms_.forward,
                    reinterpret_cast<fftw_complex *>(s_ptr),
                    reinterpret_cast<fftw_complex *>(s_ptr));
 
-  Eigen::Map<Eigen::Array3Xcd> observers(&obs_table(front), 3, nb);
+  Eigen::Map<Eigen::Array3Xcd> observers(&obs_table_(front), 3, nb);
   observers = 0;
 
-  for(int i = 1; i < table_dimensions[0]; ++i) {
+  for(int i = 1; i < table_dimensions_[0]; ++i) {
     // If (step - i) runs "off the end", just propagate src[0][...]
-    auto wrap = std::max(step - i, 0) % table_dimensions[0];
+    auto wrap = std::max(step - i, 0) % table_dimensions_[0];
 
-    Eigen::Map<Eigen::ArrayXcd> prop(&propagation_table[i][0][0][0], nb);
-    Eigen::Map<Eigen::Array3Xcd> src(&source_table[wrap][0][0][0][0], 3, nb);
+    Eigen::Map<Eigen::ArrayXcd> prop(&propagation_table_[i][0][0][0], nb);
+    Eigen::Map<Eigen::Array3Xcd> src(&source_table_[wrap][0][0][0][0], 3, nb);
 
     // Use broadcasting to do the x, y, and z component propagation
     observers += src.rowwise() * prop.transpose();
   }
 
-  const auto o_ptr = &obs_table(front);
-  fftw_execute_dft(spatial_vector_transforms.backward,
+  const auto o_ptr = &obs_table_(front);
+  fftw_execute_dft(spatial_vector_transforms_.backward,
                    reinterpret_cast<fftw_complex *>(o_ptr),
                    reinterpret_cast<fftw_complex *>(o_ptr));
 }
@@ -88,14 +98,15 @@ void AIM::Farfield::fill_results_table(const int step)
 {
   results = 0;
 
-  for(auto dot_idx = 0u; dot_idx < expansion_table.shape()[0]; ++dot_idx) {
+  for(auto dot_idx = 0u; dot_idx < expansion_table->shape()[0]; ++dot_idx) {
     Eigen::Vector3cd total_field = Eigen::Vector3cd::Zero();
-    for(auto expansion_idx = 0u; expansion_idx < expansion_table.shape()[1];
+    for(auto expansion_idx = 0u; expansion_idx < expansion_table->shape()[1];
         ++expansion_idx) {
-      const Expansions::Expansion &e = expansion_table[dot_idx][expansion_idx];
-      Eigen::Vector3i coord = grid.idx_to_coord(e.index);
+      const Expansions::Expansion &e =
+          (*expansion_table)[dot_idx][expansion_idx];
+      Eigen::Vector3i coord = grid->idx_to_coord(e.index);
       total_field += expansion_function(
-          obs_table, {{step, coord(0), coord(1), coord(2)}}, e);
+          obs_table_, {{step, coord(0), coord(1), coord(2)}}, e);
       // Don't use a _wrapped_ step here; the expansion_function needs knowledge
       // of where it's being called in the complete timeline to accommodate
       // boundary conditions
@@ -106,12 +117,12 @@ void AIM::Farfield::fill_results_table(const int step)
 
 spacetime::vector<cmplx> AIM::Farfield::make_propagation_table() const
 {
-  spacetime::vector<cmplx> g_mat(table_dimensions);
+  spacetime::vector<cmplx> g_mat(table_dimensions_);
 
   const int num_gridpts =
-      table_dimensions[1] * table_dimensions[2] * table_dimensions[3];
+      table_dimensions_[1] * table_dimensions_[2] * table_dimensions_[3];
   TransformPair circulant_plan = {
-      fftw_plan_many_dft(3, &table_dimensions[1], table_dimensions[0],
+      fftw_plan_many_dft(3, &table_dimensions_[1], table_dimensions_[0],
                          reinterpret_cast<fftw_complex *>(g_mat.data()),
                          nullptr, 1, num_gridpts,
                          reinterpret_cast<fftw_complex *>(g_mat.data()),
@@ -149,20 +160,20 @@ void AIM::Farfield::fill_gmatrix_table(
 
   Interpolation::UniformLagrangeSet interp(interp_order);
 
-  for(int x = 0; x < grid.shape()[0]; ++x) {
-    for(int y = 0; y < grid.shape()[1]; ++y) {
-      for(int z = 0; z < grid.shape()[2]; ++z) {
-        const size_t box_idx = grid.coord_to_idx({x, y, z});
+  for(int x = 0; x < grid->shape()[0]; ++x) {
+    for(int y = 0; y < grid->shape()[1]; ++y) {
+      for(int z = 0; z < grid->shape()[2]; ++z) {
+        const size_t box_idx = grid->coord_to_idx({x, y, z});
 
         if(box_idx == 0) continue;
 
         const Eigen::Vector3d dr =
-            grid.spatial_coord_of_box(box_idx) - grid.spatial_coord_of_box(0);
+            grid->spatial_coord_of_box(box_idx) - grid->spatial_coord_of_box(0);
 
         const double arg = dr.norm() / (c0 * dt);
         const std::pair<int, double> split_arg = split_double(arg);
 
-        for(int t = 1; t < table_dimensions[0]; ++t) {
+        for(int t = 1; t < table_dimensions_[0]; ++t) {
           const auto polynomial_idx = static_cast<int>(ceil(t - arg));
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             interp.evaluate_derivative_table_at_x(split_arg.second, dt);
@@ -193,10 +204,10 @@ TransformPair AIM::Farfield::spatial_fft_plans()
 
   auto make_plan = [&](const int sign) {
     return fftw_plan_many_dft(
-        transform_rank, &table_dimensions[1], num_transforms,
-        reinterpret_cast<fftw_complex *>(source_table.data()), nullptr,
+        transform_rank, &table_dimensions_[1], num_transforms,
+        reinterpret_cast<fftw_complex *>(source_table_.data()), nullptr,
         dist_between_elements, dist_between_transforms,
-        reinterpret_cast<fftw_complex *>(source_table.data()), nullptr,
+        reinterpret_cast<fftw_complex *>(source_table_.data()), nullptr,
         dist_between_elements, dist_between_transforms, sign, FFTW_MEASURE);
   };
 

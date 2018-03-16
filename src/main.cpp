@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
           config.c0, config.dt,
           AIM::Expansions::RotatingEFIE(transit_steps, config.c0, config.dt,
                                         config.omega),
-          AIM::normalization::Helmholtz(
+          AIM::Normalization::Helmholtz(
               config.omega / config.c0,
               (config.mu0 / (4 * M_PI * config.hbar))));
     } else {

@@ -22,11 +22,12 @@ class AIM::Interaction final : public InteractionBase {
               const double c0,
               const double dt,
               Expansions::ExpansionFunction expansion_function,
-              normalization::SpatialNorm normalization)
+              Normalization::SpatialNorm normalization)
       : InteractionBase(dots, dt),
-        grid(spacing, expansion_order, *dots),
-        expansion_table(Expansions::LeastSquaresExpansionSolver::get_expansions(
-            expansion_order, grid, *dots)),
+        grid{std::make_shared<Grid>(spacing, expansion_order, *dots)},
+        expansion_table{std::make_shared<Expansions::ExpansionTable>(
+            Expansions::LeastSquaresExpansionSolver::get_expansions(
+                expansion_order, *grid, *dots))},
 
         ff(dots,
            history,
@@ -49,7 +50,7 @@ class AIM::Interaction final : public InteractionBase {
            expansion_function,
            normalization),
 
-        direct(dots, history, kernel, interp_order, border, c0, dt, grid)
+        direct(dots, history, kernel, interp_order, border, c0, dt, *grid)
   {
   }
 
@@ -62,8 +63,8 @@ class AIM::Interaction final : public InteractionBase {
   }
 
  private:
-  Grid grid;
-  Expansions::ExpansionTable expansion_table;
+  std::shared_ptr<Grid> grid;
+  std::shared_ptr<Expansions::ExpansionTable> expansion_table;
 
   Farfield ff;
   Nearfield nf;

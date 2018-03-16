@@ -15,23 +15,22 @@ class AIM::Nearfield final : public AimBase {
             const int,
             const double,
             const double,
-            const Grid &,
-            const Expansions::ExpansionTable &,
+            std::shared_ptr<const Grid>,
+            std::shared_ptr<const Expansions::ExpansionTable>,
             Expansions::ExpansionFunction,
-            normalization::SpatialNorm);
-
+            Normalization::SpatialNorm);
   ~Nearfield() = default;
 
- private:
-  enum FIELD_AXIS_LABEL { STEPS, PAIRS, POINTSETS, EXPANSIONS, DIMS };
-  std::array<int, 5> field_table_dims;
-  std::vector<const_DotRange> mapping;
-  std::vector<Grid::ipair_t> neighbors;
+  const ResultArray &evaluate(const int) final;
+  std::vector<std::pair<int, int>> make_pair_list(const int) const;
 
-  spacetime::vector<cmplx> make_propagation_table() const override;
-  void fill_source_table(const int) override;
-  void propagate(const int) override;
-  void fill_results_table(const int) override;
+ private:
+  std::vector<std::pair<int, int>> interaction_pairs_;
+  std::array<int, 2> shape_;
+  boost::multi_array<cmplx, 2> coefficients_;
+
+  boost::multi_array<cmplx, 2> build_coefficient_table(
+      const std::array<int, 2> &, const int) const;
 };
 
 #endif
