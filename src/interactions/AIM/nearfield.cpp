@@ -23,7 +23,7 @@ AIM::Nearfield::Nearfield(
       interaction_pairs_(make_pair_list(border)),
       shape_({{static_cast<int>(interaction_pairs_.size()),
                grid->max_transit_steps(c0, dt) + interp_order}}),
-      coefficients_{build_coefficient_table(shape_, interp_order)}
+      coefficients_{build_coefficient_table(interp_order)}
 {
 }
 
@@ -67,7 +67,7 @@ std::vector<std::pair<int, int>> AIM::Nearfield::make_pair_list(
       for(auto dot2 = begin2; dot2 != end2; ++dot2) {
         auto idx2{std::distance(dots->begin(), dot2)};
 
-        if(idx1 < idx2) particle_pairs.emplace_back(idx1, idx2);
+        if(idx1 <= idx2) particle_pairs.emplace_back(idx1, idx2);
       }
     }
   }
@@ -76,18 +76,19 @@ std::vector<std::pair<int, int>> AIM::Nearfield::make_pair_list(
 }
 
 boost::multi_array<cmplx, 2> AIM::Nearfield::build_coefficient_table(
-    const std::array<int, 2> &shape, const int interp_order) const
+    const int interp_order) const
 {
-  boost::multi_array<cmplx, 2> coefficients(shape);
+  boost::multi_array<cmplx, 2> coefficients(shape_);
   std::fill(coefficients.data(),
             coefficients.data() + coefficients.num_elements(), cmplx(0, 0));
 
   Interpolation::UniformLagrangeSet lagrange(interp_order);
 
-  for(int pair_idx = 0; pair_idx < shape[0]; ++pair_idx) {
+  for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
     const auto &pair = interaction_pairs_[pair_idx];
 
     const double innerprod =
+        ((pair.first == pair.second) ? 0.5 : 1) *
         (*dots)[pair.second].dipole().dot((*dots)[pair.first].dipole());
 
     for(size_t e1 = 0; e1 < expansion_table->shape()[1]; ++e1) {
