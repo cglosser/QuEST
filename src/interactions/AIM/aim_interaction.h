@@ -22,7 +22,8 @@ class AIM::Interaction final : public InteractionBase {
               const double c0,
               const double dt,
               Expansions::ExpansionFunction expansion_function,
-              Normalization::SpatialNorm normalization)
+              Normalization::SpatialNorm normalization,
+              const double omega = 0)
       : InteractionBase(dots, dt),
         grid{std::make_shared<Grid>(spacing, expansion_order, *dots)},
         expansion_table{std::make_shared<Expansions::ExpansionTable>(
@@ -50,7 +51,8 @@ class AIM::Interaction final : public InteractionBase {
            expansion_table,
            expansion_function,
            normalization,
-           nearfield_pairs),
+           nearfield_pairs,
+           omega),
 
         direct(dots, history, kernel, interp_order, c0, dt, nearfield_pairs)
   {

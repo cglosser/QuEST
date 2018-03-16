@@ -18,17 +18,21 @@ class AIM::Nearfield final : public AimBase {
             std::shared_ptr<const Expansions::ExpansionTable>,
             Expansions::ExpansionFunction,
             Normalization::SpatialNorm,
-            std::shared_ptr<const std::vector<Grid::ipair_t>>);
+            std::shared_ptr<const std::vector<Grid::ipair_t>>,
+            const double = 0);
   ~Nearfield() = default;
 
   const ResultArray &evaluate(const int) final;
 
  private:
-  std::shared_ptr<const std::vector<Grid::ipair_t>> interaction_pairs_;
-  std::array<int, 2> shape_;
-  boost::multi_array<cmplx, 2> coefficients_;
+  std::array<double, 6> dt_coef_, dt_sq_coef_;
 
-  boost::multi_array<cmplx, 2> coefficient_table(const int) const;
+  double omega_;
+  std::shared_ptr<const std::vector<Grid::ipair_t>> interaction_pairs_;
+  std::array<int, 3> shape_;
+  boost::multi_array<cmplx, 3> coefficients_;
+
+  boost::multi_array<cmplx, 3> coefficient_table(const int) const;
 };
 
 #endif
