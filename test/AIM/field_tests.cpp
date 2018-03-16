@@ -58,7 +58,7 @@ struct EQUIVALENCE_BASE : public PARAMETERS {
   {
     for(int t = 0; t < n_steps; ++t) {
       auto eval = p.nf->evaluate(t) - p.ff->evaluate(t);
-      BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
+      if(t > n_steps / 10) BOOST_CHECK_SMALL(eval.matrix().norm(), 1e-12);
     }
   }
 };
