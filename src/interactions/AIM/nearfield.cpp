@@ -30,20 +30,19 @@ AIM::Nearfield::Nearfield(
 const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
 {
   results.setZero();
+  constexpr int RHO_01 = 1;
 
   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
     const auto &pair = interaction_pairs_[pair_idx];
 
-    for(int i = 0; i < shape_[1]; ++i) {
+    for(int t = 0; t < shape_[1]; ++t) {
       const int s = std::max(
-          time_idx - i, static_cast<int>(history->array_.index_bases()[1]));
-
-      constexpr int RHO_01 = 1;
+          time_idx - t, static_cast<int>(history->array_.index_bases()[1]));
 
       results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
-                             coefficients_[pair_idx][i];
+                             coefficients_[pair_idx][t];
       results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
-                              coefficients_[pair_idx][i];
+                              coefficients_[pair_idx][t];
     }
   }
 
@@ -104,7 +103,7 @@ boost::multi_array<cmplx, 2> AIM::Nearfield::build_coefficient_table(
         const double arg = dr.norm() / (c0 * dt);
         const auto split_arg = split_double(arg);
 
-        for(int t = 1; t < shape[1]; ++t) {
+        for(int t = 0; t < shape_[1]; ++t) {
           const auto polynomial_idx = static_cast<int>(ceil(t - arg));
           if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             lagrange.evaluate_derivative_table_at_x(split_arg.second, dt);
