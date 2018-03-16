@@ -28,6 +28,8 @@ class AIM::Interaction final : public InteractionBase {
         expansion_table{std::make_shared<Expansions::ExpansionTable>(
             Expansions::LeastSquaresExpansionSolver::get_expansions(
                 expansion_order, *grid, *dots))},
+        nearfield_pairs{std::make_shared<std::vector<Grid::ipair_t>>(
+            grid->nearfield_point_pairs(border, *dots))},
 
         ff(dots,
            history,
@@ -42,15 +44,15 @@ class AIM::Interaction final : public InteractionBase {
         nf(dots,
            history,
            interp_order,
-           border,
            c0,
            dt,
            grid,
            expansion_table,
            expansion_function,
-           normalization),
+           normalization,
+           nearfield_pairs),
 
-        direct(dots, history, kernel, interp_order, border, c0, dt, *grid)
+        direct(dots, history, kernel, interp_order, c0, dt, nearfield_pairs)
   {
   }
 
@@ -65,6 +67,7 @@ class AIM::Interaction final : public InteractionBase {
  private:
   std::shared_ptr<Grid> grid;
   std::shared_ptr<Expansions::ExpansionTable> expansion_table;
+  std::shared_ptr<std::vector<Grid::ipair_t>> nearfield_pairs;
 
   Farfield ff;
   Nearfield nf;

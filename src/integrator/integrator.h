@@ -117,7 +117,7 @@ void Integrator::PredictorCorrector<soltype>::log_percentage_complete(
     const int step) const
 {
   if(step % (time_idx_ubound / 10) == 0) {
-    std::cout << "\t" << static_cast<double>(step) / time_idx_ubound
+    std::cout << "\t" << static_cast<int>(10.0 * step / time_idx_ubound)
               << std::endl;
   }
 }

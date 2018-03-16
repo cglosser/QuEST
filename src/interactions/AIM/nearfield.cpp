@@ -4,13 +4,13 @@ AIM::Nearfield::Nearfield(
     const std::shared_ptr<const DotVector> dots,
     const std::shared_ptr<const Integrator::History<Eigen::Vector2cd>> history,
     const int interp_order,
-    const int border,
     const double c0,
     const double dt,
     std::shared_ptr<const Grid> grid,
     std::shared_ptr<const Expansions::ExpansionTable> expansion_table,
     Expansions::ExpansionFunction expansion_function,
-    Normalization::SpatialNorm normalization)
+    Normalization::SpatialNorm normalization,
+    std::shared_ptr<const std::vector<Grid::ipair_t>> interaction_pairs)
     : AimBase(dots,
               history,
               interp_order,
@@ -20,10 +20,10 @@ AIM::Nearfield::Nearfield(
               expansion_table,
               expansion_function,
               normalization),
-      interaction_pairs_(grid->nearfield_point_pairs(border, *dots)),
-      shape_({{static_cast<int>(interaction_pairs_.size()),
+      interaction_pairs_{std::move(interaction_pairs)},
+      shape_({{static_cast<int>(interaction_pairs_->size()),
                grid->max_transit_steps(c0, dt) + interp_order}}),
-      coefficients_{build_coefficient_table(interp_order)}
+      coefficients_{coefficient_table(interp_order)}
 {
 }
 
@@ -33,7 +33,7 @@ const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
   constexpr int RHO_01 = 1;
 
   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
-    const auto &pair = interaction_pairs_[pair_idx];
+    const auto &pair = (*interaction_pairs_)[pair_idx];
 
     for(int t = 0; t < shape_[1]; ++t) {
       const int s = std::max(
@@ -49,7 +49,7 @@ const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
   return results;
 }
 
-boost::multi_array<cmplx, 2> AIM::Nearfield::build_coefficient_table(
+boost::multi_array<cmplx, 2> AIM::Nearfield::coefficient_table(
     const int interp_order) const
 {
   boost::multi_array<cmplx, 2> coefficients(shape_);
@@ -59,7 +59,7 @@ boost::multi_array<cmplx, 2> AIM::Nearfield::build_coefficient_table(
   Interpolation::UniformLagrangeSet lagrange(interp_order);
 
   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
-    const auto &pair = interaction_pairs_[pair_idx];
+    const auto &pair = (*interaction_pairs_)[pair_idx];
 
     const double innerprod =
         ((pair.first == pair.second) ? 0.5 : 1) *

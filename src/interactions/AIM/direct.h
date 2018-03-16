@@ -14,18 +14,17 @@ class AIM::DirectInteraction final : public HistoryInteraction {
       std::shared_ptr<const Integrator::History<Eigen::Vector2cd>>,
       Propagation::Kernel<cmplx> &,
       const int,
-      const int,
       const double,
       const double,
-      const AIM::Grid &);
+      std::shared_ptr<const std::vector<Grid::ipair_t>>);
 
   const ResultArray &evaluate(const int) final;
+  boost::multi_array<cmplx, 2> coefficient_table(Propagation::Kernel<cmplx> &,
+                                                 std::vector<int> &) const;
 
  private:
-  std::vector<std::pair<int, int>> interaction_pairs;
-  std::array<int, 2> shape;
-  std::vector<int> floor_delays;
-  boost::multi_array<cmplx, 2> coefficients;
-
-  void build_coefficient_table(Propagation::Kernel<cmplx> &);
+  std::shared_ptr<const std::vector<Grid::ipair_t>> interaction_pairs_;
+  std::array<int, 2> shape_;
+  std::vector<int> floor_delays_;
+  boost::multi_array<cmplx, 2> coefficients_;
 };

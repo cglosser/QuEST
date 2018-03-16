@@ -69,17 +69,21 @@ struct RETARDATION_PARAMETERS : public EQUIVALENCE_BASE {
     auto grid = std::make_shared<AIM::Grid>(make_grid());
     auto expansion_table = std::make_shared<AIM::Expansions::ExpansionTable>(
         LSE::get_expansions(1, *grid, *dots));
+    auto nf_pairs = std::make_shared<std::vector<AIM::Grid::ipair_t>>(
+        grid->nearfield_point_pairs(100, *dots));
+
     int interp_order = 4;
 
     AIM::Expansions::Retardation potential(grid->max_transit_steps(c, dt) +
                                            interp_order);
 
-    return FieldPair{std::make_unique<AIM::Nearfield>(
-                         dots, history, interp_order, 100, c, dt, grid,
-                         expansion_table, potential, AIM::Normalization::unit),
-                     std::make_unique<AIM::Farfield>(
-                         dots, history, interp_order, c, dt, grid,
-                         expansion_table, potential, AIM::Normalization::unit)};
+    return FieldPair{
+        std::make_unique<AIM::Nearfield>(dots, history, interp_order, c, dt,
+                                         grid, expansion_table, potential,
+                                         AIM::Normalization::unit, nf_pairs),
+        std::make_unique<AIM::Farfield>(dots, history, interp_order, c, dt,
+                                        grid, expansion_table, potential,
+                                        AIM::Normalization::unit)};
   }
 };
 
@@ -125,14 +129,16 @@ struct LAPLACE_PARAMETERS : public EQUIVALENCE_BASE {
     auto grid{std::make_shared<AIM::Grid>(make_grid())};
     auto expansion_table = std::make_shared<AIM::Expansions::ExpansionTable>(
         LSE::get_expansions(1, *grid, *dots));
+    auto nf_pairs = std::make_shared<std::vector<AIM::Grid::ipair_t>>(
+        grid->nearfield_point_pairs(100, *dots));
     int interp_order = 4;
 
     AIM::Expansions::Retardation potential(grid->max_transit_steps(c, dt) +
                                            interp_order);
 
     return FieldPair{std::make_unique<AIM::Nearfield>(
-                         dots, history, 4, 100, 1, 1, grid, expansion_table,
-                         potential, AIM::Normalization::Laplace()),
+                         dots, history, 4, 1, 1, grid, expansion_table,
+                         potential, AIM::Normalization::Laplace(), nf_pairs),
                      std::make_unique<AIM::Farfield>(
                          dots, history, 4, 1, 1, grid, expansion_table,
                          potential, AIM::Normalization::Laplace())};
