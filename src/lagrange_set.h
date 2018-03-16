@@ -18,9 +18,10 @@ class Interpolation::UniformLagrangeSet {
 
   void evaluate_derivative_table_at_x(const double, const double = 1);
   int order() const { return order_; }
-
  private:
   int order_;
 };
+
+double PolyTree(const int, const int, const double);
 
 #endif
