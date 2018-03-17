@@ -177,7 +177,7 @@ void AIM::Farfield::fill_gmatrix_table(
 
         for(int t = 1; t < table_dimensions_[0]; ++t) {
           const auto polynomial_idx = static_cast<int>(ceil(t - arg));
-          if(0 <= polynomial_idx && polynomial_idx <= 5) {
+          if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
             gmatrix_table[t][x][y][z] =
                 interp.evaluations[0][polynomial_idx] * normalization(dr);
           }

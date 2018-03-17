@@ -88,7 +88,7 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table(
 
         lagrange.evaluate_derivative_table_at_x(split_arg.second);
 
-        for(int t = 0; t < shape_[1]; ++t) {
+        for(int t = 1; t < shape_[1]; ++t) {
           const auto p_idx = static_cast<int>(ceil(t - arg));
           if(0 <= p_idx && p_idx <= lagrange.order()) {
             const cmplx time =
@@ -98,14 +98,16 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table(
                 innerprod * (e0.d0 * e1.d0);
 
             coefficients[pair_idx][t][0] +=
-                -matrix_element *
-                (time - c_sq * del_sq[0] * lagrange.evaluations[0][p_idx]);
+              matrix_element * innerprod * (e0.d0 * e1.d0) * lagrange.evaluations[0][p_idx];
+                //-matrix_element *
+                //(time - c_sq * del_sq[0] * lagrange.evaluations[0][p_idx]);
 
             if(pair.first == pair.second) continue;
 
             coefficients[pair_idx][t][1] +=
-                -matrix_element *
-                (time - c_sq * del_sq[1] * lagrange.evaluations[0][p_idx]);
+              matrix_element * innerprod * (e0.d0 * e1.d0) * lagrange.evaluations[0][p_idx];
+                //-matrix_element *
+                //(time - c_sq * del_sq[1] * lagrange.evaluations[0][p_idx]);
           }
         }
       }

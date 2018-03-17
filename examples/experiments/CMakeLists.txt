@@ -17,3 +17,13 @@ add_executable(timestepping EXCLUDE_FROM_ALL "")
 target_sources(timestepping PUBLIC "${CMAKE_CURRENT_LIST_DIR}/timestepping.cpp")
 target_compile_features(timestepping PUBLIC ${CPP_FEATURES})
 target_link_libraries(timestepping PUBLIC quest ${Boost_LIBRARIES})
+
+add_executable(hotfix EXCLUDE_FROM_ALL "")
+target_sources(hotfix PUBLIC "${CMAKE_CURRENT_LIST_DIR}/hotfix.cpp")
+target_compile_features(hotfix PUBLIC ${CPP_FEATURES})
+target_link_libraries(hotfix PUBLIC quest ${Boost_LIBRARIES})
+
+add_executable(hotfix_SI EXCLUDE_FROM_ALL "")
+target_sources(hotfix_SI PUBLIC "${CMAKE_CURRENT_LIST_DIR}/hotfix_SI.cpp")
+target_compile_features(hotfix_SI PUBLIC ${CPP_FEATURES})
+target_link_libraries(hotfix_SI PUBLIC quest ${Boost_LIBRARIES})
