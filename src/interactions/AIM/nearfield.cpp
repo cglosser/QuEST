@@ -21,9 +21,6 @@ AIM::Nearfield::Nearfield(
               expansion_table,
               expansion_function,
               normalization),
-      dt_coef_{{137.0 / 60, -5.0, 5.0, -10.0 / 3, 5.0 / 4, -1.0 / 5}},
-      dt_sq_coef_{{15.0 / 4, -77.0 / 6, 107.0 / 6, -13, 61.0 / 12, -5.0 / 6}},
-
       omega_{omega},
       interaction_pairs_{std::move(interaction_pairs)},
       shape_({{static_cast<int>(interaction_pairs_->size()),
@@ -61,7 +58,8 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table(
   std::fill(coefficients.data(),
             coefficients.data() + coefficients.num_elements(), cmplx(0, 0));
 
-  Interpolation::UniformLagrangeSet lagrange(interp_order);
+  Interpolation::DerivFive lagrange(dt);
+  const double c_sq = std::pow(c0, 2);
 
   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
     const auto &pair = (*interaction_pairs_)[pair_idx];
@@ -78,7 +76,7 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table(
 
         std::array<double, 2> del_sq{
             dot0.dipole().dot(e0.del_sq * e1.d0 * dot1.dipole()),
-            dot1.dipole().dot(e1.del_sq * e0.d0 * dot0.dipole())};
+            -dot1.dipole().dot(e1.del_sq * e0.d0 * dot0.dipole())};
 
         Eigen::Vector3d dr(grid->spatial_coord_of_box(e1.index) -
                            grid->spatial_coord_of_box(e0.index));
@@ -88,43 +86,26 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table(
         const double arg = dr.norm() / (c0 * dt);
         const auto split_arg = split_double(arg);
 
+        lagrange.evaluate_derivative_table_at_x(split_arg.second);
+
         for(int t = 0; t < shape_[1]; ++t) {
-          const auto polynomial_idx = static_cast<int>(ceil(t - arg));
-          if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
-            lagrange.evaluate_derivative_table_at_x(split_arg.second, dt);
+          const auto p_idx = static_cast<int>(ceil(t - arg));
+          if(0 <= p_idx && p_idx <= lagrange.order()) {
+            const cmplx time =
+                (lagrange.evaluations[2][p_idx] +
+                 2.0 * iu * omega_ * lagrange.evaluations[1][p_idx] -
+                 std::pow(omega_, 2) * lagrange.evaluations[0][p_idx]) *
+                innerprod * (e0.d0 * e1.d0);
 
             coefficients[pair_idx][t][0] +=
-                matrix_element * innerprod * (e0.d0 * e1.d0) *
-                lagrange.evaluations[0][polynomial_idx] *
-                dt_coef_[polynomial_idx];
+                -matrix_element *
+                (time - c_sq * del_sq[0] * lagrange.evaluations[0][p_idx]);
 
             if(pair.first == pair.second) continue;
 
             coefficients[pair_idx][t][1] +=
-                matrix_element * innerprod * (e0.d0 * e1.d0) *
-                lagrange.evaluations[0][polynomial_idx] *
-                dt_coef_[polynomial_idx];
-
-            // const cmplx time =
-            // lagrange.evaluations[2][polynomial_idx] +
-            // 2.0 * iu * omega_ * lagrange.evaluations[1][polynomial_idx] -
-            // std::pow(omega_, 2) * lagrange.evaluations[0][polynomial_idx];
-
-            // const double c_sq = std::pow(c0, 2);
-
-            //// dot0 -> dot1
-            // coefficients[pair_idx][t][1] =
-            // matrix_element * (innerprod * time -
-            // c_sq * del_sq.second *
-            // lagrange.evaluations[0][polynomial_idx]);
-
-            // if(pair.first == pair.second) continue;
-
-            //// dot1 -> dot0
-            // coefficients[pair_idx][t][0] =
-            // matrix_element *
-            //(innerprod * time -
-            // c_sq * del_sq.first * lagrange.evaluations[0][polynomial_idx]);
+                -matrix_element *
+                (time - c_sq * del_sq[1] * lagrange.evaluations[0][p_idx]);
           }
         }
       }

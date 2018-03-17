@@ -173,10 +173,11 @@ void AIM::Farfield::fill_gmatrix_table(
         const double arg = dr.norm() / (c0 * dt);
         const std::pair<int, double> split_arg = split_double(arg);
 
+        interp.evaluate_derivative_table_at_x(split_arg.second, dt);
+
         for(int t = 1; t < table_dimensions_[0]; ++t) {
           const auto polynomial_idx = static_cast<int>(ceil(t - arg));
-          if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
-            interp.evaluate_derivative_table_at_x(split_arg.second, dt);
+          if(0 <= polynomial_idx && polynomial_idx <= 5) {
             gmatrix_table[t][x][y][z] =
                 interp.evaluations[0][polynomial_idx] * normalization(dr);
           }

@@ -181,9 +181,11 @@ namespace AIM {
         // calculations. There is no exp(-ikr) factor here as that gets
         // taken care of in the normalization class.
 
-        return -((deriv.col(2) + 2.0 * iu * omega * deriv.col(1) -
-                  std::pow(omega, 2) * deriv.col(0)) -
-                 std::pow(c, 2) * (e.del_sq * present_field));
+        const auto time = deriv.col(2) + 2.0 * iu * omega * deriv.col(1) -
+                          std::pow(omega, 2) * deriv.col(0);
+        const auto space = e.del_sq * present_field;
+
+        return -(time - std::pow(c, 2) * space);
       }
 
      private:

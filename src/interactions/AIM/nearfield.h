@@ -25,8 +25,6 @@ class AIM::Nearfield final : public AimBase {
   const ResultArray &evaluate(const int) final;
 
  private:
-  std::array<double, 6> dt_coef_, dt_sq_coef_;
-
   double omega_;
   std::shared_ptr<const std::vector<Grid::ipair_t>> interaction_pairs_;
   std::array<int, 3> shape_;
