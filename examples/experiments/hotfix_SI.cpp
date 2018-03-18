@@ -26,14 +26,15 @@ int main()
   // const double dt = 0.5e-2, total_time = dt * num_steps;
 
   const double c = 1, omega = 0, k2 = 1;
-  const double dt = 2, total_time = dt * num_steps;
+  const double dt = 0.5, total_time = dt * num_steps;
 
-  const int interpolation_order = 5, expansion_order = 3;
+  const int interpolation_order = 5, expansion_order = 1;
 
-  const double s = 2;
+  const double s = 1;
   const Eigen::Array3d spacing(s, s, s);
 
   auto dots = std::make_shared<DotVector>();
+  // dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5) * s, {1, 0, 0}));
   dots->push_back(QuantumDot(Eigen::Vector3d(0.1, 0.1, 0.1) * s, {1, 0, 0}));
   dots->push_back(QuantumDot(Eigen::Vector3d(0.9, 0.9, 10.9) * s, {1, 0, 0}));
 
@@ -62,14 +63,10 @@ int main()
       // grid->max_transit_steps(c, dt) + interpolation_order, c, dt, omega),
       AIM::Normalization::unit);
 
-  for(const auto &p : grid->nearfield_point_pairs(100, *dots)) {
-    std::cout << p.first << " " << p.second << std::endl;
-  }
-
   AIM::Nearfield nf(dots, history, interpolation_order, c, dt, grid,
                     expansion_table, nullptr, AIM::Normalization::unit,
                     std::make_shared<std::vector<AIM::Grid::ipair_t>>(
-                        grid->nearfield_point_pairs(100, *dots)),
+                        grid->nearfield_point_pairs(1, *dots)),
                     omega);
 
   std::ofstream near_fd("nearfield.dat"), far_fd("farfield.dat");

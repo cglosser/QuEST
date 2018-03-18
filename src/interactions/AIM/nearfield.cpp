@@ -24,9 +24,12 @@ AIM::Nearfield::Nearfield(
       omega_{omega},
       interaction_pairs_{std::move(interaction_pairs)},
       shape_({{static_cast<int>(interaction_pairs_->size()),
-               grid->max_transit_steps(c0, dt) + interp_order, 2}}),
-      coefficients_{coefficient_table(interp_order)}
+               grid->max_transit_steps(c0, dt) + 5, 2}}),
+      coefficients_{coefficient_table()}
 {
+  std::cout << "c: " << c0 << ", dt: " << dt << std::endl;
+  std::cout << grid->size() << std::endl;
+  std::cout << grid->shape().transpose() << std::endl;
 }
 
 const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
@@ -51,8 +54,7 @@ const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
   return results;
 }
 
-boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table(
-    const int interp_order) const
+boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table() const
 {
   boost::multi_array<cmplx, 3> coefficients(shape_);
   std::fill(coefficients.data(),
@@ -69,6 +71,7 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table(
 
     for(size_t i = 0; i < expansion_table->shape()[1]; ++i) {
       const auto &e0 = (*expansion_table)[pair.first][i];
+
       for(size_t j = 0; j < expansion_table->shape()[1]; ++j) {
         const auto &e1 = (*expansion_table)[pair.second][j];
 
@@ -88,27 +91,27 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table(
 
         lagrange.evaluate_derivative_table_at_x(split_arg.second);
 
-        for(int t = 1; t < shape_[1]; ++t) {
-          const auto p_idx = static_cast<int>(ceil(t - arg));
-          if(0 <= p_idx && p_idx <= lagrange.order()) {
-            const cmplx time =
-                (lagrange.evaluations[2][p_idx] +
-                 2.0 * iu * omega_ * lagrange.evaluations[1][p_idx] -
-                 std::pow(omega_, 2) * lagrange.evaluations[0][p_idx]) *
-                innerprod * (e0.d0 * e1.d0);
+        for(int p = 0; p < lagrange.order() + 1; ++p) {
+          // const cmplx time =
+          //(lagrange.evaluations[2][poly] +
+          // 2.0 * iu * omega_ * lagrange.evaluations[1][poly] -
+          // std::pow(omega_, 2) * lagrange.evaluations[0][poly]) *
+          // innerprod * (e0.d0 * e1.d0);
 
-            coefficients[pair_idx][t][0] +=
-              matrix_element * innerprod * (e0.d0 * e1.d0) * lagrange.evaluations[0][p_idx];
-                //-matrix_element *
-                //(time - c_sq * del_sq[0] * lagrange.evaluations[0][p_idx]);
+          coefficients[pair_idx][split_arg.first + p][0] +=
+              matrix_element * innerprod * (e0.d0 * e1.d0) *
+              lagrange.evaluations[0][p];
+          //-matrix_element *
+          //(time - c_sq * del_sq[0] * lagrange.evaluations[0][poly]);
 
-            if(pair.first == pair.second) continue;
+          if(pair.first == pair.second) continue;
 
-            coefficients[pair_idx][t][1] +=
-              matrix_element * innerprod * (e0.d0 * e1.d0) * lagrange.evaluations[0][p_idx];
-                //-matrix_element *
-                //(time - c_sq * del_sq[1] * lagrange.evaluations[0][p_idx]);
-          }
+          coefficients[pair_idx][split_arg.first + p][1] +=
+              matrix_element * innerprod * (e0.d0 * e1.d0) *
+              lagrange.evaluations[0][p];
+
+          //-matrix_element *
+          //(time - c_sq * del_sq[1] * lagrange.evaluations[0][p_idx]);
         }
       }
     }

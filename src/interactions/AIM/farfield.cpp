@@ -171,16 +171,13 @@ void AIM::Farfield::fill_gmatrix_table(
             grid->spatial_coord_of_box(box_idx) - grid->spatial_coord_of_box(0);
 
         const double arg = dr.norm() / (c0 * dt);
-        const std::pair<int, double> split_arg = split_double(arg);
+        const auto split_arg = split_double(arg);
 
         interp.evaluate_derivative_table_at_x(split_arg.second, dt);
 
-        for(int t = 1; t < table_dimensions_[0]; ++t) {
-          const auto polynomial_idx = static_cast<int>(ceil(t - arg));
-          if(0 <= polynomial_idx && polynomial_idx <= interp_order) {
-            gmatrix_table[t][x][y][z] =
-                interp.evaluations[0][polynomial_idx] * normalization(dr);
-          }
+        for(int p = 0; p < interp.order() + 1; ++p) {
+          gmatrix_table[split_arg.first + p][x][y][z] =
+              interp.evaluations[0][p] * normalization(dr);
         }
       }
     }

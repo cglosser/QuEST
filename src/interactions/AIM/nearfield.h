@@ -30,7 +30,7 @@ class AIM::Nearfield final : public AimBase {
   std::array<int, 3> shape_;
   boost::multi_array<cmplx, 3> coefficients_;
 
-  boost::multi_array<cmplx, 3> coefficient_table(const int) const;
+  boost::multi_array<cmplx, 3> coefficient_table() const;
 };
 
 #endif
