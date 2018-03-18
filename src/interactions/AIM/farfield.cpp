@@ -77,7 +77,7 @@ void AIM::Farfield::propagate(const int step)
   Eigen::Map<Eigen::Array3Xcd> observers(&obs_table_(front), 3, nb);
   observers = 0;
 
-  for(int i = 1; i < table_dimensions_[0]; ++i) {
+  for(int i = 0; i < table_dimensions_[0]; ++i) {
     // If (step - i) runs "off the end", just propagate src[0][...]
     auto wrap = std::max(step - i, 0) % table_dimensions_[0];
 
