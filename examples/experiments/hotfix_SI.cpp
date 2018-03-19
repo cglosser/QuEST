@@ -18,6 +18,18 @@ class Gaussian {
   double mu_, sigma_;
 };
 
+class Logistic {
+ public:
+  Logistic(double mu, double sigma) : mu_(mu), sigma_(sigma){};
+  double operator()(double t) const
+  {
+    return 1 / (1 + std::exp(-(t - mu_) / sigma_));
+  }
+
+ private:
+  double mu_, sigma_;
+};
+
 int main()
 {
   const int num_steps = 1024;
@@ -25,25 +37,26 @@ int main()
   // const double c = 299.792458, omega = 2278.9013, k2 = 2.4341348e-05;
   // const double dt = 0.5e-2, total_time = dt * num_steps;
 
-  const double c = 1, omega = 0, k2 = 1;
+  const double c = 1, omega = 0;
   const double dt = 1, total_time = dt * num_steps;
 
-  const int interpolation_order = 5, expansion_order = 4;
+  const int interpolation_order = 5, expansion_order = 5;
 
   const double s = c * dt;
   const Eigen::Array3d spacing(s, s, s);
 
   auto dots = std::make_shared<DotVector>();
-  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0) * s, {0, 1, 0}));
-  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 10.5) * s, {0, 1, 0}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0), {0, 0, 1}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0.2, 1.3, 0.4), {0, 0, 1}));
 
-  const Gaussian source(total_time / 2.0, total_time / 12.0);
+  const Logistic source(total_time / 2.0, total_time / 12.0);
 
   const int num_dots = dots->size();
   auto history = std::make_shared<Integrator::History<Eigen::Vector2cd>>(
       num_dots, 10, num_steps);
   for(int t = -10; t < num_steps; ++t) {
     history->array_[0][t][0](RHO_01) = source(t * dt);
+    // history->array_[1][t][0](RHO_01) = source(t * dt);
   }
 
   using LSE = AIM::Expansions::LeastSquaresExpansionSolver;
@@ -56,12 +69,12 @@ int main()
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid,
                    expansion_table,
-                   AIM::Expansions::Del_Del(grid->max_transit_steps(c, dt) +
-                                            interpolation_order),
-                   AIM::Normalization::Laplace());
+                   AIM::Expansions::Oper(grid->max_transit_steps(c, dt) +
+                                         interpolation_order),
+                   AIM::Normalization::unit);
 
   AIM::Nearfield nf(dots, history, interpolation_order, c, dt, grid,
-                    expansion_table, nullptr, AIM::Normalization::Laplace(),
+                    expansion_table, nullptr, AIM::Normalization::unit,
                     std::make_shared<std::vector<AIM::Grid::ipair_t>>(
                         grid->nearfield_point_pairs(100, *dots)),
                     omega);

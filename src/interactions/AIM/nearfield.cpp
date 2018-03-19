@@ -24,7 +24,7 @@ AIM::Nearfield::Nearfield(
       omega_{omega},
       interaction_pairs_{std::move(interaction_pairs)},
       shape_({{static_cast<int>(interaction_pairs_->size()),
-               grid->max_transit_steps(c0, dt) + 5, 2}}),
+               grid->max_transit_steps(c0, dt) + 6, 2}}),
       coefficients_{coefficient_table()}
 {
 }
@@ -43,6 +43,7 @@ const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
 
       results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
                              coefficients_[pair_idx][t][0];
+
       results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
                               coefficients_[pair_idx][t][1];
     }
@@ -72,13 +73,6 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table() const
 
         if(e0.index == e1.index) continue;
 
-        const double innerprod =
-            dot1.dipole().dot(e1.d0 * e0.d0 * dot1.dipole());
-
-        const std::array<double, 2> del_sq{
-            dot0.dipole().dot(e0.del_sq * e1.d0 * dot1.dipole()),
-            dot1.dipole().dot(e1.del_sq * e0.d0 * dot0.dipole())};
-
         Eigen::Vector3d dr(grid->spatial_coord_of_box(e1.index) -
                            grid->spatial_coord_of_box(e0.index));
 
@@ -97,14 +91,14 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table() const
           // innerprod;
 
           coefficients[pair_idx][split_arg.first + poly][0] +=
-              matrix_element * del_sq[0] * lagrange.evaluations[0][poly];
-          //-matrix_element * (del_sq[0] * lagrange.evaluations[0][poly]);
+              matrix_element * dot0.dipole().dot(e1.d0 * dot1.dipole()) *
+              lagrange.evaluations[0][poly];
 
           if(pair.first == pair.second) continue;
 
           coefficients[pair_idx][split_arg.first + poly][1] +=
-              matrix_element * del_sq[1] * lagrange.evaluations[0][poly];
-          //-matrix_element * (del_sq[1] * lagrange.evaluations[0][poly]);
+              matrix_element * dot1.dipole().dot(e0.d0 * dot0.dipole()) *
+              lagrange.evaluations[0][poly];
 
           // coefficients[pair_idx][split_arg.first + poly][0] +=
           //-matrix_element *
