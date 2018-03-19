@@ -22,15 +22,15 @@ int main()
 {
   const int num_steps = 1024;
 
-  // const double c = 299.792458, omega = 2278.9013, k2 = 2.4241248e-5;
+  // const double c = 299.792458, omega = 2278.9013, k2 = 2.4341348e-05;
   // const double dt = 0.5e-2, total_time = dt * num_steps;
 
   const double c = 1, omega = 0, k2 = 1;
-  const double dt = 0.5, total_time = dt * num_steps;
+  const double dt = 1, total_time = dt * num_steps;
 
-  const int interpolation_order = 5, expansion_order = 1;
+  const int interpolation_order = 5, expansion_order = 4;
 
-  const double s = 1;
+  const double s = 0.1 * c * dt;
   const Eigen::Array3d spacing(s, s, s);
 
   auto dots = std::make_shared<DotVector>();
@@ -57,16 +57,16 @@ int main()
 
   AIM::Farfield ff(
       dots, history, interpolation_order, c, dt, grid, expansion_table,
-      AIM::Expansions::Retardation(grid->max_transit_steps(c, dt) +
+      AIM::Expansions::Del_Del(grid->max_transit_steps(c, dt) +
                                    interpolation_order),
       // AIM::Expansions::RotatingEFIE(
       // grid->max_transit_steps(c, dt) + interpolation_order, c, dt, omega),
-      AIM::Normalization::unit);
+      AIM::Normalization::Laplace());
 
   AIM::Nearfield nf(dots, history, interpolation_order, c, dt, grid,
-                    expansion_table, nullptr, AIM::Normalization::unit,
+                    expansion_table, nullptr, AIM::Normalization::Laplace(),
                     std::make_shared<std::vector<AIM::Grid::ipair_t>>(
-                        grid->nearfield_point_pairs(1, *dots)),
+                        grid->nearfield_point_pairs(100, *dots)),
                     omega);
 
   std::ofstream near_fd("nearfield.dat"), far_fd("farfield.dat");
@@ -77,6 +77,9 @@ int main()
     near_fd << nf.evaluate(t).transpose() << std::endl;
     far_fd << ff.evaluate(t).conjugate().transpose() << std::endl;
   }
+
+  std::cout << dots->at(0).position().transpose() << std::endl;
+  std::cout << dots->at(1).position().transpose() << std::endl;
 
   return 0;
 }
