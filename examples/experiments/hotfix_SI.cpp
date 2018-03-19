@@ -30,13 +30,12 @@ int main()
 
   const int interpolation_order = 5, expansion_order = 4;
 
-  const double s = 0.1 * c * dt;
+  const double s = c * dt;
   const Eigen::Array3d spacing(s, s, s);
 
   auto dots = std::make_shared<DotVector>();
-  // dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5) * s, {1, 0, 0}));
-  dots->push_back(QuantumDot(Eigen::Vector3d(0.1, 0.1, 0.1) * s, {1, 0, 0}));
-  dots->push_back(QuantumDot(Eigen::Vector3d(0.9, 0.9, 10.9) * s, {1, 0, 0}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0) * s, {0, 1, 0}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 10.5) * s, {0, 1, 0}));
 
   const Gaussian source(total_time / 2.0, total_time / 12.0);
 
@@ -55,13 +54,11 @@ int main()
 
   std::cout << "Shape: " << grid->shape().transpose() << std::endl;
 
-  AIM::Farfield ff(
-      dots, history, interpolation_order, c, dt, grid, expansion_table,
-      AIM::Expansions::Del_Del(grid->max_transit_steps(c, dt) +
-                                   interpolation_order),
-      // AIM::Expansions::RotatingEFIE(
-      // grid->max_transit_steps(c, dt) + interpolation_order, c, dt, omega),
-      AIM::Normalization::Laplace());
+  AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid,
+                   expansion_table,
+                   AIM::Expansions::Del_Del(grid->max_transit_steps(c, dt) +
+                                            interpolation_order),
+                   AIM::Normalization::Laplace());
 
   AIM::Nearfield nf(dots, history, interpolation_order, c, dt, grid,
                     expansion_table, nullptr, AIM::Normalization::Laplace(),
@@ -69,17 +66,24 @@ int main()
                         grid->nearfield_point_pairs(100, *dots)),
                     omega);
 
-  std::ofstream near_fd("nearfield.dat"), far_fd("farfield.dat");
+  AIM::Nearfield nf_trunc(dots, history, interpolation_order, c, dt, grid,
+                          expansion_table, nullptr,
+                          AIM::Normalization::Laplace(),
+                          std::make_shared<std::vector<AIM::Grid::ipair_t>>(
+                              grid->nearfield_point_pairs(1, *dots)),
+                          omega);
+
+  std::ofstream trunc("nearfield_truncated.dat"), near_fd("nearfield.dat"),
+      far_fd("farfield.dat");
+  trunc.precision(17);
   near_fd.precision(17);
   far_fd.precision(17);
   for(int t = 0; t < num_steps; ++t) {
     if(t % 100 == 0) std::cout << t << std::endl;
+    trunc << nf_trunc.evaluate(t).transpose() << std::endl;
     near_fd << nf.evaluate(t).transpose() << std::endl;
     far_fd << ff.evaluate(t).conjugate().transpose() << std::endl;
   }
-
-  std::cout << dots->at(0).position().transpose() << std::endl;
-  std::cout << dots->at(1).position().transpose() << std::endl;
 
   return 0;
 }

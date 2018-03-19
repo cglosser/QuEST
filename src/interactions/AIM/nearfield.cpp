@@ -90,11 +90,11 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table() const
         lagrange.evaluate_derivative_table_at_x(split_arg.second);
 
         for(int poly = 0; poly < lagrange.order() + 1; ++poly) {
-          const cmplx time =
-              (lagrange.evaluations[2][poly] +
-               2.0 * iu * omega_ * lagrange.evaluations[1][poly] -
-               std::pow(omega_, 2) * lagrange.evaluations[0][poly]) *
-              innerprod;
+          // const cmplx time =
+          //(lagrange.evaluations[2][poly] +
+          // 2.0 * iu * omega_ * lagrange.evaluations[1][poly] -
+          // std::pow(omega_, 2) * lagrange.evaluations[0][poly]) *
+          // innerprod;
 
           coefficients[pair_idx][split_arg.first + poly][0] +=
               matrix_element * del_sq[0] * lagrange.evaluations[0][poly];
