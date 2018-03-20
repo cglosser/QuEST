@@ -27,6 +27,10 @@ AIM::Nearfield::Nearfield(
                grid->max_transit_steps(c0, dt) + 12, 2}}),
       coefficients_{coefficient_table()}
 {
+  if(interp_order != 5)
+    throw std::runtime_error(
+        "Lagrange interpolation of order != 5 is not supported in nearfield "
+        "calculations");
 }
 
 const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
