@@ -1,6 +1,7 @@
 #ifndef NEARFIELD_H
 #define NEARFIELD_H
 
+#include <limits>
 #include "aim_base.h"
 
 namespace AIM {
@@ -25,12 +26,17 @@ class AIM::Nearfield final : public AimBase {
   const ResultArray &evaluate(const int) final;
 
  private:
+  struct support_range_t {
+    int begin, end;
+  };
+
   double omega_;
   std::shared_ptr<const std::vector<Grid::ipair_t>> interaction_pairs_;
   std::array<int, 3> shape_;
+  std::vector<support_range_t> support_;
   boost::multi_array<cmplx, 3> coefficients_;
 
-  boost::multi_array<cmplx, 3> coefficient_table() const;
+  boost::multi_array<cmplx, 3> coefficient_table();
 };
 
 #endif

@@ -65,12 +65,12 @@ void Interpolation::DerivFive::evaluate_derivative_table_at_x(const double x)
 double Interpolation::DerivFive::d0(const int i, const double x) const
 {
   switch(i) {
-    case 0: return 1+x*(137.0/60+x*(15.0/8+x*(17.0/24+x*(1.0/8+x/120))));
-    case 1: return x*(-5+x*(-77.0/12+x*(-71.0/24+x*(-7.0/12-x/24))));
-    case 2: return x*(5+x*(107.0/12+x*(59.0/12+x*(13.0/12+x/12))));
-    case 3: return x*(-10.0/3+x*(-13.0/2+x*(-49.0/12+x*(-1-x/12))));
-    case 4: return x*(5.0/4+x*(61.0/24+x*(41.0/24+x*(11.0/24+x/24))));
-    case 5: return x*(-1.0/5+x*(-5.0/12+x*(-7.0/24+x*(-1.0/12-x/120))));
+    case 0 : return 1+x*(-137.0/60+x*(15.0/8+x*(-17.0/24+x*(1.0/8-x/120))));
+    case 1 : return x*(5+x*(-77.0/12+x*(71.0/24+x*(-7.0/12+x/24))));
+    case 2 : return x*(-5+x*(107.0/12+x*(-59.0/12+x*(13.0/12-x/12))));
+    case 3 : return x*(10.0/3+x*(-13.0/2+x*(49.0/12+x*(-1+x/12))));
+    case 4 : return x*(-5.0/4+x*(61.0/24+x*(-41.0/24+x*(11.0/24-x/24))));
+    case 5 : return x*(1.0/5+x*(-5.0/12+x*(7.0/24+x*(-1.0/12+x/120))));
     default: return 0;
   }
 }
@@ -78,25 +78,26 @@ double Interpolation::DerivFive::d0(const int i, const double x) const
 double Interpolation::DerivFive::d1(const int i, const double x) const
 {
   switch(i) {
-    case 0: return 137.0/60+x*(15.0/4+x*(17.0/8+x*(1.0/2+x/24)));
-    case 1: return -5+x*(-77.0/6+x*(-71.0/8+x*(-7.0/3-(5*x)/24)));
-    case 2: return 5+x*(107.0/6+x*(59.0/4+x*(13.0/3+(5*x)/12)));
-    case 3: return -10.0/3+x*(-13+x*(-49.0/4+x*(-4-(5*x)/12)));
-    case 4: return 5.0/4+x*(61.0/12+x*(41.0/8+x*(11.0/6+(5*x)/24)));
-    case 5: return -1.0/5+x*(-5.0/6+x*(-7.0/8+x*(-1.0/3-x/24)));
-    default: return 0;
+    // Again, note the negative sign
+    case 0 : return 137.0/60+x*(-15.0/4+x*(17.0/8+x*(-1.0/2+x/24)));
+    case 1 : return -5+x*(77.0/6+x*(-71.0/8+x*(7.0/3-(5*x)/24)));
+    case 2 : return 5+x*(-107.0/6+x*(59.0/4+x*(-13.0/3+(5*x)/12)));
+    case 3 : return -10.0/3+x*(13+x*(-49.0/4+x*(4-(5*x)/12)));
+    case 4 : return 5.0/4+x*(-61.0/12+x*(41.0/8+x*(-11.0/6+(5*x)/24)));
+    case 5 : return -1.0/5+x*(5.0/6+x*(-7.0/8+x*(1.0/3-x/24)));
+    default : return 0;
   }
 }
 
 double Interpolation::DerivFive::d2(const int i, const double x) const
 {
   switch(i) {
-    case 0: return 15.0/4+x*(17.0/4+x*(3.0/2+x/6));
-    case 1: return -77.0/6+x*(-71.0/4+x*(-7-(5*x)/6));
-    case 2: return 107.0/6+x*(59.0/2+x*(13+(5*x)/3));
-    case 3: return -13+x*(-49.0/2+x*(-12-(5*x)/3));
-    case 4: return 61.0/12+x*(41.0/4+x*(11.0/2+(5*x)/6));
-    case 5: return -5.0/6+x*(-7.0/4+x*(-1-x/6));
+    case 0 : return 15.0/4+x*(-17.0/4+x*(3.0/2-x/6));
+    case 1 : return -77.0/6+x*(71.0/4+x*(-7+(5*x)/6));
+    case 2 : return 107.0/6+x*(-59.0/2+x*(13-(5*x)/3));
+    case 3 : return -13+x*(49.0/2+x*(-12+(5*x)/3));
+    case 4 : return 61.0/12+x*(-41.0/4+x*(11.0/2-(5*x)/6));
+    case 5 : return -5.0/6+x*(7.0/4+x*(-1+x/6));
     default: return 0;
   }
 }
