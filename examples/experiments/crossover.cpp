@@ -81,10 +81,12 @@ int main()
   std::ofstream fd("timing.dat");
   fd << std::setprecision(17);
 
-  for(int n_boxes = 1; n_boxes < 30; ++n_boxes) {
+  for(int n_boxes = 1; n_boxes < 40; ++n_boxes) {
     const auto dots = std::make_shared<DotVector>(make_system(n_boxes));
     auto history = std::make_shared<hist_t>(dots->size(), 10, num_steps);
     history->fill(Eigen::Vector2cd(0, 1));
+
+    // == SLOW STUFF =================================================
 
     Propagation::Laplace<cmplx> kernel;
     DirectInteraction direct(dots, history, kernel, interpolation_order, c, dt);
@@ -96,6 +98,8 @@ int main()
     auto slow_stop = std::chrono::high_resolution_clock::now();
     interval_t slow_span =
         std::chrono::duration_cast<interval_t>(slow_stop - slow_start);
+
+    // == FAST STUFF =================================================
 
     using LSE = AIM::Expansions::LeastSquaresExpansionSolver;
 
@@ -116,6 +120,8 @@ int main()
     auto fast_stop = std::chrono::high_resolution_clock::now();
     interval_t fast_span =
         std::chrono::duration_cast<interval_t>(fast_stop - fast_start);
+
+    // == OUTPUT =====================================================
 
     std::cout << n_boxes << " " << dots->size() << " " << slow_span.count()
               << " " << fast_span.count() << std::endl;
