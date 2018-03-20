@@ -27,3 +27,8 @@ add_executable(hotfix_SI EXCLUDE_FROM_ALL "")
 target_sources(hotfix_SI PUBLIC "${CMAKE_CURRENT_LIST_DIR}/hotfix_SI.cpp")
 target_compile_features(hotfix_SI PUBLIC ${CPP_FEATURES})
 target_link_libraries(hotfix_SI PUBLIC quest ${Boost_LIBRARIES})
+
+add_executable(crossover EXCLUDE_FROM_ALL "")
+target_sources(crossover PUBLIC "${CMAKE_CURRENT_LIST_DIR}/crossover.cpp")
+target_compile_features(crossover PUBLIC ${CPP_FEATURES})
+target_link_libraries(crossover PUBLIC quest ${Boost_LIBRARIES})
