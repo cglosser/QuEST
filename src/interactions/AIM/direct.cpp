@@ -54,6 +54,8 @@ boost::multi_array<cmplx, 2> AIM::DirectInteraction::coefficient_table(
   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
     const auto &pair = (*interaction_pairs_)[pair_idx];
 
+    if(pair.first == pair.second) continue;
+
     Eigen::Vector3d dr(separation((*dots)[pair.first], (*dots)[pair.second]));
     auto delay = split_double(dr.norm() / (c0 * dt));
 
