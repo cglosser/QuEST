@@ -24,7 +24,7 @@ AIM::Nearfield::Nearfield(
       omega_{omega},
       interaction_pairs_{std::move(interaction_pairs)},
       shape_({{static_cast<int>(interaction_pairs_->size()),
-               grid->max_transit_steps(c0, dt) + 6, 2}}),
+               grid->max_transit_steps(c0, dt) + 12, 2}}),
       coefficients_{coefficient_table()}
 {
 }
@@ -33,6 +33,10 @@ const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
 {
   results.setZero();
   constexpr int RHO_01 = 1;
+  constexpr int order = 5;
+
+  const int ubound =
+      coefficients_.index_bases()[1] + coefficients_.shape()[1] - 1;
 
   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
     const auto &pair = (*interaction_pairs_)[pair_idx];
@@ -41,11 +45,13 @@ const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
       const int s = std::max(
           time_idx - t, static_cast<int>(history->array_.index_bases()[1]));
 
-      results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
-                             coefficients_[pair_idx][t][0];
+      results[pair.first] +=
+          (history->array_[pair.second][s][0])[RHO_01] *
+          coefficients_[pair_idx][std::min(t + order, ubound)][0];
 
-      results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
-                              coefficients_[pair_idx][t][1];
+      results[pair.second] +=
+          (history->array_[pair.first][s][0])[RHO_01] *
+          coefficients_[pair_idx][std::min(t + order, ubound)][1];
     }
   }
 
@@ -90,17 +96,17 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table() const
           // std::pow(omega_, 2) * lagrange.evaluations[0][poly]) *
           // innerprod;
 
-          coefficients[pair_idx][split_arg.first + poly][0] +=
-              matrix_element *
-              dot0.dipole().dot(e0.del_sq * e1.d0 * dot1.dipole()) *
-              lagrange.evaluations[0][poly];
+          const int convolution_idx = split_arg.first + lagrange.order() - poly;
+
+          coefficients[pair_idx][convolution_idx][0] +=
+              matrix_element * lagrange.evaluations[0][poly] *
+              dot0.dipole().dot(e0.del_sq * e1.d0 * dot1.dipole());
 
           if(pair.first == pair.second) continue;
 
-          coefficients[pair_idx][split_arg.first + poly][1] +=
-              matrix_element *
-              dot1.dipole().dot(e1.del_sq * e0.d0 * dot0.dipole()) *
-              lagrange.evaluations[0][poly];
+          coefficients[pair_idx][convolution_idx][1] +=
+              matrix_element * lagrange.evaluations[0][poly] *
+              dot1.dipole().dot(e1.del_sq * e0.d0 * dot0.dipole());
 
           // coefficients[pair_idx][split_arg.first + poly][0] +=
           //-matrix_element *

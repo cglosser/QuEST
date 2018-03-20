@@ -40,14 +40,14 @@ int main()
   const double c = 1, omega = 0;
   const double dt = 1, total_time = dt * num_steps;
 
-  const int interpolation_order = 5, expansion_order = 5;
+  const int interpolation_order = 5, expansion_order = 6;
 
   const double s = c * dt;
   const Eigen::Array3d spacing(s, s, s);
 
   auto dots = std::make_shared<DotVector>();
-  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0), {0, 0, 1}));
-  dots->push_back(QuantumDot(Eigen::Vector3d(0, 10, 10), {0, 0, 1}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0), {0, 1, 0}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 10, 10), {0, 1, 0}));
 
   const Gaussian source(total_time / 2.0, total_time / 12.0);
 
