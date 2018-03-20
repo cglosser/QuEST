@@ -47,16 +47,16 @@ int main()
 
   auto dots = std::make_shared<DotVector>();
   dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0), {0, 0, 1}));
-  dots->push_back(QuantumDot(Eigen::Vector3d(0.2, 1.3, 0.4), {0, 0, 1}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 10, 10), {0, 0, 1}));
 
-  const Logistic source(total_time / 2.0, total_time / 12.0);
+  const Gaussian source(total_time / 2.0, total_time / 12.0);
 
   const int num_dots = dots->size();
   auto history = std::make_shared<Integrator::History<Eigen::Vector2cd>>(
       num_dots, 10, num_steps);
   for(int t = -10; t < num_steps; ++t) {
-    history->array_[0][t][0](RHO_01) = source(t * dt);
-    // history->array_[1][t][0](RHO_01) = source(t * dt);
+    // history->array_[0][t][0](RHO_01) = source(t * dt);
+    history->array_[1][t][0](RHO_01) = source(t * dt);
   }
 
   using LSE = AIM::Expansions::LeastSquaresExpansionSolver;

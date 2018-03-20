@@ -103,7 +103,7 @@ namespace AIM {
       {
         Eigen::Map<const Eigen::Vector3cd> field(
             &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
-        return field;
+        return e.del(0) * field;
       }
     };
 
