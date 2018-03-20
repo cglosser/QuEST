@@ -91,13 +91,15 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table() const
           // innerprod;
 
           coefficients[pair_idx][split_arg.first + poly][0] +=
-              matrix_element * dot0.dipole().dot(e1.d0 * dot1.dipole()) *
+              matrix_element *
+              dot0.dipole().dot(e0.del_sq * e1.d0 * dot1.dipole()) *
               lagrange.evaluations[0][poly];
 
           if(pair.first == pair.second) continue;
 
           coefficients[pair_idx][split_arg.first + poly][1] +=
-              matrix_element * dot1.dipole().dot(e0.d0 * dot0.dipole()) *
+              matrix_element *
+              dot1.dipole().dot(e1.del_sq * e0.d0 * dot0.dipole()) *
               lagrange.evaluations[0][poly];
 
           // coefficients[pair_idx][split_arg.first + poly][0] +=
