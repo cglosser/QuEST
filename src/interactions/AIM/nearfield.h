@@ -26,14 +26,17 @@ class AIM::Nearfield final : public AimBase {
   const ResultArray &evaluate(const int) final;
 
  private:
+  struct support_range_t {
+    int begin, end;
+  };
+
   double omega_;
   std::shared_ptr<const std::vector<Grid::ipair_t>> interaction_pairs_;
   std::array<int, 3> shape_;
-  std::vector<int> floor_delays_, support_;
+  std::vector<support_range_t> support_;
   boost::multi_array<cmplx, 3> coefficients_;
 
-  boost::multi_array<cmplx, 3> coefficient_table(std::vector<int> &,
-                                                 std::vector<int> &) const;
+  boost::multi_array<cmplx, 3> coefficient_table();
 };
 
 #endif
