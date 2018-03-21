@@ -150,7 +150,7 @@ namespace AIM {
             &obs[wrap_index(coord[0])][coord[1]][coord[2]][coord[3]][0]);
         Eigen::Vector3cd del_sq = e.del_sq * field;
 
-        return dt2 - std::pow(c, 2) * del_sq;
+        return -dt2 + std::pow(c, 2) * del_sq;
       }
 
      private:
@@ -199,7 +199,7 @@ namespace AIM {
                           std::pow(omega, 2) * deriv.col(0);
         const auto space = e.del_sq * present_field;
 
-        return -(time - std::pow(c, 2) * space);
+        return -time + std::pow(c, 2) * space;
       }
 
      private:
