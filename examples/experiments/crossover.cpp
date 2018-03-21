@@ -85,9 +85,13 @@ const int interpolation_order = 5, expansion_order = 1;
 DotVector make_system(const int num_boxes)
 {
   DotVector dots;
-  for(int box_id = 0; box_id < num_boxes; ++box_id) {
-    for(const auto &r : pos8) {
-      dots.push_back(QuantumDot(r + Eigen::Vector3d(0, 0, box_id), {0, 0, 1}));
+  for(int x = 0; x < num_boxes + 1; ++x) {
+    for(int y = 0; y < num_boxes + 1; ++y) {
+      for(int z = 0; z < num_boxes + 1; ++z) {
+        for(const auto &r : pos8) {
+          dots.push_back(QuantumDot(r + Eigen::Vector3d(x, y, z), {0, 0, 1}));
+        }
+      }
     }
   }
 
@@ -102,7 +106,7 @@ int main()
   std::ofstream fd("timing.dat");
   fd << std::setprecision(17);
 
-  for(int n_boxes = 1; n_boxes < 65; ++n_boxes) {
+  for(int n_boxes = 0; n_boxes < 6; ++n_boxes) {
     const auto dots = std::make_shared<DotVector>(make_system(n_boxes));
     auto history = std::make_shared<hist_t>(dots->size(), 10, num_steps);
     for(int dot = 0; dot < 8; ++dot) {
