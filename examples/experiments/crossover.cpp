@@ -131,6 +131,7 @@ int main()
 
     // == FAST STUFF =================================================
 
+    // FFT
     std::ofstream far("farfield.dat");
 
     using LSE = AIM::Expansions::LeastSquaresExpansionSolver;
@@ -153,12 +154,29 @@ int main()
     interval_t fast_span =
         std::chrono::duration_cast<interval_t>(fast_stop - fast_start);
 
+    // Nearfield
+
+    AIM::Nearfield nf(dots, history, interpolation_order, c, dt, grid,
+                      expansion_table, nullptr, AIM::Normalization::Laplace(),
+                      std::make_shared<std::vector<AIM::Grid::ipair_t>>(
+                          grid->nearfield_point_pairs(1, *dots)),
+                      0);
+
+    auto near_start = std::chrono::high_resolution_clock::now();
+    for(int t = 0; t < num_steps; ++t) {
+      nf.evaluate(t);
+    }
+    auto near_stop = std::chrono::high_resolution_clock::now();
+    interval_t near_span =
+        std::chrono::duration_cast<interval_t>(near_stop - near_start);
+
     // == OUTPUT =====================================================
 
     std::cout << n_boxes << " " << dots->size() << " " << slow_span.count()
-              << " " << fast_span.count() << std::endl;
+              << " " << near_span.count() << " " << fast_span.count()
+              << std::endl;
     fd << n_boxes << " " << dots->size() << " " << slow_span.count() << " "
-       << fast_span.count() << std::endl;
+       << near_span.count() << " " << fast_span.count() << std::endl;
   }
   return 0;
 }
