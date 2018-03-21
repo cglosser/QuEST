@@ -18,18 +18,38 @@ class Gaussian {
   double mu_, sigma_;
 };
 
+class Logistic {
+ public:
+  Logistic(double mu, double sigma) : mu_(mu), sigma_(sigma){};
+  double operator()(double t) const
+  {
+    return 1 / (1 + std::exp(-(t - mu_) / sigma_));
+  }
+
+ private:
+  double mu_, sigma_;
+};
+
 int main()
 {
-  const int interpolation_order = 5, expansion_order = 5, num_steps = 1024;
-  const double c = 1, dt = 1, total_time = dt * num_steps, omega = M_PI / 20;
-  const Gaussian source(total_time / 2.0, total_time / 12.0);
+  const int num_steps = 1024;
 
-  const double h = c * dt;
-  const Eigen::Array3d spacing(h, h, h);
+  // const double c = 299.792458, omega = 2278.9013, k2 = 2.4341348e-05;
+  // const double dt = 0.5e-2, total_time = dt * num_steps;
+
+  const double c = 1, omega = 0;
+  const double dt = 1, total_time = dt * num_steps;
+
+  const int interpolation_order = 5, expansion_order = 6;
+
+  const double s = c * dt;
+  const Eigen::Array3d spacing(s, s, s);
 
   auto dots = std::make_shared<DotVector>();
-  dots->push_back(QuantumDot({0.1, 0.1, 0.1}, {1, 0, 0}));
-  dots->push_back(QuantumDot({0.9, 0.9, 10.9}, {1, 0, 0}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0), {0, 1, 0}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 10, 10), {0, 1, 0}));
+
+  const Gaussian source(total_time / 2.0, total_time / 12.0);
 
   const int num_dots = dots->size();
   auto history = std::make_shared<Integrator::History<Eigen::Vector2cd>>(
@@ -40,18 +60,17 @@ int main()
 
   using LSE = AIM::Expansions::LeastSquaresExpansionSolver;
 
-  Propagation::RotatingEFIE prop(c, 1, omega);
   auto grid = std::make_shared<AIM::Grid>(spacing, expansion_order, *dots);
   auto expansion_table = std::make_shared<AIM::Expansions::ExpansionTable>(
       LSE::get_expansions(expansion_order, *grid, *dots));
 
   std::cout << "Shape: " << grid->shape().transpose() << std::endl;
 
-  AIM::Farfield ff(
-      dots, history, interpolation_order, c, dt, grid, expansion_table,
-      AIM::Expansions::RotatingEFIE(
-          grid->max_transit_steps(c, dt) + interpolation_order, c, dt, omega),
-      AIM::Normalization::unit);
+  AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid,
+                   expansion_table,
+                   AIM::Expansions::Oper(grid->max_transit_steps(c, dt) +
+                                         interpolation_order),
+                   AIM::Normalization::unit);
 
   AIM::Nearfield nf(dots, history, interpolation_order, c, dt, grid,
                     expansion_table, nullptr, AIM::Normalization::unit,
