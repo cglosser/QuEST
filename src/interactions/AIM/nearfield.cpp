@@ -64,7 +64,6 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table()
             coefficients.data() + coefficients.num_elements(), cmplx(0, 0));
 
   Interpolation::DerivFive lagrange(dt);
-  const double c_sq = std::pow(c0, 2);
 
   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
     const auto &pair = (*interaction_pairs_)[pair_idx];
@@ -81,7 +80,7 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table()
         Eigen::Vector3d dr(grid->spatial_coord_of_box(e1.index) -
                            grid->spatial_coord_of_box(e0.index));
 
-        cmplx matrix_element = normalization(dr);
+        // == Retardation quantities ==
 
         const double arg = dr.norm() / (c0 * dt);
         const auto split_arg = split_double(arg);
@@ -93,34 +92,32 @@ boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table()
 
         lagrange.evaluate_derivative_table_at_x(split_arg.second);
 
-        for(int poly = 0; poly < lagrange.order() + 1; ++poly) {
-          // const cmplx time =
-          //(lagrange.evaluations[2][poly] +
-          // 2.0 * iu * omega_ * lagrange.evaluations[1][poly] -
-          // std::pow(omega_, 2) * lagrange.evaluations[0][poly]) *
-          // innerprod;
+        // == Expansion quantities ==
 
+        const double innerprod =
+            dot1.dipole().dot(e1.d0 * e0.d0 * dot0.dipole());
+        const std::array<cmplx, 2> dyad{
+            normalization(dr) * std::pow(c0, 2) *
+                dot0.dipole().dot(e0.del_sq * e1.d0 * dot1.dipole()),
+            normalization(dr) * std::pow(c0, 2) *
+                dot1.dipole().dot(e1.del_sq * e0.d0 * dot0.dipole()),
+        };
+
+        for(int poly = 0; poly < lagrange.order() + 1; ++poly) {
           const int convolution_idx = split_arg.first + poly;
+          const cmplx time =
+              (lagrange.evaluations[2][poly] +
+               2.0 * iu * omega_ * lagrange.evaluations[1][poly] -
+               std::pow(omega_, 2) * lagrange.evaluations[0][poly]) *
+              innerprod * normalization(dr);
 
           coefficients[pair_idx][convolution_idx][0] +=
-              matrix_element * lagrange.evaluations[0][poly] *
-              dot0.dipole().dot(e0.del_sq * e1.d0 * dot1.dipole());
+              -time + dyad[0] * lagrange.evaluations[0][poly];
 
           if(pair.first == pair.second) continue;
 
           coefficients[pair_idx][convolution_idx][1] +=
-              matrix_element * lagrange.evaluations[0][poly] *
-              dot1.dipole().dot(e1.del_sq * e0.d0 * dot0.dipole());
-
-          // coefficients[pair_idx][split_arg.first + poly][0] +=
-          //-matrix_element *
-          //(time - c_sq * del_sq[0] * lagrange.evaluations[0][poly]);
-
-          // if(pair.first == pair.second) continue;
-
-          // coefficients[pair_idx][split_arg.first + poly][1] +=
-          //-matrix_element *
-          //(time - c_sq * del_sq[1] * lagrange.evaluations[0][poly]);
+              -time + dyad[1] * lagrange.evaluations[0][poly];
         }
       }
     }
