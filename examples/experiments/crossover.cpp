@@ -30,7 +30,28 @@ class Logistic {
   double mu_, sigma_;
 };
 
-const std::vector<Eigen::Vector3d> pos = {
+const std::vector<Eigen::Vector3d> pos8 = {
+    {0.25, 0.25, 0.25}, {0.25, 0.25, 0.75}, {0.25, 0.75, 0.25},
+    {0.25, 0.75, 0.75}, {0.75, 0.25, 0.25}, {0.75, 0.25, 0.75},
+    {0.75, 0.75, 0.25}, {0.75, 0.75, 0.75}};
+
+const std::vector<Eigen::Vector3d> pos27 = {
+    {0.166667, 0.166667, 0.166667}, {0.166667, 0.166667, 0.5},
+    {0.166667, 0.166667, 0.833333}, {0.166667, 0.5, 0.166667},
+    {0.166667, 0.5, 0.5},           {0.166667, 0.5, 0.833333},
+    {0.166667, 0.833333, 0.166667}, {0.166667, 0.833333, 0.5},
+    {0.166667, 0.833333, 0.833333}, {0.5, 0.166667, 0.166667},
+    {0.5, 0.166667, 0.5},           {0.5, 0.166667, 0.833333},
+    {0.5, 0.5, 0.166667},           {0.5, 0.5, 0.5},
+    {0.5, 0.5, 0.833333},           {0.5, 0.833333, 0.166667},
+    {0.5, 0.833333, 0.5},           {0.5, 0.833333, 0.833333},
+    {0.833333, 0.166667, 0.166667}, {0.833333, 0.166667, 0.5},
+    {0.833333, 0.166667, 0.833333}, {0.833333, 0.5, 0.166667},
+    {0.833333, 0.5, 0.5},           {0.833333, 0.5, 0.833333},
+    {0.833333, 0.833333, 0.166667}, {0.833333, 0.833333, 0.5},
+    {0.833333, 0.833333, 0.833333}};
+
+const std::vector<Eigen::Vector3d> pos64 = {
     {0.125, 0.125, 0.125}, {0.125, 0.125, 0.375}, {0.125, 0.125, 0.625},
     {0.125, 0.125, 0.875}, {0.125, 0.375, 0.125}, {0.125, 0.375, 0.375},
     {0.125, 0.375, 0.625}, {0.125, 0.375, 0.875}, {0.125, 0.625, 0.125},
@@ -58,14 +79,14 @@ const int num_steps = 1024;
 
 const double c = 1, omega = 0;
 const double dt = 1, total_time = dt * num_steps;
-const auto spacing = Eigen::Vector3d(1, 1, 1) * c * dt;
+const Eigen::Vector3d spacing(c *dt, c *dt, c *dt);
 const int interpolation_order = 5, expansion_order = 1;
 
 DotVector make_system(const int num_boxes)
 {
   DotVector dots;
   for(int box_id = 0; box_id < num_boxes; ++box_id) {
-    for(const auto &r : pos) {
+    for(const auto &r : pos8) {
       dots.push_back(QuantumDot(r + Eigen::Vector3d(0, 0, box_id), {0, 0, 1}));
     }
   }
@@ -81,10 +102,15 @@ int main()
   std::ofstream fd("timing.dat");
   fd << std::setprecision(17);
 
-  for(int n_boxes = 1; n_boxes < 40; ++n_boxes) {
+  for(int n_boxes = 1; n_boxes < 65; ++n_boxes) {
     const auto dots = std::make_shared<DotVector>(make_system(n_boxes));
     auto history = std::make_shared<hist_t>(dots->size(), 10, num_steps);
-    history->fill(Eigen::Vector2cd(0, 1));
+    for(int dot = 0; dot < 8; ++dot) {
+      for(int t = -10; t < num_steps; ++t) {
+        history->array_[dot][t][0](RHO_01) =
+            1e-8 * gaussian((t * dt - num_steps / 2.0) / (num_steps / 12.0));
+      }
+    }
 
     // == SLOW STUFF =================================================
 
@@ -100,6 +126,8 @@ int main()
         std::chrono::duration_cast<interval_t>(slow_stop - slow_start);
 
     // == FAST STUFF =================================================
+
+    std::ofstream far("farfield.dat");
 
     using LSE = AIM::Expansions::LeastSquaresExpansionSolver;
 
