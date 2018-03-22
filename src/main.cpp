@@ -33,18 +33,21 @@ int main(int argc, char *argv[])
     qds->resize(config.num_particles);
     auto rhs_funcs = rhs_functions(*qds, config.omega);
 
-    // Set up History
+    // == HISTORY ====================================================
+
     auto history = make_shared<Integrator::History<Eigen::Vector2cd>>(
         config.num_particles, 22, config.num_timesteps);
     history->fill(Eigen::Vector2cd::Zero());
     history->initialize_past(Eigen::Vector2cd(1, 0));
 
-    // Set up Interactions
-    auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
-    Propagation::RotatingEFIE rotating_dyadic(
-        config.c0, config.mu0 / (4 * M_PI * config.hbar), config.omega);
+    // == INTERACTIONS ===============================================
+
+    const double propagation_constant = config.mu0 / (4 * M_PI * config.hbar);
 
     std::shared_ptr<InteractionBase> pairwise;
+    Propagation::RotatingEFIE rotating_dyadic(config.c0, propagation_constant,
+                                              config.omega);
+
     if(config.sim_type == Configuration::SIMULATION_TYPE::FAST) {
       AIM::Grid grid(config.grid_spacing, config.expansion_order, *qds);
       const int transit_steps = grid.max_transit_steps(config.c0, config.dt) +
@@ -56,9 +59,8 @@ int main(int argc, char *argv[])
           config.c0, config.dt,
           AIM::Expansions::RotatingEFIE(transit_steps, config.c0, config.dt,
                                         config.omega),
-          AIM::Normalization::Helmholtz(
-              config.omega / config.c0,
-              (config.mu0 / (4 * M_PI * config.hbar))),
+          AIM::Normalization::Helmholtz(config.omega / config.c0,
+                                        propagation_constant),
           config.omega);
     } else {
       pairwise = make_shared<DirectInteraction>(qds, history, rotating_dyadic,
@@ -66,11 +68,14 @@ int main(int argc, char *argv[])
                                                 config.c0, config.dt);
     }
 
+    auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
+
     std::vector<std::shared_ptr<InteractionBase>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
         pairwise};
 
-    // Set up Bloch RHS
+    // == INTEGRATOR =================================================
+
     std::unique_ptr<Integrator::RHS<Eigen::Vector2cd>> bloch_rhs =
         std::make_unique<Integrator::BlochRHS>(
             config.dt, history, std::move(interactions), std::move(rhs_funcs));
@@ -80,6 +85,8 @@ int main(int argc, char *argv[])
 
     cout << "Solving..." << endl;
     solver.solve(log_level_t::LOG_INFO);
+
+    // == OUTPUT =====================================================
 
     cout << "Writing output..." << endl;
     ofstream outfile("output.dat");
