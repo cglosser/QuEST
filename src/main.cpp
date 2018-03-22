@@ -58,7 +58,8 @@ int main(int argc, char *argv[])
                                         config.omega),
           AIM::Normalization::Helmholtz(
               config.omega / config.c0,
-              (config.mu0 / (4 * M_PI * config.hbar))));
+              (config.mu0 / (4 * M_PI * config.hbar))),
+          config.omega);
     } else {
       pairwise = make_shared<DirectInteraction>(qds, history, rotating_dyadic,
                                                 config.interpolation_order,
