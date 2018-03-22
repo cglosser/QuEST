@@ -23,7 +23,7 @@ class AIM::Interaction final : public InteractionBase {
               const double dt,
               Expansions::ExpansionFunction expansion_function,
               Normalization::SpatialNorm normalization,
-              const double omega = 0)
+              const double omega)
       : InteractionBase(dots, dt),
         grid{std::make_shared<Grid>(spacing, expansion_order, *dots)},
         expansion_table{std::make_shared<Expansions::ExpansionTable>(

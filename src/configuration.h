@@ -19,7 +19,7 @@ struct Configuration {
   std::string qd_path, pulse_path;
 
   // Constants
-  double c0, mu0, hbar, omega;
+  double c0, mu0, hbar, laser_frequency;
 
   // AIM
   int expansion_order, border;
