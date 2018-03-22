@@ -46,8 +46,8 @@ int main()
   const Eigen::Array3d spacing(s, s, s);
 
   auto dots = std::make_shared<DotVector>();
-  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0), {0, 1, 0}));
-  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0.867825), {0, 1, 0}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0), {0, 0, 1}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0.5, 0.867825), {0, 0, 1}));
 
   const Gaussian source(total_time / 2.0, total_time / 12.0);
 
@@ -59,7 +59,7 @@ int main()
   }
   // == Direct =======================================================
 
-  Propagation::EFIE<cmplx> kernel(c, k2);
+  Propagation::RotatingEFIE kernel(c, k2, omega);
   DirectInteraction direct(dots, history, kernel, interpolation_order, c, dt);
 
   // == AIM ==========================================================
@@ -75,7 +75,7 @@ int main()
   AIM::Expansions::RotatingEFIE exp_fun(
       grid->max_transit_steps(c, dt) + interpolation_order, c, dt, omega);
 
-  AIM::Normalization::Laplace norm_fun(k2);
+  AIM::Normalization::Helmholtz norm_fun(omega / c, k2);
 
   AIM::Farfield ff(dots, history, interpolation_order, c, dt, grid,
                    expansion_table, exp_fun, norm_fun);
