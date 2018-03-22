@@ -34,20 +34,20 @@ int main()
 {
   const int num_steps = 1024;
 
-  // const double c = 299.792458, omega = 2278.9013, k2 = 2.4341348e-05;
-  // const double dt = 0.5e-2, total_time = dt * num_steps;
+  const double c = 299.792458, omega = 2278.9013, k2 = 2.4341348e-05;
+  const double dt = 0.5e-2, total_time = dt * num_steps;
 
-  const double c = 1, omega = 0, k2 = 1;
-  const double dt = 1, total_time = dt * num_steps;
+  // const double c = 1, omega = 0, k2 = 1;
+  // const double dt = 1, total_time = dt * num_steps;
 
   const int interpolation_order = 5, expansion_order = 6;
 
-  const double s = 0.1 * c * dt;
+  const double s = c * 2 * M_PI / (10 * omega);
   const Eigen::Array3d spacing(s, s, s);
 
   auto dots = std::make_shared<DotVector>();
-  dots->push_back(QuantumDot(Eigen::Vector3d(0.5, 0.5, 0.5), {0, 1, 0}));
-  dots->push_back(QuantumDot(Eigen::Vector3d(0, 1.5, 2.3), {0, 1, 0}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0), {0, 1, 0}));
+  dots->push_back(QuantumDot(Eigen::Vector3d(0, 0, 0.867825), {0, 1, 0}));
 
   const Gaussian source(total_time / 2.0, total_time / 12.0);
 
@@ -83,7 +83,7 @@ int main()
   AIM::Nearfield nf(dots, history, interpolation_order, c, dt, grid,
                     expansion_table, nullptr, norm_fun,
                     std::make_shared<std::vector<AIM::Grid::ipair_t>>(
-                        grid->nearfield_point_pairs(1, *dots)),
+                        grid->nearfield_point_pairs(100, *dots)),
                     omega);
 
   AIM::Interaction combined(dots, history, kernel, spacing, interpolation_order,
