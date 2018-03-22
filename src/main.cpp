@@ -29,6 +29,11 @@ int main(int argc, char *argv[])
                       : "SLOW")
               << " mode" << std::endl;
 
+    std::cout << 2 * M_PI / (20 * config.omega) << std::endl;
+    std::cout << config.c0 * 2 * M_PI / (10 * config.omega) << std::endl;
+    std::cout << config.dt << std::endl;
+    std::cout << config.grid_spacing.transpose() << std::endl;
+
     auto qds = make_shared<DotVector>(import_dots(config.qd_path));
     qds->resize(config.num_particles);
     auto rhs_funcs = rhs_functions(*qds, config.omega);
@@ -39,6 +44,11 @@ int main(int argc, char *argv[])
     history->fill(Eigen::Vector2cd::Zero());
     history->initialize_past(Eigen::Vector2cd(1, 0));
 
+    for(int t = 0; t < config.num_timesteps; ++t) {
+      history->array_[0][t][0](1) = gaussian((t * config.dt - 6));
+      history->array_[1][t][0](1) = gaussian((t * config.dt - 6));
+    }
+
     // Set up Interactions
     auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
     Propagation::RotatingEFIE rotating_dyadic(
@@ -47,6 +57,12 @@ int main(int argc, char *argv[])
     std::shared_ptr<InteractionBase> pairwise;
     if(config.sim_type == Configuration::SIMULATION_TYPE::FAST) {
       AIM::Grid grid(config.grid_spacing, config.expansion_order, *qds);
+
+      std::cout << grid.shape().transpose() << std::endl;
+      std::cout << grid.associated_grid_index(qds->at(0).position()) << " "
+                << grid.associated_grid_index(qds->at(1).position())
+                << std::endl;
+
       const int transit_steps = grid.max_transit_steps(config.c0, config.dt) +
                                 config.interpolation_order;
 
@@ -78,15 +94,16 @@ int main(int argc, char *argv[])
         config.dt, 18, 22, 3.15, history, std::move(bloch_rhs));
 
     cout << "Solving..." << endl;
-    solver.solve(log_level_t::LOG_INFO);
+    // solver.solve(log_level_t::LOG_INFO);
 
     cout << "Writing output..." << endl;
     ofstream outfile("output.dat");
     outfile << scientific << setprecision(15);
     for(int t = 0; t < config.num_timesteps; ++t) {
-      for(int n = 0; n < config.num_particles; ++n) {
-        outfile << history->array_[n][t][0].transpose() << " ";
-      }
+      outfile << pairwise->evaluate(t).transpose();
+      // for(int n = 0; n < config.num_particles; ++n) {
+      // outfile << history->array_[n][t][0].transpose() << " ";
+      //}
       outfile << "\n";
     }
 
