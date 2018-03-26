@@ -25,6 +25,9 @@ namespace Propagation {
   class Helmholtz;
 
   template <class T>
+  class DelSq_Laplace;
+
+  template <class T>
   class EFIE;
 
   class RotatingEFIE;
@@ -92,8 +95,8 @@ class Propagation::Helmholtz : public Propagation::Kernel<cmplx> {
     this->coefs_.resize(interp.order() + 1);
 
     for(int i = 0; i <= interp.order(); ++i) {
-      this->coefs_[i] = Mat3D<cmplx>::Identity() * interp.evaluations[0][i] * k2 *
-                        std::exp(-iu * k * dr.norm()) / dr.norm();
+      this->coefs_[i] = Mat3D<cmplx>::Identity() * interp.evaluations[0][i] *
+                        k2 * std::exp(-iu * k * dr.norm()) / dr.norm();
     }
 
     return this->coefs_;
@@ -101,6 +104,41 @@ class Propagation::Helmholtz : public Propagation::Kernel<cmplx> {
 
  private:
   double k2, k;
+};
+
+template <class T>
+class Propagation::DelSq_Laplace : public Propagation::Kernel<T> {
+ public:
+  explicit DelSq_Laplace(const double c, const double k2 = 1) : c_{c}, k2_{k2}
+  {
+  }
+  const std::vector<Mat3D<T>> &coefficients(
+      const Eigen::Vector3d &dr,
+      const Interpolation::UniformLagrangeSet &interp)
+  {
+    this->coefs_.resize(interp.order() + 1);
+
+    const Eigen::Matrix3d rh = dr * dr.transpose() / dr.squaredNorm();
+    const double R = dr.norm();
+    const double R_sq = dr.squaredNorm();
+    const double R_cu = std::pow(dr.norm(), 3);
+
+    for(int i = 0; i <= interp.order(); ++i) {
+      this->coefs_[i] =
+          k2_ * ((3 * interp.evaluations[0][i] / R_cu +
+                  3 * interp.evaluations[1][i] / (c_ * R_sq) +
+                  interp.evaluations[2][i] / (std::pow(c_, 2) * R)) *
+                     rh +
+                 (-1 * interp.evaluations[0][i] / R_cu -
+                  interp.evaluations[1][i] / (c_ * R_sq)) *
+                     Eigen::Matrix3d::Identity());
+    }
+
+    return this->coefs_;
+  }
+
+ private:
+  double c_, k2_;
 };
 
 template <class T>
