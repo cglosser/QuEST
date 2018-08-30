@@ -17,5 +17,9 @@ if(${Boost_FOUND})
       "${CMAKE_CURRENT_LIST_DIR}/pulse_interaction_test.cpp"
       "${CMAKE_CURRENT_LIST_DIR}/quantum_dot_test.cpp"
   )
-  target_link_libraries(qtest-bin PUBLIC quest ${Boost_LIBRARIES})
+
+  add_subdirectory("extras/rapidcheck")
+  add_subdirectory("extras/rapidcheck/extras/boost_test")
+
+  target_link_libraries(qtest-bin PUBLIC quest ${Boost_LIBRARIES} rapidcheck rapidcheck_boost_test)
 endif(${Boost_FOUND})

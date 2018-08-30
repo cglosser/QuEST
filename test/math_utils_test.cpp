@@ -1,41 +1,70 @@
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
+#include <rapidcheck/boost_test.h>
+#include <iostream>
 #include "../src/math_utils.h"
 
 BOOST_AUTO_TEST_SUITE(math_utils)
 
-BOOST_AUTO_TEST_CASE(LinSpace)
-{
-  constexpr double TOLER = 1e-13;
-  std::vector<double> ls = linspace(0, 1, 10);
+BOOST_AUTO_TEST_SUITE(LINSPACE)
 
-  BOOST_CHECK_SMALL(ls.at(0), TOLER);
-  for(int i = 1; i < 10; ++i) {
-    BOOST_CHECK_CLOSE(ls.at(i), i / 9.0, TOLER);
+RC_BOOST_PROP(first_arg_is_first_element,
+              (const double first, const double second))
+{
+  const auto values = linspace(first, second, 8);
+  const auto error = std::abs(values.at(0) - first);
+  RC_ASSERT(error <= 1e-12 * std::abs(first));
+  RC_ASSERT(error <= 1e-12 * std::abs(values.at(0)));
+}
+
+RC_BOOST_PROP(second_arg_is_last_element,
+              (const double first, const double second))
+{
+  const auto values = linspace(first, second, 8);
+  const auto error = std::abs(values.at(7) - second);
+  RC_ASSERT(error <= 1e-12 * std::abs(second));
+  RC_ASSERT(error <= 1e-12 * std::abs(values.at(7)));
+}
+
+RC_BOOST_PROP(reverse_args_reverses_list,
+              (const double first, const double second))
+{
+  constexpr size_t n = 8;
+
+  auto l1 = linspace(first, second, n);
+  auto l2 = linspace(second, first, n);
+  std::reverse(l2.begin(), l2.end());
+
+  for(size_t i = 0; i < 8; ++i) {
+    const double error = std::abs(l1.at(i) - l2.at(i));
+    RC_ASSERT(error <= 1e-12 * std::abs(l1.at(i)));
+    RC_ASSERT(error <= 1e-12 * std::abs(l2.at(i)));
   }
 }
 
-BOOST_AUTO_TEST_CASE(UnitNormal)
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(UNIT_NORMAL)
+
+RC_BOOST_PROP(vector_has_unit_norm, (const double theta, const double phi))
 {
-  constexpr double TOLER = 1e-16;
-
-  const Eigen::Vector3d n_xhat = unit_normal(M_PI_2, 0);
-  const Eigen::Vector3d n_yhat = unit_normal(M_PI_2, M_PI_2);
-  const Eigen::Vector3d n_zhat = unit_normal(0, 0);
-
-  BOOST_CHECK_CLOSE(n_xhat(0), 1, TOLER);
-  BOOST_CHECK_SMALL(n_xhat(1), TOLER);
-  BOOST_CHECK_SMALL(n_xhat(2), TOLER);
-
-  BOOST_CHECK_SMALL(n_yhat(0), TOLER);
-  BOOST_CHECK_CLOSE(n_yhat(1), 1, TOLER);
-  BOOST_CHECK_SMALL(n_yhat(2), TOLER);
-
-  BOOST_CHECK_SMALL(n_zhat(0), TOLER);
-  BOOST_CHECK_SMALL(n_zhat(1), TOLER);
-  BOOST_CHECK_CLOSE(n_zhat(2), 1, TOLER);
+  const Eigen::Vector3d r = unit_normal(theta, phi);
+  RC_ASSERT(std::abs(r.norm() - 1) <= 1e-12);
 }
+
+RC_BOOST_PROP(vector_has_bounded_coordinates,
+              (const double theta, const double phi))
+{
+  const Eigen::Vector3d r = unit_normal(theta, phi);
+
+  RC_ASSERT(-1 <= r(0) && r(0) <= 1);
+  RC_ASSERT(-1 <= r(1) && r(1) <= 1);
+  RC_ASSERT(-1 <= r(2) && r(2) <= 1);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(GRID_SEQUENCE)
 
 BOOST_AUTO_TEST_CASE(GridSequence)
 {
@@ -51,20 +80,43 @@ BOOST_AUTO_TEST_CASE(GridSequence)
   BOOST_CHECK_EQUAL(grid_sequence(9), 5);
 }
 
-BOOST_AUTO_TEST_CASE(SplitDouble)
+RC_BOOST_PROP(only_even_terms_are_negative, ())
 {
-  auto x1 = split_double(10.5);
-  BOOST_CHECK_EQUAL(x1.first, 10);
-  BOOST_CHECK_EQUAL(x1.second, 0.5);
+  const auto n = *rc::gen::inRange(0, 4096);
+  const auto x = grid_sequence(n);
 
-  auto x2 = split_double(3.0);
-  BOOST_CHECK_EQUAL(x2.first, 3);
-  BOOST_CHECK_EQUAL(x2.second, 0.0);
-
-  auto x3 = split_double(-8.4);
-  BOOST_CHECK_EQUAL(x3.first, -8);
-  BOOST_CHECK_CLOSE(x3.second, -0.4, 1e-13);
+  if(n % 2 == 0) {
+    RC_ASSERT(x <= 0);
+  } else {
+    RC_ASSERT(x > 0);
+  }
 }
+
+RC_BOOST_PROP(grid_sequence_pattern, ())
+{
+  const auto n = *rc::gen::inRange(0, 4096);
+  const auto x = grid_sequence(n);
+
+  if(x < 0) {
+    RC_ASSERT(grid_sequence(n + 1) == -x + 1);
+  } else if(x > 0) {
+    RC_ASSERT(grid_sequence(n + 1) == -x);
+  } else {
+    RC_ASSERT(grid_sequence(n + 1) == 1);
+  }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(SPLIT_DOUBLE)
+
+RC_BOOST_PROP(int_magnitude_is_smaller_than_double, (const double x))
+{
+  const auto p = split_double(x);
+  RC_ASSERT(std::abs(p.first) <= std::abs(x));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(FALLING_FACTORIAL)
 {

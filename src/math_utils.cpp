@@ -31,7 +31,7 @@ double skew_gaussian(const double alpha, const double t)
   return gaussian(t) * std::erfc(-alpha * t / std::sqrt(2));
 }
 
-int grid_sequence(const int n)
+int grid_sequence(const size_t n)
 {
   return (1 - std::pow(-1, n) * (1 + 2 * n)) / 4;
 }
