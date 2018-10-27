@@ -10,6 +10,10 @@ before_script:
 
 script: make && make test
 
+before_install:
+  - wget https://launchpad.net/ubuntu/+archive/primary/+files/libeigen3-dev_3.3.4-4build1_all.deb
+  - sudo dpkg -i libeigen3-dev_3.3.4-4build1_all.deb
+
 addons:
   apt:
     sources:
