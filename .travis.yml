@@ -2,6 +2,14 @@ language: cpp
 compiler:
   - clang
   - gcc
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake ..
+
+script: make && make test
+
 addons:
   apt:
     sources:
