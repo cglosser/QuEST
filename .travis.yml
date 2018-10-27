@@ -1,0 +1,13 @@
+language: cpp
+compiler:
+  - clang
+  - gcc
+addons:
+  apt:
+    sources:
+      - george-edison55-precise-backports
+    packages:
+      - cmake-data
+      - cmake
+      - libeigen3-dev
+      - libfftw3-dev
