@@ -4,9 +4,8 @@ compiler:
   - gcc
 
 before_script:
-  - ./install/get_eigen.sh
-  - mkdir build
-  - cd build
+  - sudo ./install/get_eigen.sh
+  - mkdir build && cd build
   - cmake ..
 
 script: make qtest && ./qtest
