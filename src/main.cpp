@@ -22,6 +22,9 @@ int main(int argc, char *argv[])
     cout << setprecision(12) << scientific;
     auto vm = parse_configs(argc, argv);
 
+    std::unique_ptr<DurationLogger> durationLogger =
+        config.report_time_data ? std::make_unique<DurationLogger>() : nullptr;
+
     cout << "Initializing..." << endl;
     std::cout << "  Running in "
               << ((config.sim_type == Configuration::SIMULATION_TYPE::FAST)
@@ -33,12 +36,20 @@ int main(int argc, char *argv[])
     qds->resize(config.num_particles);
     auto rhs_funcs = rhs_functions(*qds, config.omega);
 
+    if(durationLogger) {
+      durationLogger->log_event("Import dots");
+    }
+
     // == HISTORY ====================================================
 
     auto history = make_shared<Integrator::History<Eigen::Vector2cd>>(
         config.num_particles, 22, config.num_timesteps);
     history->fill(Eigen::Vector2cd::Zero());
     history->initialize_past(Eigen::Vector2cd(1, 0));
+
+    if(durationLogger) {
+      durationLogger->log_event("Initialize history");
+    }
 
     // == INTERACTIONS ===============================================
 
@@ -74,6 +85,10 @@ int main(int argc, char *argv[])
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
         pairwise};
 
+    if(durationLogger) {
+      durationLogger->log_event("Initialize interactions");
+    }
+
     // == INTEGRATOR =================================================
 
     std::unique_ptr<Integrator::RHS<Eigen::Vector2cd>> bloch_rhs =
@@ -86,6 +101,10 @@ int main(int argc, char *argv[])
     cout << "Solving..." << endl;
     solver.solve(log_level_t::LOG_INFO);
 
+    if(durationLogger) {
+      durationLogger->log_event("Full solution");
+    }
+
     // == OUTPUT =====================================================
 
     cout << "Writing output..." << endl;
@@ -96,6 +115,10 @@ int main(int argc, char *argv[])
         outfile << history->array_[n][t][0].transpose() << " ";
       }
       outfile << "\n";
+    }
+
+    if(durationLogger) {
+      durationLogger->log_event("Write output");
     }
 
   } catch(CommandLineException &e) {

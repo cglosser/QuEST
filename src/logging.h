@@ -16,8 +16,8 @@ enum class log_level_t {
 
 class DurationLogger {
  private:
-  std::chrono::high_resolution_clock::time_point t1, t2;
   std::ofstream log_file;
+  std::chrono::high_resolution_clock::time_point t1, t2;
 
  public:
   DurationLogger(const std::string &fname = "timing.dat")

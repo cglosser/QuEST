@@ -12,7 +12,8 @@ po::variables_map parse_configs(int argc, char *argv[]) {
     ("help", "print this help message")
     ("version,v", "print version string")
     ("config,c", po::value<string>(&config_path)->default_value("input.cfg"), "path to configuration file")
-    ("fast,f",   po::bool_switch()->default_value(false), "employ fast methods to calculate potentials");
+    ("fast,f",   po::bool_switch()->default_value(false), "employ fast methods to calculate potentials")
+    ("time,t",   po::bool_switch(&config.report_time_data)->default_value(false), "report execution time data");
   ;
 
   po::options_description files_description("Configuration files");
