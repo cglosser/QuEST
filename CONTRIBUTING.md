@@ -29,6 +29,10 @@ Start reading our code and you'll get the hang of it. For the most part, we opti
   * Set class names in `CamelCase` and variable/function names in `snake_case`.
   * Short variable names are right out. Be descriptive and try to make your code read like a sentence. `chi[i][j]` doesn't work nearly as well as `damping_parameters[particle_idx][derivative_idx]`.
   * This is open source software. Consider the people who will read your code, and make it look nice for them. It's sort of like driving a car: Perhaps you love doing donuts when you're alone, but with passengers the goal is to make the ride as smooth as possible.
+  
+### References and Pointers
+
+   * Prefer passing references/values instead of pointers unless a given function _needs_ a pointer (likely to give ownership of a shared resource or abstract type). This pushes the responsibility of checking for null pointers higher in the function tree, thereby reducing error-checking boilerplate.
 
 ## Academic integrity
 
