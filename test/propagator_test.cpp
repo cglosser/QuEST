@@ -14,6 +14,7 @@ struct Parameters {
   const double dt;
   const int num_timesteps;
   const int interpolation_order;
+  const int num_pts;
 
   const double max_time;
 
@@ -22,50 +23,61 @@ struct Parameters {
         dt{1},
         num_timesteps{2048},
         interpolation_order{6},
+        num_pts{2},
         max_time{num_timesteps * dt} {};
 };
 
-BOOST_AUTO_TEST_SUITE(DIRECT_INTERACTION)
+BOOST_AUTO_TEST_SUITE(RETARDED_GAUSSIAN)
 
-BOOST_FIXTURE_TEST_CASE(RETARDED_GAUSSIAN, Parameters)
-{
-  // == Initialize dots ==
-  auto qds = std::make_shared<DotVector>();
-  qds->emplace_back(Eigen::Vector3d(0.5, 0.5, 0.5), Eigen::Vector3d(0, 0, 1));
-  qds->emplace_back(Eigen::Vector3d(10.5, 0.6, 0.7), Eigen::Vector3d(0, 0, 1));
+struct SimulationStructures : Parameters {
+  std::function<double(double)> src_fn, obs_fn;
 
-  const double tau =
-      (qds->at(1).position() - qds->at(0).position()).norm() / c0;
+  std::shared_ptr<DotVector> qds;
+  std::shared_ptr<Integrator::History<Eigen::Vector2cd>> history;
 
-  // == Initialize history ==
-  auto history = std::make_shared<Integrator::History<Eigen::Vector2cd>>(
-      2, num_timesteps / 2, num_timesteps);
+  SimulationStructures()
+      : qds{std::make_shared<DotVector>()},
+        history{std::make_shared<Integrator::History<Eigen::Vector2cd>>(
+            num_pts, num_timesteps / 2, num_timesteps)}
+  {
+    // == Initialize dots ==
+    qds->emplace_back(Eigen::Vector3d(0.5, 0.5, 0.5), Eigen::Vector3d(0, 0, 1));
+    qds->emplace_back(Eigen::Vector3d(10.5, 0.6, 0.7),
+                      Eigen::Vector3d(0, 0, 1));
 
-  const double mu = max_time / 2.0, sigma = max_time / 12.0;
+    const double delay =
+        (qds->at(1).position() - qds->at(0).position()).norm() / c0;
 
-  for(int t = -num_timesteps / 2; t < num_timesteps; ++t) {
-    const double arg = (t * dt - mu) / sigma;
+    const double mu = max_time / 2.0, sigma = max_time / 12.0;
 
-    history->array_[0][t][0] = Eigen::Vector2cd(0, gaussian(arg));
-    history->array_[1][t][0] = Eigen::Vector2cd(0, 0);
+    src_fn = [=](const double t) { return gaussian((t - mu) / sigma); };
+    obs_fn = [=](const double t) { return src_fn(t - delay); };
+
+    // == Initialize history ==
+    for(int i = -num_timesteps / 2; i < num_timesteps; ++i) {
+      history->array_[0][i][0] = Eigen::Vector2cd(0, src_fn(i * dt));
+      history->array_[1][i][0] = Eigen::Vector2cd(0, 0);
+    }
   }
+};
 
+BOOST_FIXTURE_TEST_CASE(DIRECT_INTERACTION, SimulationStructures)
+{
   // == Initialize interaction ==
   Propagation::Identity<cmplx> identity_kernel;
   DirectInteraction direct_interaction(qds, history, identity_kernel,
                                        interpolation_order, c0, dt);
 
   // == Run propagation simulation ==
-  for(int t = 0; t < num_timesteps; ++t) {
-    BOOST_TEST_MESSAGE(t);
+  for(int i = 0; i < num_timesteps; ++i) {
+    BOOST_TEST_MESSAGE(i);
 
-    const double obs_val_calculated = direct_interaction.evaluate(t)(1).real();
-    const double obs_val_actual = gaussian((t * dt - mu - tau) / sigma);
-
+    const double obs_val_calculated = direct_interaction.evaluate(i)(1).real();
+    const double obs_val_actual = obs_fn(i * dt);
     BOOST_REQUIRE_CLOSE_FRACTION(obs_val_calculated, obs_val_actual, 1e-12);
   }
 }
 
-BOOST_AUTO_TEST_SUITE_END()  // DIRECT_INTERACTION
+BOOST_AUTO_TEST_SUITE_END()  // RETARDED_GAUSSIAN
 
 BOOST_AUTO_TEST_SUITE_END()  // PROPAGATION
