@@ -46,5 +46,6 @@ doc/doxygen_sqlite3.db
 build/
 debug/
 
-# JetBrains
+# IDEs
 .idea/
+.vscode/
