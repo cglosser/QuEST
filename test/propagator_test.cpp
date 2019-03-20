@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "../src/integrator/history.h"
+#include "../src/interactions/AIM/aim_interaction.h"
 #include "../src/interactions/direct_interaction.h"
 #include "../src/interactions/green_function.h"
 #include "../src/math_utils.h"
@@ -22,7 +23,7 @@ struct Parameters {
       : c0{1},
         dt{1},
         num_timesteps{2048},
-        interpolation_order{6},
+        interpolation_order{5},
         num_pts{2},
         max_time{num_timesteps * dt} {};
 };
@@ -45,8 +46,8 @@ struct SimulationStructures : Parameters {
     qds->emplace_back(Eigen::Vector3d(10.5, 0.6, 0.7),
                       Eigen::Vector3d(0, 0, 1));
 
-    const double delay =
-        (qds->at(1).position() - qds->at(0).position()).norm() / c0;
+    const double dr = (qds->at(1).position() - qds->at(0).position()).norm();
+    const double delay = dr / c0;
 
     const double mu = max_time / 2.0, sigma = max_time / 12.0;
 
@@ -74,7 +75,42 @@ BOOST_FIXTURE_TEST_CASE(DIRECT_INTERACTION, SimulationStructures)
 
     const double obs_val_calculated = direct_interaction.evaluate(i)(1).real();
     const double obs_val_actual = obs_fn(i * dt);
-    BOOST_REQUIRE_CLOSE_FRACTION(obs_val_calculated, obs_val_actual, 1e-12);
+    BOOST_REQUIRE_CLOSE_FRACTION(obs_val_calculated, obs_val_actual, 1e-9);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(AIM_INTERACTION, SimulationStructures)
+{
+  constexpr int expansion_order = 3;
+  // == Initialize AIM structures ==
+  Eigen::Vector3d spacing = Eigen::Vector3d::Ones() * c0 * dt;
+  AIM::Grid grid(spacing, expansion_order, *qds);
+  const int transit_steps =
+      grid.max_transit_steps(c0, dt) + interpolation_order;
+
+  Propagation::Identity<cmplx> identity_kernel;
+  AIM::Interaction aim_interaction(
+      qds, history, identity_kernel, spacing, interpolation_order,
+      expansion_order, 1, c0, dt, AIM::Expansions::Retardation(transit_steps),
+      AIM::Normalization::unit);
+
+  // == Run propagation simulation ==
+  for(int i = 0; i < num_timesteps; ++i) {
+    BOOST_TEST_MESSAGE(i);
+
+    const double obs_val_calculated = aim_interaction.evaluate(i)(1).real();
+    const double obs_val_actual = obs_fn(i * dt);
+
+    if(i > 16) {
+      // Because of how AIM works the first several timesteps are required to
+      // "warm up" the simulation and will likely have a large amount of error
+      // but a negligible signal, thus this test simply ignores the first 16
+      // steps. The tolerance is relatively large due to the identity kernel;
+      // obs values don't scale as 1/r, so the grid approximation is much worse.
+      // Of course, the approximation can be made much better with higher order
+      // interpolations and/or expansions.
+      BOOST_REQUIRE_CLOSE_FRACTION(obs_val_calculated, obs_val_actual, 1e-4);
+    }
   }
 }
 
