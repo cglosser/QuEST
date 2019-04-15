@@ -26,8 +26,6 @@ Start reading our code and you'll get the hang of it. For the most part, we opti
 
   * The top-level `.clang-format` file contains the preferred styling rules for all C++ code. Please follow that and run that on your source files judiciously. 
   * ALWAYS put spaces after list items and method parameters (`[1, 2, 3]`, not `[1,2,3]`), around operators (`x += 1`, not `x+=1`), and around hash arrows.
-  * Set class names in `CamelCase` and variable/function names in `snake_case`.
-  * Short variable names are right out. Be descriptive and try to make your code read like a sentence. `chi[i][j]` doesn't work nearly as well as `damping_parameters[particle_idx][derivative_idx]`.
   * This is open source software. Consider the people who will read your code, and make it look nice for them. It's sort of like driving a car: Perhaps you love doing donuts when you're alone, but with passengers the goal is to make the ride as smooth as possible.
   
 ### Variable names
@@ -35,10 +33,11 @@ Start reading our code and you'll get the hang of it. For the most part, we opti
 Variable names are fundamentally how intent is communicated between developers, so comments on their style merit their own section. There are reasons to break these conventions, but please follow them as closely as possible.
 
   * Set class names in CamelCase with a leading capital letter: `class MyFirstClass { ... }`
-  * Use all lowercase characters with underscores for instance names: `MyFirstClass my_first_class(...);`
+  * Set variable and function names with snake_case: `MyFirstClass my_first_class(...);`
   * Avoid abbreviations.
   * Seriously, avoid abbreviations.
     * When you're communicating verbally and say "interpolation table" it is *extremely* difficult for whomever you're communicating with to match that against `intrpTbl` on the fly.
+  * Short variable names are right out. Be descriptive and try to make your code read like a sentence. `chi[i][j]` doesn't work nearly as well as `damping_parameters[particle_idx][derivative_idx]`.
 
 ## Academic integrity
 
