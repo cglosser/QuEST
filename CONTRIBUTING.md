@@ -29,10 +29,20 @@ Start reading our code and you'll get the hang of it. For the most part, we opti
   * Set class names in `CamelCase` and variable/function names in `snake_case`.
   * Short variable names are right out. Be descriptive and try to make your code read like a sentence. `chi[i][j]` doesn't work nearly as well as `damping_parameters[particle_idx][derivative_idx]`.
   * This is open source software. Consider the people who will read your code, and make it look nice for them. It's sort of like driving a car: Perhaps you love doing donuts when you're alone, but with passengers the goal is to make the ride as smooth as possible.
+  
+### Variable names
+
+Variable names are fundamentally how intent is communicated between developers, so comments on their style merit their own section. There are reasons to break these conventions, but please follow them as closely as possible.
+
+  * Set class names in CamelCase with a leading capital letter: `class MyFirstClass { ... }`
+  * Use all lowercase characters with underscores for instance names: `MyFirstClass my_first_class(...);`
+  * Avoid abbreviations.
+  * Seriously, avoid abbreviations.
+    * When you're communicating verbally and say "interpolation table" it is *extremely* difficult for whomever you're communicating with to match that against `intrpTbl` on the fly.
 
 ## Academic integrity
 
 QuEST is an open-source platform for research and a lot of development work went into it. Please make use of the tool as you need, but also please consider paying it back with even small features or fixes---every little bit greatly helps the project! And if you do use QuEST in your own research, please don't heasitate to let us know; we'd be thrilled to put a link to your work on the main page!
 
 Thanks,
-Connor Glosser, Active QuEST Maintainer (guildmaster?)
+Connor Glosser, Active QuEST Maintainer (questgiver?)
