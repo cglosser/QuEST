@@ -33,6 +33,7 @@ po::variables_map parse_configs(int argc, char *argv[]) {
   po::options_description parameters_description("System parameters");
   parameters_description.add_options()
     ("parameters.num_particles", po::value<int>(&config.num_particles)->required(), "number of particles in the system")
+    ("parameters.num_corrector_steps", po::value<int>(&config.num_corrector_steps)->required(),"number of corrector steps")
     ("parameters.total_time",
      po::value<double>(&config.total_time)
          ->required()

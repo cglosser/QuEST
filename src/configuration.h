@@ -11,7 +11,7 @@
 
 struct Configuration {
   // Parameters
-  int num_particles, num_timesteps, interpolation_order;
+  int num_particles, num_timesteps, interpolation_order,num_corrector_steps;
   double dt, total_time;
   enum class SIMULATION_TYPE { DIRECT, FAST } sim_type;
   bool report_time_data;
