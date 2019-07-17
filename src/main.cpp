@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
             config.dt, history, std::move(interactions), std::move(rhs_funcs));
 
     Integrator::PredictorCorrector<Eigen::Vector2cd> solver(
-        config.dt, 18, 22, 3.15, history, std::move(bloch_rhs));
+        config.dt,config.num_corrector_steps, 18, 22, 3.15, history, std::move(bloch_rhs));
 
     cout << "Solving..." << endl;
     solver.solve(log_level_t::LOG_INFO);
