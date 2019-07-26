@@ -7,7 +7,7 @@ QuantumDot::QuantumDot(const Eigen::Vector3d &pos,
     : pos(pos), freq(freq), damping(damping), dip(dip)
 {
 }
-
+//add rotating and fixed frame
 matrix_elements QuantumDot::liouville_rhs(const matrix_elements &rho,
                                           const cmplx rabi,
                                           const double laser_freq) const

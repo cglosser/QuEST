@@ -24,7 +24,7 @@ typedef std::function<Eigen::Vector2cd(const Eigen::Vector2cd,
                                        const std::complex<double>)>
     BlochFunctionType;
 enum MatrixElement { RHO_00, RHO_01 };
-
+//add rotating and fixed frame
 class QuantumDot {
  public:
   QuantumDot() = default;

@@ -52,12 +52,26 @@ int main(int argc, char *argv[])
     }
 
     // == INTERACTIONS ===============================================
-
+    //Change RotatingEFIE to EFIE
     const double propagation_constant = config.mu0 / (4 * M_PI * config.hbar);
 
     std::shared_ptr<InteractionBase> pairwise;
-    Propagation::RotatingEFIE rotating_dyadic(config.c0, propagation_constant,
-                                              config.omega);
+
+
+    // Can I even do this?
+    if(config.ref_frame == Configuration::REFERENCE_FRAME::ROTATING) {
+      typedef Propagation::RotatingEFIE foo;
+      typedef AIM::Expansions::RotatingEFIE bar;
+    } else{
+      typedef Propagation::EFIE foo;
+      typedef AIM::Expansions::EFIE bar;
+    }
+
+    // Propagation::RotatingEFIE rotating_dyadic(config.c0, propagation_constant,
+    //                                           config.omega);
+
+    foo dyadic(config.c0, propagation_constant,
+                        config.omega);
 
     if(config.sim_type == Configuration::SIMULATION_TYPE::FAST) {
       AIM::Grid grid(config.grid_spacing, config.expansion_order, *qds);
@@ -65,16 +79,16 @@ int main(int argc, char *argv[])
                                 config.interpolation_order;
 
       pairwise = make_shared<AIM::Interaction>(
-          qds, history, rotating_dyadic, config.grid_spacing,
+          qds, history, dyadic, config.grid_spacing,
           config.interpolation_order, config.expansion_order, config.border,
           config.c0, config.dt,
-          AIM::Expansions::RotatingEFIE(transit_steps, config.c0, config.dt,
+          bar(transit_steps, config.c0, config.dt,
                                         config.omega),
           AIM::Normalization::Helmholtz(config.omega / config.c0,
                                         propagation_constant),
           config.omega);
     } else {
-      pairwise = make_shared<DirectInteraction>(qds, history, rotating_dyadic,
+      pairwise = make_shared<DirectInteraction>(qds, history, dyadic,
                                                 config.interpolation_order,
                                                 config.c0, config.dt);
     }

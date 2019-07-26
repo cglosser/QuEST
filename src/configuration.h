@@ -14,6 +14,7 @@ struct Configuration {
   int num_particles, num_timesteps, interpolation_order, num_corrector_steps;
   double dt, total_time;
   enum class SIMULATION_TYPE { DIRECT, FAST } sim_type;
+  enum class REFERENCE_FRAME { FIXED, ROTATING } ref_frame;
   bool report_time_data;
 
   // File paths

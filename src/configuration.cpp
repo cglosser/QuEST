@@ -11,9 +11,10 @@ po::variables_map parse_configs(int argc, char *argv[]) {
   cmd_line_description.add_options()
     ("help", "print this help message")
     ("version,v", "print version string")
-    ("config,c", po::value<string>(&config_path)->default_value("input.cfg"), "path to configuration file")
-    ("fast,f",   po::bool_switch()->default_value(false), "employ fast methods to calculate potentials")
-    ("time,t",   po::bool_switch(&config.report_time_data)->default_value(false), "report execution time data");
+    ("config,c",   po::value<string>(&config_path)->default_value("input.cfg"), "path to configuration file")
+    ("fast,f",     po::bool_switch()->default_value(false), "employ fast methods to calculate potentials")
+    ("rotating,r", po::bool_switch()->default_value(false), "(need help w/ discription) calculate matrix elements in a rotating frame of reference")
+    ("time,t",     po::bool_switch(&config.report_time_data)->default_value(false), "report execution time data");
   ;
 
   po::options_description files_description("Configuration files");
@@ -44,6 +45,7 @@ po::variables_map parse_configs(int argc, char *argv[]) {
     ("parameters.timestep",            po::value<double>(&config.dt)->required(), "timestep size")
     ("parameters.interpolation_order", po::value<int>(&config.interpolation_order)->required(), "order of the temporal Lagrange interpolants")
     ("parameters.fast",                po::bool_switch()->default_value(false), "in-file alias of --fast");
+    ("parameters.rotating",            po::bool_switch()->default_value(false), "in-file alias of --rotating");
 
   po::options_description aim_description("AIM & Grid parameters");
   aim_description.add_options()
@@ -98,6 +100,8 @@ po::variables_map parse_configs(int argc, char *argv[]) {
     config.grid_spacing = Eigen::Vector3d(tokens.at(0), tokens.at(1), tokens.at(2));
     config.sim_type = static_cast<Configuration::SIMULATION_TYPE>(
         vm["fast"].as<bool>() || vm["parameters.fast"].as<bool>());
+    config.ref_frame = static_cast<Configuration::REFERENCE_FRAME>(
+        vm["rotating"].as<bool>() || vm["parameter.rotating"].as<bool>());
   }
 
   return vm;
