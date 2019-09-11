@@ -58,13 +58,15 @@ int main(int argc, char *argv[])
     std::shared_ptr<InteractionBase> pairwise;
 
 
-    // Can I even do this?
+    // Can I even do this? pick better names
     if(config.ref_frame == Configuration::REFERENCE_FRAME::ROTATING) {
       typedef Propagation::RotatingEFIE foo;
       typedef AIM::Expansions::RotatingEFIE bar;
+      cout << "She's spinnin' " << endl;
     } else{
       typedef Propagation::EFIE foo;
       typedef AIM::Expansions::EFIE bar;
+      cout << "She ain't spinnin' " << endl;
     }
 
     // Propagation::RotatingEFIE rotating_dyadic(config.c0, propagation_constant,
@@ -93,7 +95,8 @@ int main(int argc, char *argv[])
                                                 config.c0, config.dt);
     }
 
-    auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path));
+    auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path,config.ref_frame)); //add config.ref_frame as an argument
+                                                                                             //what type is that thing anyway? I want a bool. finding out is very important
 
     std::vector<std::shared_ptr<InteractionBase>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
