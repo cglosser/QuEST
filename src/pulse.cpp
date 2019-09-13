@@ -9,7 +9,7 @@ Pulse::Pulse(const double amplitude, const double delay, const double width,
       width(width),
       freq(freq),
       wavevector(wavevector),
-      polarization(polarization.normalized())
+      polarization(polarization.normalized()),
       ref_frame(ref_frame) //add a fixed vs rot argument
 {
 }
@@ -43,7 +43,7 @@ std::istream &operator>>(std::istream &is, Pulse &p)
   return is;
 }
 
-friend void set_reference_frame(Pulse &p, Configuration::REFERENCE_FRAME ref_frame)
+void set_reference_frame(Pulse &p, Configuration::REFERENCE_FRAME ref_frame)
 {
   p.ref_frame = ref_frame;
 }
@@ -56,6 +56,6 @@ Pulse read_pulse_config(const std::string &filename, const Configuration::REFERE
   Pulse p;
   ifs >> p; //find a way to include config.ref_frame in p
   set_reference_frame(p,ref_frame);
-  
+
   return p;
 }

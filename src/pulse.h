@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "math_utils.h"
+#include "configuration.h"
 
 class Pulse {
  public:
