@@ -44,7 +44,7 @@ po::variables_map parse_configs(int argc, char *argv[]) {
          }),"total simulation duration")
     ("parameters.timestep",            po::value<double>(&config.dt)->required(), "timestep size")
     ("parameters.interpolation_order", po::value<int>(&config.interpolation_order)->required(), "order of the temporal Lagrange interpolants")
-    ("parameters.fast",                po::bool_switch()->default_value(false), "in-file alias of --fast");
+    ("parameters.fast",                po::bool_switch()->default_value(false), "in-file alias of --fast")
     ("parameters.rotating",            po::bool_switch()->default_value(false), "in-file alias of --rotating");
 
   po::options_description aim_description("AIM & Grid parameters");
@@ -101,7 +101,7 @@ po::variables_map parse_configs(int argc, char *argv[]) {
     config.sim_type = static_cast<Configuration::SIMULATION_TYPE>(
         vm["fast"].as<bool>() || vm["parameters.fast"].as<bool>());
     config.ref_frame = static_cast<Configuration::REFERENCE_FRAME>(
-        vm["rotating"].as<bool>() || vm["parameter.rotating"].as<bool>());
+        vm["rotating"].as<bool>() || vm["parameters.rotating"].as<bool>());
   }
 
   return vm;
