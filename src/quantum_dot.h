@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "common.h"
+#include "configuration.h"
 
 class QuantumDot;
 
@@ -39,7 +40,8 @@ class QuantumDot {
 
   matrix_elements liouville_rhs(const matrix_elements &,
                                 const cmplx,
-                                const double) const;
+                                const double,
+                                const Configuration::REFERENCE_FRAME) const;
 
   const Eigen::Vector3d &position() const { return pos; }
   const Eigen::Vector3d &dipole() const { return dip; }
@@ -62,6 +64,7 @@ class QuantumDot {
 };
 
 DotVector import_dots(const std::string &);
-std::vector<BlochFunctionType> rhs_functions(const DotVector &, const double);
+std::vector<BlochFunctionType> rhs_functions(const DotVector &, const double,
+                                             Configuration::REFERENCE_FRAME);
 
 #endif

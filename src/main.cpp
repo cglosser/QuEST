@@ -32,15 +32,9 @@ int main(int argc, char *argv[])
                       : "SLOW")
               << " mode" << std::endl;
 
-    std::cout << " Is it spinning? "
-              << ((config.ref_frame == Configuration::REFERENCE_FRAME::FIXED)
-                      ? "Nah..."
-                      : "Yeah...")
-                      << std::endl;
-
     auto qds = make_shared<DotVector>(import_dots(config.qd_path));
     qds->resize(config.num_particles);
-    auto rhs_funcs = rhs_functions(*qds, config.omega);
+    auto rhs_funcs = rhs_functions(*qds, config.omega, config.ref_frame);
 
     if(durationLogger) {
       durationLogger->log_event("Import dots");
@@ -58,13 +52,10 @@ int main(int argc, char *argv[])
     }
 
     // == INTERACTIONS ===============================================
-    //Change RotatingEFIE to EFIE
+
     const double propagation_constant = config.mu0 / (4 * M_PI * config.hbar);
 
     std::shared_ptr<InteractionBase> pairwise;
-
-    // Propagation::RotatingEFIE rotating_dyadic(config.c0, propagation_constant,
-    //                                           config.omega);
 
     if(config.sim_type == Configuration::SIMULATION_TYPE::FAST) {
       AIM::Grid grid(config.grid_spacing, config.expansion_order, *qds);
@@ -112,8 +103,7 @@ int main(int argc, char *argv[])
 
     }
 
-    auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path, config.ref_frame)); //add config.ref_frame as an argument
-                                                                                             //what type is that thing anyway? I want a bool. finding out is very important
+    auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path, config.ref_frame));
 
     std::vector<std::shared_ptr<InteractionBase>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),

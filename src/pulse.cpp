@@ -20,7 +20,7 @@ Eigen::Vector3d Pulse::operator()(const Eigen::Vector3d &r,
   const double arg = wavevector.dot(r) - freq * (t - delay);
 
   if(ref_frame == Configuration::REFERENCE_FRAME::ROTATING) {
-    return (amplitude / 2 * polarization) * gaussian(arg / width);  // * cos(arg); write an if statement that determines whether the cos(arg) term is included
+    return (amplitude / 2 * polarization) * gaussian(arg / width);
 
   } else {
     return (amplitude / 2 * polarization) * gaussian(arg / width) * cos(arg);
@@ -43,7 +43,7 @@ std::istream &operator>>(std::istream &is, Pulse &p)
   return is;
 }
 
-void set_reference_frame(Pulse &p, Configuration::REFERENCE_FRAME ref_frame)
+void set_reference_frame(Pulse &p, Configuration::REFERENCE_FRAME ref_frame) //there has to be a better way to do this with the >> operator.
 {
   p.ref_frame = ref_frame;
 }
