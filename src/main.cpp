@@ -32,9 +32,14 @@ int main(int argc, char *argv[])
                       : "SLOW")
               << " mode" << std::endl;
 
+    const bool rotating =
+    config.ref_frame == Configuration::REFERENCE_FRAME::ROTATING
+    ? true
+    : false;
+
     auto qds = make_shared<DotVector>(import_dots(config.qd_path));
     qds->resize(config.num_particles);
-    auto rhs_funcs = rhs_functions(*qds, config.omega, config.ref_frame);
+    auto rhs_funcs = rhs_functions(*qds, config.omega, rotating);
 
     if(durationLogger) {
       durationLogger->log_event("Import dots");
@@ -57,6 +62,7 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<InteractionBase> pairwise;
 
+    //There has to be a faster way to do this...
     if(config.sim_type == Configuration::SIMULATION_TYPE::FAST) {
       AIM::Grid grid(config.grid_spacing, config.expansion_order, *qds);
       const int transit_steps = grid.max_transit_steps(config.c0, config.dt) +
@@ -103,7 +109,7 @@ int main(int argc, char *argv[])
 
     }
 
-    auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path, config.ref_frame));
+    auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path, rotating));
 
     std::vector<std::shared_ptr<InteractionBase>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),

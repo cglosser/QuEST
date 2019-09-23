@@ -3,14 +3,14 @@
 Pulse::Pulse(const double amplitude, const double delay, const double width,
              const double freq, const Eigen::Vector3d &wavevector,
              const Eigen::Vector3d &polarization,
-             const Configuration::REFERENCE_FRAME ref_frame) //add a fixed vs. rot argument
+             bool rotating)
     : amplitude(amplitude),
       delay(delay),
       width(width),
       freq(freq),
       wavevector(wavevector),
       polarization(polarization.normalized()),
-      ref_frame(ref_frame) //add a fixed vs rot argument
+      rotating(rotating)
 {
 }
 
@@ -19,13 +19,12 @@ Eigen::Vector3d Pulse::operator()(const Eigen::Vector3d &r,
 {
   const double arg = wavevector.dot(r) - freq * (t - delay);
 
-  if(ref_frame == Configuration::REFERENCE_FRAME::ROTATING) {
-    return (amplitude / 2 * polarization) * gaussian(arg / width);
+  Eigen::Vector3d pulse_vector;
+  (rotating == true)
+  ? pulse_vector = (amplitude / 2 * polarization) * gaussian(arg / width)
+  : pulse_vector = (amplitude * polarization) * gaussian(arg / width) * cos(arg);
 
-  } else {
-    return (amplitude / 2 * polarization) * gaussian(arg / width) * cos(arg);
-  }
-
+  return pulse_vector;
 }
 
 std::ostream &operator<<(std::ostream &os, const Pulse &p)
@@ -43,19 +42,19 @@ std::istream &operator>>(std::istream &is, Pulse &p)
   return is;
 }
 
-void set_reference_frame(Pulse &p, Configuration::REFERENCE_FRAME ref_frame) //there has to be a better way to do this with the >> operator.
+void set_reference_frame(Pulse &p, const bool rotating) //there has to be a better way to do this
 {
-  p.ref_frame = ref_frame;
+  p.rotating = rotating;
 }
 
-Pulse read_pulse_config(const std::string &filename, const Configuration::REFERENCE_FRAME ref_frame) //read in config.ref_frame
+Pulse read_pulse_config(const std::string &filename, const bool rotating)
 {
   std::ifstream ifs(filename);
   if(!ifs) throw std::runtime_error("Could not open " + filename);
 
   Pulse p;
-  ifs >> p; //find a way to include config.ref_frame in p
-  set_reference_frame(p,ref_frame);
+  ifs >> p;
+  set_reference_frame(p, rotating);
 
   return p;
 }

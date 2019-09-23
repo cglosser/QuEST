@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "common.h"
-#include "configuration.h"
 
 class QuantumDot;
 
@@ -25,7 +24,6 @@ typedef std::function<Eigen::Vector2cd(const Eigen::Vector2cd,
                                        const std::complex<double>)>
     BlochFunctionType;
 enum MatrixElement { RHO_00, RHO_01 };
-//add rotating and fixed frame
 class QuantumDot {
  public:
   QuantumDot() = default;
@@ -41,7 +39,7 @@ class QuantumDot {
   matrix_elements liouville_rhs(const matrix_elements &,
                                 const cmplx,
                                 const double,
-                                const Configuration::REFERENCE_FRAME) const;
+                                const bool) const;
 
   const Eigen::Vector3d &position() const { return pos; }
   const Eigen::Vector3d &dipole() const { return dip; }
@@ -65,6 +63,6 @@ class QuantumDot {
 
 DotVector import_dots(const std::string &);
 std::vector<BlochFunctionType> rhs_functions(const DotVector &, const double,
-                                             Configuration::REFERENCE_FRAME);
+                                             bool);
 
 #endif

@@ -7,27 +7,20 @@ QuantumDot::QuantumDot(const Eigen::Vector3d &pos,
     : pos(pos), freq(freq), damping(damping), dip(dip)
 {
 }
-//add rotating and fixed frame
 matrix_elements QuantumDot::liouville_rhs(const matrix_elements &rho,
                                           const cmplx rabi,
                                           const double laser_freq,
-                                          const Configuration::REFERENCE_FRAME ref_frame) const
+                                          const bool rotating) const
 {
   const cmplx m0 = -iu * (rabi * std::conj(rho[1]) - std::conj(rabi) * rho[1]) -
                    (rho[0] - 1.0) / damping.first;
 
-  cmplx m1_temp;
-  if (ref_frame == Configuration::REFERENCE_FRAME::ROTATING)
-  {
-    cmplx m1_temp =
-        -iu * (rabi * (1.0 - 2.0 * rho[0]) + rho[1] * (laser_freq - freq)) -
-        rho[1] / damping.second;
-  } else {
-    cmplx m1_temp =
-        -iu * (rabi * (1.0 - 2.0 * rho[0]) + rho[1] * (-freq)) -
-        rho[1] / damping.second;
-  }
-  const cmplx m1 = m1_temp;
+  const cmplx m1 = (rotating == true)
+  ? -iu * (rabi * (1.0 - 2.0 * rho[0]) + rho[1] * (laser_freq - freq)) -
+                    rho[1] / damping.second
+
+  : -iu * (rabi * (1.0 - 2.0 * rho[0]) + rho[1] * (-freq)) -
+                    rho[1] / damping.second;
 
   return matrix_elements(m0, m1);
 }
@@ -62,16 +55,16 @@ DotVector import_dots(const std::string &fname)
 
 std::vector<BlochFunctionType> rhs_functions(const DotVector &dots,
                                              const double laser_frequency,
-                                             const Configuration::REFERENCE_FRAME ref_frame)
+                                             const bool rotating)
 {
   std::vector<BlochFunctionType> funcs(dots.size());
 
   using std::placeholders::_1;
   using std::placeholders::_2;
   std::transform(dots.begin(), dots.end(), funcs.begin(),
-                 [laser_frequency, ref_frame](const QuantumDot &d) {
+                 [laser_frequency, rotating](const QuantumDot &d) {
                    return std::bind(&QuantumDot::liouville_rhs, d, _1, _2,
-                                    laser_frequency, ref_frame);
+                                    laser_frequency, rotating);
                  });
   return funcs;
 }

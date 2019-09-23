@@ -10,10 +10,10 @@ const double width = 227.89013;
 const double pulse_freq = 2278.9013;
 const Eigen::Vector3d wavevector(1, 0, 0);
 const Eigen::Vector3d polarization(1, 0, 0);
-const Configuration::REFERENCE_FRAME ref_frame = Configuration::REFERENCE_FRAME::ROTATING;
+bool rotating = true;
 
 auto pulse =
-    Pulse(amplitude, delay, width, pulse_freq, wavevector, polarization, ref_frame);
+    Pulse(amplitude, delay, width, pulse_freq, wavevector, polarization, rotating);
 
 BOOST_AUTO_TEST_CASE(pulse_shape_1)
 {
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(dot_pulse_interaction)
   auto dots = std::make_shared<DotVector>(dots_vec);
 
   std::shared_ptr<Pulse> pulse_ptr = std::make_shared<Pulse>(
-      Pulse(amplitude, delay, width, pulse_freq, wavevector, polarization, ref_frame));
+      Pulse(amplitude, delay, width, pulse_freq, wavevector, polarization, rotating));
 
   PulseInteraction pulse_interaction =
       PulseInteraction(dots, pulse_ptr, 1, 0.1);  // hbar=1, dt=1

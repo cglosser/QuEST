@@ -9,7 +9,7 @@ const Eigen::Vector3d pos(0, 0, 0), dipole(0, 0, 1);
 const double omega = 2278.9013;
 const std::pair<double, double> ts(10, 20);
 const QuantumDot qd(pos, omega, ts, dipole);
-Configuration::REFERENCE_FRAME ref_frame = Configuration::REFERENCE_FRAME::ROTATING;
+bool rotating = true;
 
 BOOST_AUTO_TEST_CASE(resonant_rhs)
 {
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(resonant_rhs)
 
   matrix_elements rhs(qd.liouville_rhs(
       matrix_elements(density_matrix(0, 0), density_matrix(0, 1)), rabi,
-      omega, ref_frame));
+      omega, rotating));
 
   BOOST_CHECK_CLOSE(matrix_rhs(0, 0).real(), rhs(0).real(), 1e-9);
   BOOST_CHECK_CLOSE(matrix_rhs(0, 0).imag(), rhs(0).imag(), 1e-9);
