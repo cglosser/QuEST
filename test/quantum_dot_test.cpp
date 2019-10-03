@@ -1,5 +1,5 @@
-#include "../src/quantum_dot.h"
 #include <boost/test/unit_test.hpp>
+#include "../src/quantum_dot.h"
 
 BOOST_AUTO_TEST_SUITE(quantum_dot)
 
@@ -9,6 +9,7 @@ const Eigen::Vector3d pos(0, 0, 0), dipole(0, 0, 1);
 const double omega = 2278.9013;
 const std::pair<double, double> ts(10, 20);
 const QuantumDot qd(pos, omega, ts, dipole);
+bool rotating = true;
 
 BOOST_AUTO_TEST_CASE(resonant_rhs)
 {
@@ -27,17 +28,17 @@ BOOST_AUTO_TEST_CASE(resonant_rhs)
       density_matrix(1, 1) / ts.first;
 
   // Evaluate the commutator & dissipator
-  Eigen::Matrix2cd matrix_rhs(
-      -iu * (hamiltonian_matrix * density_matrix -
-             density_matrix * hamiltonian_matrix) - dissipator);
+  Eigen::Matrix2cd matrix_rhs(-iu * (hamiltonian_matrix * density_matrix -
+                                     density_matrix * hamiltonian_matrix) -
+                              dissipator);
 
   matrix_elements rhs(qd.liouville_rhs(
-      matrix_elements(density_matrix(0, 0), density_matrix(0, 1)), rabi,
-      omega));
+      matrix_elements(density_matrix(0, 0), density_matrix(0, 1)), rabi, omega,
+      rotating));
 
   BOOST_CHECK_CLOSE(matrix_rhs(0, 0).real(), rhs(0).real(), 1e-9);
   BOOST_CHECK_CLOSE(matrix_rhs(0, 0).imag(), rhs(0).imag(), 1e-9);
-                                                                
+
   BOOST_CHECK_CLOSE(matrix_rhs(0, 1).real(), rhs(1).real(), 1e-9);
   BOOST_CHECK_CLOSE(matrix_rhs(0, 1).imag(), rhs(1).imag(), 1e-9);
 }

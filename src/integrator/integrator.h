@@ -20,13 +20,14 @@ class Integrator::PredictorCorrector {
   PredictorCorrector(const double,
                      const int,
                      const int,
+                     const int,
                      const double,
                      const std::shared_ptr<Integrator::History<soltype>>,
                      std::unique_ptr<Integrator::RHS<soltype>>);
   void solve(const log_level_t = log_level_t::LOG_NOTHING) const;
 
  private:
-  int num_solutions, time_idx_ubound;
+  int num_solutions, time_idx_ubound, num_corrector_steps;
   double dt;
   Weights weights;
   std::shared_ptr<Integrator::History<soltype>> history;
@@ -39,10 +40,10 @@ class Integrator::PredictorCorrector {
   void log_percentage_complete(const int) const;
 };
 
-constexpr int NUM_CORRECTOR_STEPS = 10;
 template <class soltype>
 Integrator::PredictorCorrector<soltype>::PredictorCorrector(
     const double dt,
+    const int num_corrector_steps,
     const int n_lambda,
     const int n_time,
     const double radius,
@@ -52,6 +53,7 @@ Integrator::PredictorCorrector<soltype>::PredictorCorrector(
       time_idx_ubound(history->array_.index_bases()[1] +
                       history->array_.shape()[1]),
       dt(dt),
+      num_corrector_steps(num_corrector_steps),
       weights(n_lambda, n_time, radius),
       history(std::move(history)),
       rhs(std::move(rhs))
@@ -76,7 +78,7 @@ void Integrator::PredictorCorrector<soltype>::solve_step(const int step) const
   predictor(step);
   rhs->evaluate(step);
 
-  for(int m = 0; m < NUM_CORRECTOR_STEPS; ++m) {
+  for(int m = 0; m < num_corrector_steps; ++m) {
     corrector(step);
     rhs->evaluate(step);
   }

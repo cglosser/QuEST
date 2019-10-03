@@ -71,11 +71,12 @@ struct SIGMOIDAL_SYSTEM {
   }
 
   const double dt;
-  const int window, num_steps;
+  const int window, num_steps, num_corrector_steps;
   std::shared_ptr<Integrator::History<double>> hist;
 
   SIGMOIDAL_SYSTEM()
       : dt(0.1),
+        num_corrector_steps(10),
         window(22),
         num_steps(201),
         hist(
@@ -101,7 +102,8 @@ BOOST_AUTO_TEST_CASE(PREDICTOR_CORRECTOR)
   std::unique_ptr<Integrator::RHS<double>> system_rhs =
       std::make_unique<Integrator::ODE_RHS>(dt, hist, rhs_funcs);
 
-  Integrator::PredictorCorrector<double> solver(dt, 32, window, 3.15, hist,
+  Integrator::PredictorCorrector<double> solver(dt, num_corrector_steps, 32,
+                                                window, 3.15, hist,
                                                 std::move(system_rhs));
   solver.solve();
 
