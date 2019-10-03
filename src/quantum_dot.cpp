@@ -15,13 +15,12 @@ matrix_elements QuantumDot::liouville_rhs(const matrix_elements &rho,
   const cmplx m0 = -iu * (rabi * std::conj(rho[1]) - std::conj(rabi) * rho[1]) -
                    (rho[0] - 1.0) / damping.first;
 
-  const cmplx m1 = (rotating == true)
-  ? -iu * (rabi * (1.0 - 2.0 * rho[0]) + rho[1] * (laser_freq - freq)) -
-                    rho[1] / damping.second
+  cmplx m1_temp = -iu * (rabi * (1.0 - 2.0 * rho[0])) - rho[1] / damping.second;
 
-  : -iu * (rabi * (1.0 - 2.0 * rho[0]) + rho[1] * (-freq)) -
-                    rho[1] / damping.second;
+  m1_temp -=
+      rotating ? iu * rho[1] * (laser_freq - freq) : iu * rho[1] * (-freq);
 
+  const cmplx m1 = m1_temp;  // is this an appropriate way to do this?
   return matrix_elements(m0, m1);
 }
 

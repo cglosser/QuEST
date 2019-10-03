@@ -1,7 +1,10 @@
 #include "pulse.h"
 
-Pulse::Pulse(const double amplitude, const double delay, const double width,
-             const double freq, const Eigen::Vector3d &wavevector,
+Pulse::Pulse(const double amplitude,
+             const double delay,
+             const double width,
+             const double freq,
+             const Eigen::Vector3d &wavevector,
              const Eigen::Vector3d &polarization,
              bool rotating)
     : amplitude(amplitude),
@@ -19,10 +22,11 @@ Eigen::Vector3d Pulse::operator()(const Eigen::Vector3d &r,
 {
   const double arg = wavevector.dot(r) - freq * (t - delay);
 
-  Eigen::Vector3d pulse_vector;
-  (rotating == true)
-  ? pulse_vector = (amplitude / 2 * polarization) * gaussian(arg / width)
-  : pulse_vector = (amplitude * polarization) * gaussian(arg / width) * cos(arg);
+  Eigen::Vector3d pulse_vector;  // is the convention to declare and define in
+                                 // the same line?
+  pulse_vector = (amplitude / 2 * polarization) * gaussian(arg / width);
+
+  pulse_vector *= rotating ? 1.0 : cos(arg);
 
   return pulse_vector;
 }
@@ -42,7 +46,8 @@ std::istream &operator>>(std::istream &is, Pulse &p)
   return is;
 }
 
-void set_reference_frame(Pulse &p, const bool rotating) //there has to be a better way to do this
+void set_reference_frame(
+    Pulse &p, const bool rotating)  // there has to be a better way to do this
 {
   p.rotating = rotating;
 }

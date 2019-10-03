@@ -33,17 +33,14 @@ int main(int argc, char *argv[])
               << " mode" << std::endl;
 
     const bool rotating =
-    config.ref_frame == Configuration::REFERENCE_FRAME::ROTATING
-    ? true
-    : false;
+        config.ref_frame == Configuration::REFERENCE_FRAME::ROTATING ? true
+                                                                     : false;
 
     auto qds = make_shared<DotVector>(import_dots(config.qd_path));
     qds->resize(config.num_particles);
     auto rhs_funcs = rhs_functions(*qds, config.omega, rotating);
 
-    if(durationLogger) {
-      durationLogger->log_event("Import dots");
-    }
+    if(durationLogger) { durationLogger->log_event("Import dots"); }
 
     // == HISTORY ====================================================
 
@@ -52,9 +49,7 @@ int main(int argc, char *argv[])
     history->fill(Eigen::Vector2cd::Zero());
     history->initialize_past(Eigen::Vector2cd(1, 0));
 
-    if(durationLogger) {
-      durationLogger->log_event("Initialize history");
-    }
+    if(durationLogger) { durationLogger->log_event("Initialize history"); }
 
     // == INTERACTIONS ===============================================
 
@@ -62,21 +57,21 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<InteractionBase> pairwise;
 
-    //There has to be a faster way to do this...
+    // There has to be a faster way to do this...
     if(config.sim_type == Configuration::SIMULATION_TYPE::FAST) {
       AIM::Grid grid(config.grid_spacing, config.expansion_order, *qds);
       const int transit_steps = grid.max_transit_steps(config.c0, config.dt) +
                                 config.interpolation_order;
 
       if(config.ref_frame == Configuration::REFERENCE_FRAME::ROTATING) {
-
-        Propagation::RotatingEFIE rotating_dyadic(config.c0, propagation_constant, config.omega);
+        Propagation::RotatingEFIE rotating_dyadic(
+            config.c0, propagation_constant, config.omega);
         pairwise = make_shared<AIM::Interaction>(
             qds, history, rotating_dyadic, config.grid_spacing,
             config.interpolation_order, config.expansion_order, config.border,
             config.c0, config.dt,
-            AIM::Expansions::RotatingEFIE(transit_steps, config.c0,
-                                          config.dt, config.omega),
+            AIM::Expansions::RotatingEFIE(transit_steps, config.c0, config.dt,
+                                          config.omega),
             AIM::Normalization::Helmholtz(config.omega / config.c0,
                                           propagation_constant),
             config.omega);
@@ -94,30 +89,28 @@ int main(int argc, char *argv[])
       }
 
     } else {
-
       if(config.ref_frame == Configuration::REFERENCE_FRAME::ROTATING) {
-        Propagation::RotatingEFIE rotating_dyadic(config.c0, propagation_constant, config.omega);
+        Propagation::RotatingEFIE rotating_dyadic(
+            config.c0, propagation_constant, config.omega);
         pairwise = make_shared<DirectInteraction>(qds, history, rotating_dyadic,
                                                   config.interpolation_order,
                                                   config.c0, config.dt);
-      } else{
+      } else {
         Propagation::EFIE<cmplx> dyadic(config.c0, propagation_constant);
         pairwise = make_shared<DirectInteraction>(qds, history, dyadic,
                                                   config.interpolation_order,
                                                   config.c0, config.dt);
-        }
-
+      }
     }
 
-    auto pulse1 = make_shared<Pulse>(read_pulse_config(config.pulse_path, rotating));
+    auto pulse1 =
+        make_shared<Pulse>(read_pulse_config(config.pulse_path, rotating));
 
     std::vector<std::shared_ptr<InteractionBase>> interactions{
         make_shared<PulseInteraction>(qds, pulse1, config.hbar, config.dt),
         pairwise};
 
-    if(durationLogger) {
-      durationLogger->log_event("Initialize interactions");
-    }
+    if(durationLogger) { durationLogger->log_event("Initialize interactions"); }
 
     // == INTEGRATOR =================================================
 
@@ -126,14 +119,13 @@ int main(int argc, char *argv[])
             config.dt, history, std::move(interactions), std::move(rhs_funcs));
 
     Integrator::PredictorCorrector<Eigen::Vector2cd> solver(
-        config.dt,config.num_corrector_steps, 18, 22, 3.15, history, std::move(bloch_rhs));
+        config.dt, config.num_corrector_steps, 18, 22, 3.15, history,
+        std::move(bloch_rhs));
 
     cout << "Solving..." << endl;
     solver.solve(log_level_t::LOG_INFO);
 
-    if(durationLogger) {
-      durationLogger->log_event("Full solution");
-    }
+    if(durationLogger) { durationLogger->log_event("Full solution"); }
 
     // == OUTPUT =====================================================
 
@@ -147,9 +139,7 @@ int main(int argc, char *argv[])
       outfile << "\n";
     }
 
-    if(durationLogger) {
-      durationLogger->log_event("Write output");
-    }
+    if(durationLogger) { durationLogger->log_event("Write output"); }
 
   } catch(CommandLineException &e) {
     // User most likely queried for help or version info, so we can silently

@@ -33,14 +33,13 @@ class Integrator::PredictorCorrector {
   std::shared_ptr<Integrator::History<soltype>> history;
   std::unique_ptr<Integrator::RHS<soltype>> rhs;
 
-  void solve_step(const int, const int) const;
+  void solve_step(const int) const;
   void predictor(const int) const;
   void corrector(const int) const;
 
   void log_percentage_complete(const int) const;
 };
 
-// constexpr int NUM_CORRECTOR_STEPS = 10;
 template <class soltype>
 Integrator::PredictorCorrector<soltype>::PredictorCorrector(
     const double dt,
@@ -66,14 +65,13 @@ void Integrator::PredictorCorrector<soltype>::solve(
     const log_level_t log_level) const
 {
   for(int step = 0; step < time_idx_ubound; ++step) {
-    solve_step(step, num_corrector_steps);
+    solve_step(step);
     if(log_level >= log_level_t::LOG_INFO) log_percentage_complete(step);
   }
 }
 
 template <class soltype>
-void Integrator::PredictorCorrector<soltype>::solve_step(
-    const int step, const int num_corrector_steps) const
+void Integrator::PredictorCorrector<soltype>::solve_step(const int step) const
 {
   assert(0 <= step && step < time_idx_ubound);
 

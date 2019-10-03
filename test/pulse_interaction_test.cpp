@@ -1,5 +1,5 @@
-#include "../src/interactions/pulse_interaction.h"
 #include <boost/test/unit_test.hpp>
+#include "../src/interactions/pulse_interaction.h"
 
 BOOST_AUTO_TEST_SUITE(pulse_interaction)
 
@@ -12,8 +12,8 @@ const Eigen::Vector3d wavevector(1, 0, 0);
 const Eigen::Vector3d polarization(1, 0, 0);
 bool rotating = true;
 
-auto pulse =
-    Pulse(amplitude, delay, width, pulse_freq, wavevector, polarization, rotating);
+auto pulse = Pulse(
+    amplitude, delay, width, pulse_freq, wavevector, polarization, rotating);
 
 BOOST_AUTO_TEST_CASE(pulse_shape_1)
 {
@@ -50,8 +50,8 @@ BOOST_AUTO_TEST_CASE(dot_pulse_interaction)
   DotVector dots_vec = {QuantumDot(pos, dot_freq, damping, dip)};
   auto dots = std::make_shared<DotVector>(dots_vec);
 
-  std::shared_ptr<Pulse> pulse_ptr = std::make_shared<Pulse>(
-      Pulse(amplitude, delay, width, pulse_freq, wavevector, polarization, rotating));
+  std::shared_ptr<Pulse> pulse_ptr = std::make_shared<Pulse>(Pulse(
+      amplitude, delay, width, pulse_freq, wavevector, polarization, rotating));
 
   PulseInteraction pulse_interaction =
       PulseInteraction(dots, pulse_ptr, 1, 0.1);  // hbar=1, dt=1

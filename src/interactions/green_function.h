@@ -31,7 +31,7 @@ namespace Propagation {
   class EFIE;
 
   class RotatingEFIE;
-}
+}  // namespace Propagation
 
 template <class T>
 class Propagation::Kernel {
