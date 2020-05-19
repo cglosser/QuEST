@@ -13,7 +13,7 @@ class DirectInteraction final : public HistoryInteraction {
       const double,
       const double);
 
-  const ResultArray &evaluate(const int) final;
+  const ResultArray &evaluate(const int, const bool = true) final;
 
  private:
   int num_interactions;

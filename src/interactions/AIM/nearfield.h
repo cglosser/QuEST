@@ -23,7 +23,7 @@ class AIM::Nearfield final : public AimBase {
             const double = 0);
   ~Nearfield() = default;
 
-  const ResultArray &evaluate(const int) final;
+  const ResultArray &evaluate(const int, const bool = true) final;
 
  private:
   struct support_range_t {

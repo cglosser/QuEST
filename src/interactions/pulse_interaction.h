@@ -7,8 +7,10 @@
 class PulseInteraction : public InteractionBase {
  public:
   PulseInteraction(const std::shared_ptr<const DotVector>,
-                   const std::shared_ptr<const Pulse>, const double, const double);
-  virtual const ResultArray &evaluate(const int);
+                   const std::shared_ptr<const Pulse>,
+                   const double,
+                   const double);
+  virtual const ResultArray &evaluate(const int, const bool = true);
 
  private:
   std::shared_ptr<const Pulse> pulse;
