@@ -9,7 +9,7 @@ before_script:
   - mkdir build && cd build
   - cmake ..
 
-script: make qtest && ./qtest
+script: make qtest-bin && ./qtest
 
 addons:
   apt:
