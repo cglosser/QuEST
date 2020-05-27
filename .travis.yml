@@ -4,7 +4,7 @@ compiler:
   - gcc
 
 before_script:
-  - sudo ./install/get_boost.sh > /dev/null
+        #  - sudo ./install/get_boost.sh > /dev/null
   - sudo ./install/get_eigen.sh > /dev/null
   - mkdir build && cd build
   - cmake ..
