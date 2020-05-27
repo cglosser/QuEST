@@ -18,6 +18,7 @@ addons:
     packages:
       - cmake-data
       - cmake
+      - boost1.68
       - libfftw3-dev
       - libboost-test-dev
       - libboost-program-options-dev
