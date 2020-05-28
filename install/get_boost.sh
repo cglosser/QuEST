@@ -9,5 +9,6 @@ ls
 
 echo "Building boost"
 cd boost/
-./bootstrap --with-libraries=program_options,test
+ls
+./bootstrap.sh --with-libraries=program_options,test
 ./b2 install
