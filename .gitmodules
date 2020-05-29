@@ -1,3 +1,0 @@
-[submodule "extra/rapidcheck"]
-	path = extras/rapidcheck
-	url = https://github.com/emil-e/rapidcheck.git
