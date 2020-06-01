@@ -76,11 +76,11 @@ void Integrator::PredictorCorrector<soltype>::solve_step(const int step) const
   assert(0 <= step && step < time_idx_ubound);
 
   predictor(step);
-  rhs->evaluate(step, true);
+  rhs->first_evaluation_of_timestep(step);
 
   for(int m = 0; m < num_corrector_steps; ++m) {
     corrector(step);
-    rhs->evaluate(step, false);
+    rhs->evaluate(step);
   }
 }
 

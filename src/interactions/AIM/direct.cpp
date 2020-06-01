@@ -17,40 +17,98 @@ AIM::DirectInteraction::DirectInteraction(
 {
 }
 
-const InteractionBase::ResultArray &AIM::DirectInteraction::evaluate(
-    const int time_idx, const bool first_call)
+const InteractionBase::ResultArray &
+AIM::DirectInteraction::first_evaluation_of_timestep(const int time_idx)
 {
   constexpr int RHO_01 = 1;
 
-  temp_res.setZero();
-  if(first_call) results.setZero();
+  results.setZero();
+  past_terms_of_results.setZero();
 
   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
     const auto &pair = (*interaction_pairs_)[pair_idx];
 
-    if(first_call) {
-      for(int i = 1; i < shape_[1]; ++i) {
-        const int s =
-            std::max(time_idx - floor_delays_[pair_idx] - i,
-                     static_cast<int>(history->array_.index_bases()[1]));
+    for(int i = 1; i < shape_[1]; ++i) {
+      const int s =
+          std::max(time_idx - floor_delays_[pair_idx] - i,
+                   static_cast<int>(history->array_.index_bases()[1]));
 
-        results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
-                               coefficients_[pair_idx][i];
-        results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
-                                coefficients_[pair_idx][i];
-      }
+      past_terms_of_results[pair.first] +=
+          (history->array_[pair.second][s][0])[RHO_01] *
+          coefficients_[pair_idx][i];
+      past_terms_of_results[pair.second] +=
+          (history->array_[pair.first][s][0])[RHO_01] *
+          coefficients_[pair_idx][i];
     }
+
     const int s = std::max(time_idx - floor_delays_[pair_idx],
                            static_cast<int>(history->array_.index_bases()[1]));
 
-    temp_res[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
+    results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
+                           coefficients_[pair_idx][0];
+    results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
                             coefficients_[pair_idx][0];
-    temp_res[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
-                             coefficients_[pair_idx][0];
   }
-  temp_res += results;
-  return temp_res;
+  results += past_terms_of_results;
+  return results;
 }
+
+const InteractionBase::ResultArray &AIM::DirectInteraction::evaluate(
+    const int time_idx)
+{
+  constexpr int RHO_01 = 1;
+
+  results.setZero();
+
+  for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
+    const auto &pair = (*interaction_pairs_)[pair_idx];
+
+    const int s = std::max(time_idx - floor_delays_[pair_idx],
+                           static_cast<int>(history->array_.index_bases()[1]));
+
+    results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
+                           coefficients_[pair_idx][0];
+    results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
+                            coefficients_[pair_idx][0];
+  }
+  results += past_terms_of_results;
+  return results;
+}
+
+// const InteractionBase::ResultArray &AIM::DirectInteraction::evaluate(
+//     const int time_idx, const bool first_call)
+// {
+//   constexpr int RHO_01 = 1;
+//
+//   temp_res.setZero();
+//   if(first_call) results.setZero();
+//
+//   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
+//     const auto &pair = (*interaction_pairs_)[pair_idx];
+//
+//     if(first_call) {
+//       for(int i = 1; i < shape_[1]; ++i) {
+//         const int s =
+//             std::max(time_idx - floor_delays_[pair_idx] - i,
+//                      static_cast<int>(history->array_.index_bases()[1]));
+//
+//         results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
+//                                coefficients_[pair_idx][i];
+//         results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
+//                                 coefficients_[pair_idx][i];
+//       }
+//     }
+//     const int s = std::max(time_idx - floor_delays_[pair_idx],
+//                            static_cast<int>(history->array_.index_bases()[1]));
+//
+//     temp_res[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
+//                             coefficients_[pair_idx][0];
+//     temp_res[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
+//                              coefficients_[pair_idx][0];
+//   }
+//   temp_res += results;
+//   return temp_res;
+// }
 
 boost::multi_array<cmplx, 2> AIM::DirectInteraction::coefficient_table(
     Propagation::Kernel<cmplx> &kernel, std::vector<int> &floor_delays) const

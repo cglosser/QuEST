@@ -28,49 +28,109 @@ AIM::Nearfield::Nearfield(
       support_(shape_[0], {std::numeric_limits<int>::max(), 0}),
       coefficients_{coefficient_table()}
 {
-  if(interp_order != 5)
-    throw std::runtime_error(
-        "Lagrange interpolation of order != 5 is not supported in nearfield "
-        "calculations");
 }
 
-const InteractionBase::ResultArray &AIM::Nearfield::evaluate(
-    const int time_idx, const bool first_call)
+const InteractionBase::ResultArray &
+AIM::Nearfield::first_evaluation_of_timestep(const int time_idx)
 {
   constexpr int RH0_01 = 1;
 
-  temp_res.setZero();
-  if(first_call) results.setZero();
+  results.setZero();
+  past_terms_of_results.setZero();
 
   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
     const auto &pair = (*interaction_pairs_)[pair_idx];
 
-    if(first_call) {
-      for(int t = support_[pair_idx].begin + 1; t < support_[pair_idx].end;
-          ++t) {
-        const int s = std::max(
-            time_idx - t, static_cast<int>(history->array_.index_bases()[1]));
+    for(int t = support_[pair_idx].begin + 1; t < support_[pair_idx].end; ++t) {
+      const int s = std::max(
+          time_idx - t, static_cast<int>(history->array_.index_bases()[1]));
 
-        results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
-                               coefficients_[pair_idx][t][0];
-        results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
-                                coefficients_[pair_idx][t][1];
-      }
+      past_terms_of_results[pair.first] +=
+          (history->array_[pair.second][s][0])[RHO_01] *
+          coefficients_[pair_idx][t][0];
+      past_terms_of_results[pair.second] +=
+          (history->array_[pair.first][s][0])[RHO_01] *
+          coefficients_[pair_idx][t][1];
     }
     int t = support_[pair_idx].begin;
     const int s = std::max(time_idx - t,
                            static_cast<int>(history->array_.index_bases()[1]));
     assert(support_[pair_idx].begin == 0);
 
-    temp_res[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
-                            coefficients_[pair_idx][t][0];
-    temp_res[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
-                             coefficients_[pair_idx][t][1];
+    results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
+                           coefficients_[pair_idx][t][0];
+    results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
+                            coefficients_[pair_idx][t][1];
   }
-  temp_res += results;
+  results += past_terms_of_results;
 
-  return temp_res;
+  return results;
 }
+
+const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
+{
+  constexpr int RH0_01 = 1;
+
+  results.setZero();
+
+  for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
+    const auto &pair = (*interaction_pairs_)[pair_idx];
+
+    int t = support_[pair_idx].begin;
+    const int s = std::max(time_idx - t,
+                           static_cast<int>(history->array_.index_bases()[1]));
+    assert(support_[pair_idx].begin == 0);
+
+    results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
+                           coefficients_[pair_idx][t][0];
+    results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
+                            coefficients_[pair_idx][t][1];
+  }
+  results += past_terms_of_results;
+
+  return results;
+}
+
+// const InteractionBase::ResultArray &AIM::Nearfield::evaluate(
+//     const int time_idx, const bool first_call)
+// {
+//   constexpr int RH0_01 = 1;
+//
+//   results.setZero();
+//   if(first_call) past_terms_of_results.setZero();
+//
+//   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
+//     const auto &pair = (*interaction_pairs_)[pair_idx];
+//
+//     if(first_call) {
+//       for(int t = support_[pair_idx].begin + 1; t < support_[pair_idx].end;
+//           ++t) {
+//         const int s = std::max(
+//             time_idx - t,
+//             static_cast<int>(history->array_.index_bases()[1]));
+//
+//         past_terms_of_results[pair.first] +=
+//             (history->array_[pair.second][s][0])[RHO_01] *
+//             coefficients_[pair_idx][t][0];
+//         past_terms_of_results[pair.second] +=
+//             (history->array_[pair.first][s][0])[RHO_01] *
+//             coefficients_[pair_idx][t][1];
+//       }
+//     }
+//     int t = support_[pair_idx].begin;
+//     const int s = std::max(time_idx - t,
+//                            static_cast<int>(history->array_.index_bases()[1]));
+//     assert(support_[pair_idx].begin == 0);
+//
+//     results[pair.first] += (history->array_[pair.second][s][0])[RHO_01] *
+//                            coefficients_[pair_idx][t][0];
+//     results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
+//                             coefficients_[pair_idx][t][1];
+//   }
+//   results += past_terms_of_results;
+//
+//   return results;
+// }
 
 boost::multi_array<cmplx, 3> AIM::Nearfield::coefficient_table()
 {

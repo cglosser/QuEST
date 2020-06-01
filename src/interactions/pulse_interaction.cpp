@@ -9,7 +9,7 @@ PulseInteraction::PulseInteraction(const std::shared_ptr<const DotVector> dots,
 }
 
 const InteractionBase::ResultArray &PulseInteraction::evaluate(
-    const int time_idx, const bool first_call)
+    const int time_idx)
 {
   const double time = time_idx * dt;
 

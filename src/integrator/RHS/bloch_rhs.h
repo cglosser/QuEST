@@ -17,7 +17,8 @@ class Integrator::BlochRHS : public Integrator::RHS<Eigen::Vector2cd> {
            const std::shared_ptr<History<Eigen::Vector2cd>>,
            std::vector<std::shared_ptr<InteractionBase>>,
            std::vector<BlochFunctionType>);
-  void evaluate(const int, const bool = true) const override;
+  void evaluate(const int) const override;
+  void first_evaluation_of_timestep(const int) const override;
 
  private:
   int num_solutions;

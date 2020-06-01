@@ -12,13 +12,33 @@ Integrator::BlochRHS::BlochRHS(
 {
 }
 
-void Integrator::BlochRHS::evaluate(const int step, const bool first_call) const
+void Integrator::BlochRHS::evaluate(const int step) const
 {
-  auto eval_and_sum = [step, first_call](
+  auto eval_and_sum = [step](
                           const InteractionBase::ResultArray &r,
                           const std::shared_ptr<InteractionBase> &interaction) {
-    return r + interaction->evaluate(step, first_call);
+    return r + interaction->evaluate(step);
   };
+  // TODO: change the evaluate function here to two seperate functions
+  auto nil = InteractionBase::ResultArray::Zero(num_solutions, 1).eval();
+
+  auto projected_efields = std::accumulate(
+      interactions.begin(), interactions.end(), nil, eval_and_sum);
+
+  for(int solution = 0; solution < num_solutions; ++solution) {
+    history->array_[solution][step][1] = rhs_functions[solution](
+        history->array_[solution][step][0], projected_efields[solution]);
+  }
+}
+
+void Integrator::BlochRHS::first_evaluation_of_timestep(const int step) const
+{
+  auto eval_and_sum = [step](
+                          const InteractionBase::ResultArray &r,
+                          const std::shared_ptr<InteractionBase> &interaction) {
+    return r + interaction->first_evaluation_of_timestep(step);
+  };
+  // TODO: change the evaluate function here to two seperate functions
   auto nil = InteractionBase::ResultArray::Zero(num_solutions, 1).eval();
 
   auto projected_efields = std::accumulate(

@@ -18,7 +18,8 @@ class AIM::DirectInteraction final : public HistoryInteraction {
       const double,
       std::shared_ptr<const std::vector<Grid::ipair_t>>);
 
-  const ResultArray &evaluate(const int, const bool = true) final;
+  const ResultArray &evaluate(const int) final;
+  const ResultArray &first_evaluation_of_timestep(const int) final;
   boost::multi_array<cmplx, 2> coefficient_table(Propagation::Kernel<cmplx> &,
                                                  std::vector<int> &) const;
 

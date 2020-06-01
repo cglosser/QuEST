@@ -21,13 +21,19 @@ class AIM::Farfield final : public AimBase {
            Normalization::SpatialNorm);
   ~Farfield() = default;
 
-  const ResultArray &evaluate(const int step,
-                              const bool first_call = true) final
+  const ResultArray &evaluate(const int step) final
   {
     fill_source_table(step);
-    propagate(step, first_call);
+    propagate(step);
     fill_results_table(step);
 
+    return results;
+  }
+  const ResultArray &first_evaluation_of_timestep(const int step) final
+  {
+    fill_source_table(step);
+    first_propagate_of_timestep(step);
+    fill_results_table(step);
     return results;
   }
 
@@ -46,7 +52,8 @@ class AIM::Farfield final : public AimBase {
 
   spacetime::vector<cmplx> make_propagation_table() const;
   void fill_source_table(const int);
-  void propagate(const int, const bool);
+  void propagate(const int);
+  void first_propagate_of_timestep(const int);
   void fill_results_table(const int);
 
   void fill_gmatrix_table(spacetime::vector<cmplx> &) const;

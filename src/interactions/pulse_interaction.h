@@ -10,7 +10,11 @@ class PulseInteraction : public InteractionBase {
                    const std::shared_ptr<const Pulse>,
                    const double,
                    const double);
-  virtual const ResultArray &evaluate(const int, const bool = true);
+  virtual const ResultArray &evaluate(const int);
+  virtual const ResultArray &first_evaluation_of_timestep(const int n)
+  {
+    return evaluate(n);
+  }
 
  private:
   std::shared_ptr<const Pulse> pulse;
