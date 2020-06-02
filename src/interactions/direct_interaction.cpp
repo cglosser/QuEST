@@ -64,7 +64,6 @@ DirectInteraction::first_evaluation_of_timestep(const int time_idx)
       past_terms_of_results[obs] +=
           (history->array_[src][s][0])[RHO_01] * coefficients[pair_idx][i];
     }
-    // TODO: just call evaluate here?
     const int s = std::max(time_idx - floor_delays[pair_idx],
                            static_cast<int>(history->array_.index_bases()[1]));
 

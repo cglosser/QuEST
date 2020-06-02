@@ -19,7 +19,6 @@ void Integrator::BlochRHS::evaluate(const int step) const
                           const std::shared_ptr<InteractionBase> &interaction) {
     return r + interaction->evaluate(step);
   };
-  // TODO: change the evaluate function here to two seperate functions
   auto nil = InteractionBase::ResultArray::Zero(num_solutions, 1).eval();
 
   auto projected_efields = std::accumulate(
@@ -38,7 +37,6 @@ void Integrator::BlochRHS::first_evaluation_of_timestep(const int step) const
                           const std::shared_ptr<InteractionBase> &interaction) {
     return r + interaction->first_evaluation_of_timestep(step);
   };
-  // TODO: change the evaluate function here to two seperate functions
   auto nil = InteractionBase::ResultArray::Zero(num_solutions, 1).eval();
 
   auto projected_efields = std::accumulate(
