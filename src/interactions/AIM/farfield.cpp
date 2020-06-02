@@ -135,52 +135,6 @@ void AIM::Farfield::propagate(const int step)
                    reinterpret_cast<fftw_complex *>(o_ptr));
 }
 
-// void AIM::Farfield::propagate(const int step, const bool first_call)
-// {
-//   const auto wrapped_step = step % table_dimensions_[0];
-//   const auto nb = 8 * grid->size();
-//   const std::array<int, 5> front = {{wrapped_step, 0, 0, 0, 0}};
-//
-//   const auto s_ptr = &source_table_(front);
-//   fftw_execute_dft(spatial_vector_transforms_.forward,
-//                    reinterpret_cast<fftw_complex *>(s_ptr),
-//                    reinterpret_cast<fftw_complex *>(s_ptr));
-//
-//   Eigen::Map<Eigen::Array3Xcd> observers(&obs_table_(front), 3, nb);
-//   observers = 0;
-//   // initialize temp_observers with the correct size and zero it
-//   if(first_call) temp_observers = Eigen::Array3Xcd::Zero(3, nb);
-//
-//   if(first_call) {
-//     // compute convolution up to but not including the current timestep
-//     for(int i = 1; i < table_dimensions_[0]; ++i) {
-//       // If (step - i) runs "off the end", just propagate src[0][...]
-//       auto wrap = std::max(step - i, 0) % table_dimensions_[0];
-//
-//       Eigen::Map<Eigen::ArrayXcd> prop(&propagation_table_[i][0][0][0], nb);
-//       Eigen::Map<Eigen::Array3Xcd> src(&source_table_[wrap][0][0][0][0], 3,
-//       nb);
-//
-//       // Use broadcasting to do the x, y, and z component propagation
-//       temp_observers += src.rowwise() * prop.transpose();
-//     }
-//   }
-//   // set observers equal to temp_observers
-//   // std::cout << temp_observers << "\n\n\n\n" << std::endl;
-//   observers += temp_observers;
-//
-//   auto wrap = std::max(step, 0) % table_dimensions_[0];  // needed ?
-//
-//   Eigen::Map<Eigen::ArrayXcd> prop(&propagation_table_[0][0][0][0], nb);
-//   Eigen::Map<Eigen::Array3Xcd> src(&source_table_[wrap][0][0][0][0], 3, nb);
-//   observers += src.rowwise() * prop.transpose();
-//
-//   const auto o_ptr = &obs_table_(front);
-//   fftw_execute_dft(spatial_vector_transforms_.backward,
-//                    reinterpret_cast<fftw_complex *>(o_ptr),
-//                    reinterpret_cast<fftw_complex *>(o_ptr));
-// }
-
 void AIM::Farfield::fill_results_table(const int step)
 {
   results = 0;

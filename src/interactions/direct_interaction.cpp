@@ -99,42 +99,6 @@ const InteractionBase::ResultArray &DirectInteraction::evaluate(
   return results;
 }
 
-// const InteractionBase::ResultArray &DirectInteraction::evaluate(
-//     const int time_idx, const bool first_call)
-// {
-//   constexpr int RHO_01 = 1;
-//   temp_res.setZero();
-//   if(first_call) results.setZero();
-//
-//   // iterate through all dot pairs
-//   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
-//     int src, obs;
-//     std::tie(src, obs) = idx2coord(pair_idx);
-//
-//     if(first_call) {  // sum over history if this is the first call
-//       for(int i = 1; i <= interp_order; ++i) {
-//         const int s =
-//             std::max(time_idx - floor_delays[pair_idx] - i,
-//                      static_cast<int>(history->array_.index_bases()[1]));
-//
-//         results[src] +=
-//             (history->array_[obs][s][0])[RHO_01] * coefficients[pair_idx][i];
-//         results[obs] +=
-//             (history->array_[src][s][0])[RHO_01] * coefficients[pair_idx][i];
-//       }
-//     }
-//     const int s = std::max(time_idx - floor_delays[pair_idx],
-//                            static_cast<int>(history->array_.index_bases()[1]));
-//
-//     temp_res[src] +=
-//         (history->array_[obs][s][0])[RHO_01] * coefficients[pair_idx][0];
-//     temp_res[obs] +=
-//         (history->array_[src][s][0])[RHO_01] * coefficients[pair_idx][0];
-//   }
-//   temp_res += results;
-//   return temp_res;
-// }
-
 int DirectInteraction::coord2idx(int row, int col)
 {
   assert(row != col);
