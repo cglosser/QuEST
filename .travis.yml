@@ -6,6 +6,7 @@ compiler:
 before_script:
   - sudo ./install/get_boost.sh > /dev/null
   - sudo ./install/get_eigen.sh > /dev/null
+  - ls extras/rapidcheck/
   - mkdir build && cd build
   - cmake ..
 
