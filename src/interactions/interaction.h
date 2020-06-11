@@ -13,7 +13,7 @@ class InteractionBase {
   InteractionBase(const std::shared_ptr<const DotVector> dots, const double dt)
       : dots(std::move(dots)),
         results(dots ? dots->size() : 0),
-        past_terms_of_results(dots ? dots->size() : 0),
+        past_terms_of_convolution(dots ? dots->size() : 0),
         dt(dt){};
   // const cmplx &operator[](const int i) const { return results[i]; }
   virtual const ResultArray &evaluate(const int) = 0;
@@ -24,7 +24,7 @@ class InteractionBase {
  protected:
   std::shared_ptr<const DotVector> dots;
   ResultArray results;
-  ResultArray past_terms_of_results;
+  ResultArray past_terms_of_convolution;
   double dt;
 };
 

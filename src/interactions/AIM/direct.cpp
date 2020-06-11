@@ -23,7 +23,7 @@ const InteractionBase::ResultArray &AIM::DirectInteraction::evaluate(
   constexpr int RHO_01 = 1;
 
   results.setZero();
-  past_terms_of_results.setZero();
+  past_terms_of_convolution.setZero();
 
   for(int pair_idx = 0; pair_idx < shape_[0]; ++pair_idx) {
     const auto &pair = (*interaction_pairs_)[pair_idx];
@@ -33,10 +33,10 @@ const InteractionBase::ResultArray &AIM::DirectInteraction::evaluate(
           std::max(time_idx - floor_delays_[pair_idx] - i,
                    static_cast<int>(history->array_.index_bases()[1]));
 
-      past_terms_of_results[pair.first] +=
+      past_terms_of_convolution[pair.first] +=
           (history->array_[pair.second][s][0])[RHO_01] *
           coefficients_[pair_idx][i];
-      past_terms_of_results[pair.second] +=
+      past_terms_of_convolution[pair.second] +=
           (history->array_[pair.first][s][0])[RHO_01] *
           coefficients_[pair_idx][i];
     }
@@ -49,7 +49,7 @@ const InteractionBase::ResultArray &AIM::DirectInteraction::evaluate(
     results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
                             coefficients_[pair_idx][0];
   }
-  results += past_terms_of_results;
+  results += past_terms_of_convolution;
   return results;
 }
 
@@ -71,7 +71,7 @@ AIM::DirectInteraction::evaluate_present_field(const int time_idx)
     results[pair.second] += (history->array_[pair.first][s][0])[RHO_01] *
                             coefficients_[pair_idx][0];
   }
-  results += past_terms_of_results;
+  results += past_terms_of_convolution;
   return results;
 }
 

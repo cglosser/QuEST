@@ -47,7 +47,7 @@ const InteractionBase::ResultArray &DirectInteraction::evaluate(
 {
   constexpr int RHO_01 = 1;
   results.setZero();
-  past_terms_of_results.setZero();
+  past_terms_of_convolution.setZero();
 
   // iterate through all dot pairs
   for(int pair_idx = 0; pair_idx < num_interactions; ++pair_idx) {
@@ -59,9 +59,9 @@ const InteractionBase::ResultArray &DirectInteraction::evaluate(
           std::max(time_idx - floor_delays[pair_idx] - i,
                    static_cast<int>(history->array_.index_bases()[1]));
 
-      past_terms_of_results[src] +=
+      past_terms_of_convolution[src] +=
           (history->array_[obs][s][0])[RHO_01] * coefficients[pair_idx][i];
-      past_terms_of_results[obs] +=
+      past_terms_of_convolution[obs] +=
           (history->array_[src][s][0])[RHO_01] * coefficients[pair_idx][i];
     }
     const int s = std::max(time_idx - floor_delays[pair_idx],
@@ -72,7 +72,7 @@ const InteractionBase::ResultArray &DirectInteraction::evaluate(
     results[obs] +=
         (history->array_[src][s][0])[RHO_01] * coefficients[pair_idx][0];
   }
-  results += past_terms_of_results;
+  results += past_terms_of_convolution;
   return results;
 }
 
@@ -95,7 +95,7 @@ const InteractionBase::ResultArray &DirectInteraction::evaluate_present_field(
     results[obs] +=
         (history->array_[src][s][0])[RHO_01] * coefficients[pair_idx][0];
   }
-  results += past_terms_of_results;
+  results += past_terms_of_convolution;
   return results;
 }
 
