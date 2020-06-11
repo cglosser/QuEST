@@ -42,8 +42,8 @@ void DirectInteraction::build_coefficient_table(
   }
 }
 
-const InteractionBase::ResultArray &
-DirectInteraction::first_evaluation_of_timestep(const int time_idx)
+const InteractionBase::ResultArray &DirectInteraction::evaluate(
+    const int time_idx)
 {
   constexpr int RHO_01 = 1;
   results.setZero();
@@ -76,7 +76,7 @@ DirectInteraction::first_evaluation_of_timestep(const int time_idx)
   return results;
 }
 
-const InteractionBase::ResultArray &DirectInteraction::evaluate(
+const InteractionBase::ResultArray &DirectInteraction::evaluate_present_field(
     const int time_idx)
 {
   constexpr int RHO_01 = 1;

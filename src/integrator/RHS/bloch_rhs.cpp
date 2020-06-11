@@ -12,12 +12,12 @@ Integrator::BlochRHS::BlochRHS(
 {
 }
 
-void Integrator::BlochRHS::evaluate(const int step) const
+void Integrator::BlochRHS::evaluate_present(const int step) const
 {
   auto eval_and_sum = [step](
                           const InteractionBase::ResultArray &r,
                           const std::shared_ptr<InteractionBase> &interaction) {
-    return r + interaction->evaluate(step);
+    return r + interaction->evaluate_present_field(step);
   };
   auto nil = InteractionBase::ResultArray::Zero(num_solutions, 1).eval();
 
@@ -30,12 +30,12 @@ void Integrator::BlochRHS::evaluate(const int step) const
   }
 }
 
-void Integrator::BlochRHS::first_evaluation_of_timestep(const int step) const
+void Integrator::BlochRHS::evaluate(const int step) const
 {
   auto eval_and_sum = [step](
                           const InteractionBase::ResultArray &r,
                           const std::shared_ptr<InteractionBase> &interaction) {
-    return r + interaction->first_evaluation_of_timestep(step);
+    return r + interaction->evaluate(step);
   };
   auto nil = InteractionBase::ResultArray::Zero(num_solutions, 1).eval();
 

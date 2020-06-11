@@ -15,8 +15,8 @@ class Integrator::ODE_RHS : public RHS<double> {
   ODE_RHS(const double,
           const std::shared_ptr<Integrator::History<double>>,
           const std::vector<std::function<double(double, double)>>);
+  void evaluate_present(const int) const;
   void evaluate(const int) const;
-  void first_evaluation_of_timestep(const int) const;
 
  private:
   std::vector<std::function<double(double, double)>> rhs_functions;
@@ -38,9 +38,6 @@ void Integrator::ODE_RHS::evaluate(const int n) const
   }
 }
 
-void Integrator::ODE_RHS::first_evaluation_of_timestep(const int n) const
-{
-  evaluate(n);
-}
+void Integrator::ODE_RHS::evaluate_present(const int n) const { evaluate(n); }
 
 #endif

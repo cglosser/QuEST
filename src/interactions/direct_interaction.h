@@ -14,7 +14,7 @@ class DirectInteraction final : public HistoryInteraction {
       const double);
 
   const ResultArray &evaluate(const int) final;
-  const ResultArray &first_evaluation_of_timestep(const int) final;
+  const ResultArray &evaluate_present_field(const int) final;
 
  private:
   int num_interactions;

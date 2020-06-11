@@ -17,8 +17,8 @@ AIM::DirectInteraction::DirectInteraction(
 {
 }
 
-const InteractionBase::ResultArray &
-AIM::DirectInteraction::first_evaluation_of_timestep(const int time_idx)
+const InteractionBase::ResultArray &AIM::DirectInteraction::evaluate(
+    const int time_idx)
 {
   constexpr int RHO_01 = 1;
 
@@ -53,8 +53,8 @@ AIM::DirectInteraction::first_evaluation_of_timestep(const int time_idx)
   return results;
 }
 
-const InteractionBase::ResultArray &AIM::DirectInteraction::evaluate(
-    const int time_idx)
+const InteractionBase::ResultArray &
+AIM::DirectInteraction::evaluate_present_field(const int time_idx)
 {
   constexpr int RHO_01 = 1;
 

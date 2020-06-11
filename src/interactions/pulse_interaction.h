@@ -11,7 +11,7 @@ class PulseInteraction : public InteractionBase {
                    const double,
                    const double);
   virtual const ResultArray &evaluate(const int);
-  virtual const ResultArray &first_evaluation_of_timestep(const int n)
+  virtual const ResultArray &evaluate_present_field(const int n)
   {
     return evaluate(n);
   }

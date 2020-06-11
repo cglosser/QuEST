@@ -58,19 +58,19 @@ class AIM::Interaction final : public InteractionBase {
   {
   }
 
-  const ResultArray &first_evaluation_of_timestep(const int t)
+  const ResultArray &evaluate(const int t)
   {
-    results = (ff.first_evaluation_of_timestep(t).conjugate() -
-               nf.first_evaluation_of_timestep(t)) +
-              direct.first_evaluation_of_timestep(t);
+    results =
+        (ff.evaluate(t).conjugate() - nf.evaluate(t)) + direct.evaluate(t);
     return results;
   }
 
-  const ResultArray &evaluate(const int t)
+  const ResultArray &evaluate_present_field(const int t)
   {
     // I DON'T KNOW WHY THAT NEEDS A CONJUGATE!!!
-    results =
-        (ff.evaluate(t).conjugate() - nf.evaluate(t)) + direct.evaluate(t);
+    results = (ff.evaluate_present_field(t).conjugate() -
+               nf.evaluate_present_field(t)) +
+              direct.evaluate_present_field(t);
     return results;
   }
 

@@ -30,8 +30,7 @@ AIM::Nearfield::Nearfield(
 {
 }
 
-const InteractionBase::ResultArray &
-AIM::Nearfield::first_evaluation_of_timestep(const int time_idx)
+const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
 {
   constexpr int RH0_01 = 1;
 
@@ -67,7 +66,8 @@ AIM::Nearfield::first_evaluation_of_timestep(const int time_idx)
   return results;
 }
 
-const InteractionBase::ResultArray &AIM::Nearfield::evaluate(const int time_idx)
+const InteractionBase::ResultArray &AIM::Nearfield::evaluate_present_field(
+    const int time_idx)
 {
   constexpr int RH0_01 = 1;
 

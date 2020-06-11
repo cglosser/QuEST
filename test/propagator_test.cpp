@@ -73,8 +73,7 @@ BOOST_FIXTURE_TEST_CASE(DIRECT_INTERACTION, SimulationStructures)
   for(int i = 0; i < num_timesteps; ++i) {
     BOOST_TEST_MESSAGE(i);
 
-    const double obs_val_calculated =
-        direct_interaction.first_evaluation_of_timestep(i)(1).real();
+    const double obs_val_calculated = direct_interaction.evaluate(i)(1).real();
     const double obs_val_actual = obs_fn(i * dt);
     BOOST_REQUIRE_CLOSE_FRACTION(obs_val_calculated, obs_val_actual, 1e-9);
   }
@@ -99,8 +98,7 @@ BOOST_FIXTURE_TEST_CASE(AIM_INTERACTION, SimulationStructures)
   for(int i = 0; i < num_timesteps; ++i) {
     BOOST_TEST_MESSAGE(i);
 
-    const double obs_val_calculated =
-        aim_interaction.first_evaluation_of_timestep(i)(1).real();
+    const double obs_val_calculated = aim_interaction.evaluate(i)(1).real();
     const double obs_val_actual = obs_fn(i * dt);
 
     if(i > 16) {

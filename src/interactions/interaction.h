@@ -17,7 +17,7 @@ class InteractionBase {
         dt(dt){};
   // const cmplx &operator[](const int i) const { return results[i]; }
   virtual const ResultArray &evaluate(const int) = 0;
-  virtual const ResultArray &first_evaluation_of_timestep(const int) = 0;
+  virtual const ResultArray &evaluate_present_field(const int) = 0;
 
   virtual ~InteractionBase(){};
 

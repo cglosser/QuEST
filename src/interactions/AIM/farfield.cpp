@@ -63,7 +63,7 @@ void AIM::Farfield::fill_source_table(const int step)
   }
 }
 
-void AIM::Farfield::first_propagate_of_timestep(const int step)
+void AIM::Farfield::propagate(const int step)
 {
   const auto wrapped_step = step % table_dimensions_[0];
   const auto nb = 8 * grid->size();
@@ -107,7 +107,7 @@ void AIM::Farfield::first_propagate_of_timestep(const int step)
                    reinterpret_cast<fftw_complex *>(o_ptr));
 }
 
-void AIM::Farfield::propagate(const int step)
+void AIM::Farfield::propagate_present_field(const int step)
 {
   const auto wrapped_step = step % table_dimensions_[0];
   const auto nb = 8 * grid->size();
