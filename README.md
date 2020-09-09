@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/37320094.svg)](https://zenodo.org/badge/latestdoi/37320094)
-[![Article](https://img.shields.io/badge/article-Phys.%20Rev.%20A%2096%2C%20033816-blueviolet.svg)](https://journals.aps.org/pra/abstract/10.1103/PhysRevA.96.033816)
-[![Article](https://img.shields.io/badge/article-Comput.%20Phys.%20Commun%2C%202020.107500-blueviolet.svg)](https://www.sciencedirect.com/science/article/pii/S0010465520302356)
+[![Article](https://img.shields.io/badge/article-Phys.%20Rev.%20A%2096%2C%20033816-indigo.svg)](https://journals.aps.org/pra/abstract/10.1103/PhysRevA.96.033816)
+[![Article](https://img.shields.io/badge/article-Comput.%20Phys.%20Commun%2C%202020.107500-indigo.svg)](https://www.sciencedirect.com/science/article/pii/S0010465520302356)
 
 # QuEST: The Quantum Electromagnetics Simulation Toolbox
 ![tube](https://user-images.githubusercontent.com/193990/31498525-20bb0fb0-af30-11e7-9e6a-9a85f99cdb09.png)
